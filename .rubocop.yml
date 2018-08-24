@@ -1,0 +1,195 @@
+AllCops:
+  Exclude:
+    - 'exp/**/*'
+
+Layout/CaseIndentation:
+  Enabled: false
+
+Layout/CommentIndentation:
+  Enabled: false
+
+Layout/ElseAlignment:
+  Enabled: false
+
+Layout/EmptyLines:
+  Enabled: false
+  
+Layout/EndAlignment:
+  Enabled: false
+
+Layout/EndOfLine:
+  Enabled: true
+  EnforcedStyle: lf
+
+Layout/IndentationWidth:
+  Enabled: false
+
+Layout/IndentationConsistency:
+  Enabled: true
+  
+Layout/IndentHeredoc:
+  Enabled: false
+  
+Layout/MultilineHashBraceLayout:
+  Enabled: true
+
+Layout/SpaceAroundOperators:
+  Enabled: true
+
+Layout/SpaceInsideParens:
+  Enabled: true
+  
+Layout/Tab:
+  Enabled: true
+  
+Layout/TrailingBlankLines:
+  Enabled: true
+
+Layout/TrailingWhitespace:
+  Enabled: true
+
+Lint/Loop:
+  Enabled: true
+
+Lint/RescueException:
+  Enabled: true
+
+Lint/UnusedMethodArgument:
+  Enabled: true
+
+Lint/UselessAccessModifier:
+  Enabled: true
+
+Lint/Void:
+  Enabled: false
+
+Lint/UselessAssignment:
+  Enabled: true
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: true
+  Max: 350
+
+Metrics/ClassLength:
+  Enabled: true
+  Max: 350
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: false
+  Max: 90
+
+Metrics/MethodLength:
+  Enabled: true
+  Max: 40
+
+Metrics/ModuleLength:
+  Enabled: true
+  Max: 500
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Naming/ConstantName:
+  Enabled: false
+
+Naming/ClassAndModuleCamelCase:
+  Enabled: false
+  
+Naming/UncommunicativeBlockParamName:
+  Enabled: true
+  
+Naming/UncommunicativeMethodParamName:
+  Enabled: false
+
+Naming/VariableName:
+  Enabled: false
+
+Style/Alias:
+  Enabled: true
+
+Layout/AlignHash:
+  Enabled: false
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/BarePercentLiterals:
+  Enabled: false
+
+Style/BlockComments:
+  Enabled: false
+
+Style/CharacterLiteral:
+  Enabled: false
+
+Style/ClassCheck:
+  Enabled: false
+
+Style/ClassVars:
+  Enabled: false
+
+Style/ColonMethodCall:
+  Enabled: false
+
+Style/CommentAnnotation:
+  Enabled: false
+
+Style/CommentedKeyword:
+  Enabled: false
+
+Style/ConditionalAssignment:
+  Enabled: false
+
+Style/DefWithParentheses:
+  Enabled: true
+
+Style/Documentation:
+  Enabled: false
+
+Style/ExpandPathArguments:
+  Enabled: false
+
+Style/GuardClause:
+  Enabled: false
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/InverseMethods:
+  Enabled: true
+
+Style/Next:
+  Enabled: false
+
+Style/RaiseArgs:
+  Enabled: true
+
+Style/RedundantReturn:
+  Enabled: false
+  
+Style/RedundantSelf:
+  Enabled: true
+
+Style/RegexpLiteral:
+  Enabled: false
+
+Style/PercentLiteralDelimiters:
+  Enabled: false
+  
+Style/StderrPuts:
+  Enabled: false  
+
+Style/StringLiterals:
+  Enabled: true
+
+Style/TernaryParentheses:
+  Enabled: false
+  
+Style/UnlessElse:
+  Enabled: false
