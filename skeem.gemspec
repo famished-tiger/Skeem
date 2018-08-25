@@ -39,7 +39,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Dimitri Geshef']
   spec.email         = ['famished.tiger@yahoo.com']
 
-  spec.description       = <<-DESCR
+  spec.description = <<-DESCR
   Skeem is an interpreter of a subset of the Scheme programming language.
 DESCR
   spec.summary = <<-SUMMARY
@@ -53,6 +53,10 @@ SUMMARY
   spec.require_paths = ['lib']
   PkgExtending.pkg_files(spec)
   PkgExtending.pkg_documentation(spec)
+  # Runtime dependencies
+  spec.add_dependency 'rley', '~> 0.6'
+
+  # Development dependencies
   spec.add_development_dependency 'bundler', '~> 1.16'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
