@@ -10,7 +10,7 @@ module Skeem
         expect(token.lexeme).to eq(lexeme)
       end
     end
-    
+
     def unquoted(aString)
       aString.gsub(/(^")|("$)/, '')
     end
@@ -141,15 +141,32 @@ containing just one line"
         end
       end
     end # context
-    
+
     context 'Scanning Scheme sample code' do
       it 'should read examples from lis.py page' do
         source = <<-SCHEME
-(if (> (val x) 0) 
-    (fn (+ (aref A i) (* 3 i)) 
+(if (> (val x) 0)
+    (fn (+ (aref A i) (* 3 i))
         (quote (one two)))
       end
     end
+SCHEME
+        subject.reinitialize(source)
+        expect { subject.tokens }.not_to raise_error
+
+        source = "(define circle-area (lambda (r) (* pi (* r r))))"
+        subject.reinitialize(source)
+        expect { subject.tokens }.not_to raise_error
+
+        source = "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"
+        subject.reinitialize(source)
+        expect { subject.tokens }.not_to raise_error
+
+        source = <<-SCHEME
+define first car)
+define rest cdr)
+define count (lambda (item L) (if L (+ (equal? item (first L)) (count item (rest L))) 0)))
+count 0 (list 0 1 2 3 0 0))
 SCHEME
         subject.reinitialize(source)
         expect { subject.tokens }.not_to raise_error

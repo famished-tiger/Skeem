@@ -1,4 +1,7 @@
 # Skeem
+[![Gem Version](https://badge.fury.io/rb/skeem.svg)](https://badge.fury.io/rb/skeem)
+
+
 __Skeem__ will be an interpreter of a subset of the Scheme programming language.
 
 
