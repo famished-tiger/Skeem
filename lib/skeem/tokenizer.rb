@@ -30,7 +30,14 @@ module Skeem
     # Constructor. Initialize a tokenizer for Skeem.
     # @param source [String] Skeem text to tokenize.
     def initialize(source)
-      @scanner = StringScanner.new(source)
+      @scanner = StringScanner.new('')
+      reinitialize(source)
+    end
+
+
+    # @param source [String] Skeem text to tokenize.
+    def reinitialize(source)
+      @scanner.string = source
       @lineno = 1
       @line_start = 0
     end
@@ -58,18 +65,29 @@ module Skeem
       if "()'`".include? curr_ch
         # Delimiters, separators => single character token
         token = build_token(@@lexeme2name[curr_ch], scanner.getch)
-      elsif (lexeme = scanner.scan(/#(?:t|f|true|false)((?=\s|[|()";])|$)/))
+      elsif (lexeme = scanner.scan(/#(?:\.)(?=\s|[|()";]|$)/)) # Single char occurring alone
+        token = build_token('PERIOD', lexeme)
+      elsif (lexeme = scanner.scan(/#(?:t|f|true|false)(?=\s|[|()";]|$)/))
         token = build_token('BOOLEAN', lexeme) # normalized lexeme
-      elsif (lexeme = scanner.scan(/[0-9]+((?=\s|[|()";])|$)/))
+      elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
-      elsif (lexeme = scanner.scan(/-?[0-9]+(\.[0-9]+)?((?=\s|[|()";])|$)/))
+      elsif (lexeme = scanner.scan(/[+-]?[0-9]+\.[0-9]+(?:(?:e|E)[+-]?[0-9]+)?/))
         token = build_token('REAL', lexeme)
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
         unquoted = lexeme.gsub(/(^")|("$)/, '')
         token = build_token('STRING_LIT', unquoted)
-      elsif (lexeme = scanner.scan(/([\+\-])((?=\s|[|()";])|$)/))
-        token = build_token('IDENTIFIER', lexeme) # Plus and minus as identifiers
       elsif (lexeme = scanner.scan(/[a-zA-Z!$%&*\/:<=>?@^_~][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
+        token = build_token('IDENTIFIER', lexeme)
+      elsif (lexeme = scanner.scan(/\|(?:[^|])*\|/)) # Vertical bar delimited
+        token = build_token('IDENTIFIER', lexeme)
+      elsif (lexeme = scanner.scan(/([\+\-])((?=\s|[|()";])|$)/))
+        #  # R7RS peculiar identifiers case 1: isolated plus and minus as identifiers
+        token = build_token('IDENTIFIER', lexeme)
+      elsif (lexeme = scanner.scan(/[+-][a-zA-Z!$%&*\/:<=>?@^_~+-@][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
+        # R7RS peculiar identifiers case 2
+        token = build_token('IDENTIFIER', lexeme)
+      elsif (lexeme = scanner.scan(/\.[a-zA-Z!$%&*\/:<=>?@^_~+-@.][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
+        # R7RS peculiar identifiers case 4
         token = build_token('IDENTIFIER', lexeme)
       else # Unknown token
         erroneous = curr_ch.nil? ? '' : scanner.scan(/./)

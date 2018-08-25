@@ -31,6 +31,9 @@ Roadmap:
 - Make it pass all examples from the [Reasoned Schemer](https://mitpress.mit.edu/books/reasoned-schemer-second-edition) book.
 
 TODO: Write usage instructions here
+
+Good to know:
+Online book: [The Scheme Programming Language (4th Ed.)](https://www.scheme.com/tspl4/)
   
 ## Development
 
