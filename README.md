@@ -1,6 +1,7 @@
 # Skeem
+[![Linux Build Status](https://travis-ci.org/famished-tiger/SRL-Ruby.svg?branch=master)](https://travis-ci.org/famished-tiger/SRL-Ruby)
 [![Gem Version](https://badge.fury.io/rb/skeem.svg)](https://badge.fury.io/rb/skeem)
-
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/famished-tiger/Skeem/blob/master/LICENSE.txt)
 
 __Skeem__ will be an interpreter of a subset of the Scheme programming language.
 
@@ -23,8 +24,12 @@ Or install it yourself as:
 
 ## Usage
 
-The __Skeem__ project has just started.
-At this stage, it is too early to use the gem.  
+The __Skeem__ project has just started.  
+At this stage, the gem consists of a tokenizer.  
+At least these steps must be done in order to have a first interpreter:
+- TODO: define subset of Scheme grammar
+- TODO: buuild parser of Scheme subset
+- TODO: Implement Skeem interpreter (and REPL)
 
 Roadmap:
 - Implement an equivalent of [lis.py](http://www.norvig.com/lispy.html)
@@ -36,7 +41,7 @@ Roadmap:
 TODO: Write usage instructions here
 
 Good to know:
-Online book: [The Scheme Programming Language (4th Ed.)](https://www.scheme.com/tspl4/)
+Online book: [The Scheme Programming Language (4th Ed.)](https://www.scheme.com/tspl4/). Remark: covers an older version of Scheme.
   
 ## Development
 

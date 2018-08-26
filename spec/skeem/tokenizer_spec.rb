@@ -144,6 +144,7 @@ containing just one line"
 
     context 'Scanning Scheme sample code' do
       it 'should read examples from lis.py page' do
+        # Shallow tokenizer testing
         source = <<-SCHEME
 (if (> (val x) 0)
     (fn (+ (aref A i) (* 3 i))
@@ -170,6 +171,34 @@ count 0 (list 0 1 2 3 0 0))
 SCHEME
         subject.reinitialize(source)
         expect { subject.tokens }.not_to raise_error
+      end
+
+      it 'should produce a sequence of token objects' do
+        # Deeper tokenizer testing
+        source = "(define circle-area (lambda (r) (* pi (* r r))))"
+        subject.reinitialize(source)
+        predicted = [
+          ['LPAREN', '('],
+          ['DEFINE', 'define'],
+          ['IDENTIFIER', 'circle-area'],
+          ['LPAREN', '('],
+          ['IDENTIFIER', 'lambda'],
+          ['LPAREN', '('],
+          ['IDENTIFIER', 'r'],
+          ['RPAREN', ')'],
+          ['LPAREN', '('],
+          ['IDENTIFIER', '*'],
+          ['IDENTIFIER', 'pi'],
+          ['LPAREN', '('],
+          ['IDENTIFIER', '*'],
+          ['IDENTIFIER', 'r'],
+          ['IDENTIFIER', 'r'],
+          ['RPAREN', ')'],
+          ['RPAREN', ')'],
+          ['RPAREN', ')'],
+          ['RPAREN', ')']
+        ]
+        match_expectations(subject, predicted)
       end
     end # context
   end # describe

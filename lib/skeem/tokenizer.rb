@@ -24,6 +24,12 @@ module Skeem
       '(' => 'LPAREN',
       ')' => 'RPAREN'
     }.freeze
+    
+    # Here are all the SRL keywords (in uppercase)
+    @@keywords = %w[
+      BEGIN
+      DEFINE
+    ].map { |x| [x, x] } .to_h      
 
     class ScanError < StandardError; end
 
@@ -77,7 +83,9 @@ module Skeem
         unquoted = lexeme.gsub(/(^")|("$)/, '')
         token = build_token('STRING_LIT', unquoted)
       elsif (lexeme = scanner.scan(/[a-zA-Z!$%&*\/:<=>?@^_~][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
-        token = build_token('IDENTIFIER', lexeme)
+        keyw = @@keywords[lexeme.upcase]
+        tok_type = keyw ? keyw : 'IDENTIFIER'
+        token = build_token(tok_type, lexeme)
       elsif (lexeme = scanner.scan(/\|(?:[^|])*\|/)) # Vertical bar delimited
         token = build_token('IDENTIFIER', lexeme)
       elsif (lexeme = scanner.scan(/([\+\-])((?=\s|[|()";])|$)/))

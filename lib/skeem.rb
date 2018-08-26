@@ -1,5 +1,8 @@
-require 'skeem/version'
+# File: skeem.rb
+# This file acts as a jumping-off point for loading dependencies expected
+# for a Skeem client.
 
-module Skeem
-  # Your code goes here...
-end
+require_relative './skeem/version'
+require_relative './skeem/parser'
+
+# End of file
