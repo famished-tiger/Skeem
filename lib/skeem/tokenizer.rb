@@ -24,12 +24,12 @@ module Skeem
       '(' => 'LPAREN',
       ')' => 'RPAREN'
     }.freeze
-    
+
     # Here are all the SRL keywords (in uppercase)
     @@keywords = %w[
       BEGIN
       DEFINE
-    ].map { |x| [x, x] } .to_h      
+    ].map { |x| [x, x] } .to_h
 
     class ScanError < StandardError; end
 
@@ -74,14 +74,13 @@ module Skeem
       elsif (lexeme = scanner.scan(/#(?:\.)(?=\s|[|()";]|$)/)) # Single char occurring alone
         token = build_token('PERIOD', lexeme)
       elsif (lexeme = scanner.scan(/#(?:t|f|true|false)(?=\s|[|()";]|$)/))
-        token = build_token('BOOLEAN', lexeme) # normalized lexeme
+        token = build_token('BOOLEAN', lexeme)
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+\.[0-9]+(?:(?:e|E)[+-]?[0-9]+)?/))
         token = build_token('REAL', lexeme)
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
-        unquoted = lexeme.gsub(/(^")|("$)/, '')
-        token = build_token('STRING_LIT', unquoted)
+        token = build_token('STRING_LIT', lexeme)
       elsif (lexeme = scanner.scan(/[a-zA-Z!$%&*\/:<=>?@^_~][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
         keyw = @@keywords[lexeme.upcase]
         tok_type = keyw ? keyw : 'IDENTIFIER'
@@ -107,11 +106,12 @@ module Skeem
       return token
     end
 
-    def build_token(aSymbolName, aLexeme)
+    def build_token(aSymbolName, aLexeme, aFormat = :default)
       begin
+        value = convert_to(aLexeme, aSymbolName, aFormat)
         col = scanner.pos - aLexeme.size - @line_start + 1
         pos = Position.new(@lineno, col)
-        token = SToken.new(aLexeme, aSymbolName, pos)
+        token = SToken.new(value, aSymbolName, pos)
       rescue StandardError => exc
         puts "Failing with '#{aSymbolName}' and '#{aLexeme}'"
         raise exc
@@ -120,6 +120,65 @@ module Skeem
       return token
     end
 
+    def convert_to(aLexeme, aSymbolName, aFormat)
+      case aSymbolName
+      when 'BOOLEAN'
+        value = to_boolean(aLexeme, aFormat)
+      when 'INTEGER'
+        value = to_integer(aLexeme, aFormat)
+      when 'REAL'
+        value = to_real(aLexeme, aFormat)
+      when 'STRING_LIT'
+        value = to_string(aLexeme, aFormat)
+      when 'SYMBOL'
+        value = to_string(aLexeme, aFormat)        
+      else
+        value = aLexeme
+      end
+
+      return value
+    end
+
+    def to_boolean(aLexeme, aFormat)
+      result = (aLexeme =~ /^#t/) ? true : false
+    end
+
+    def to_integer(aLexeme, aFormat)
+      case aFormat
+      when :default, :base10
+        value = aLexeme.to_i
+      end
+
+      return value
+    end
+
+    def to_real(aLexeme, aFormat)
+      case aFormat
+      when :default
+        value = aLexeme.to_f
+      end
+
+      return value
+    end
+    
+    def to_string(aLexeme, aFormat)
+      case aFormat
+      when :default
+        value = aLexeme.gsub(/(^")|("$)/, '')
+      end
+
+      return value
+    end  
+
+    def to_symbol(aLexeme, aFormat)
+      case aFormat
+      when :default
+        value = aLexeme
+      end
+
+      return value
+    end     
+    
     def skip_whitespaces
       pre_pos = scanner.pos
 

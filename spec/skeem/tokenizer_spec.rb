@@ -43,10 +43,10 @@ module Skeem
       it 'should tokenize boolean constants' do
         tests = [
           # couple [raw input, expected]
-          ['#t', '#t'],
-          [' #f', '#f'],
-          ['#true ', '#true'],
-          [' #false', '#false']
+          ['#t', true],
+          [' #f', false],
+          ['#true ', true],
+          [' #false', false]
         ]
 
         tests.each do |(input, prediction)|
@@ -62,11 +62,11 @@ module Skeem
       it 'should tokenize integers in default radix 10' do
         tests = [
           # couple [raw input, expected]
-          ['0', '0'],
-          [' 3', '3'],
-          ['+3 ', '+3'],
-          ['-3', '-3'],
-          ['-1234', '-1234']
+          ['0', 0],
+          [' 3', 3],
+          ['+3 ', +3],
+          ['-3', -3],
+          ['-1234', -1234]
         ]
 
         tests.each do |(input, prediction)|
@@ -82,9 +82,9 @@ module Skeem
       it 'should tokenize real numbers' do
         tests = [
           # couple [raw input, expected]
-          ["\t\t3.45e+6", '3.45e+6'],
-          ['+3.45e+6', '+3.45e+6'],
-          ['-3.45e+6', '-3.45e+6']
+          ["\t\t3.45e+6", 3.45e+6],
+          ['+3.45e+6', +3.45e+6],
+          ['-3.45e+6', -3.45e+6]
         ]
 
         tests.each do |(input, prediction)|
@@ -96,6 +96,7 @@ module Skeem
       end
     end # context
 
+    # TODO
     context 'String recognition:' do
       it 'should tokenize strings' do
         examples = [
@@ -114,13 +115,13 @@ module Skeem
       end
     end # context
 
-=begin
-For later:
-"Another example:\ntwo lines of text"
-"Here's text \
-containing just one line"
-"\x03B1; is named GREEK SMALL LETTER ALPHA."
-=end
+
+# For later:
+# "Another example:\ntwo lines of text"
+# "Here's text \
+# containing just one line"
+# "\x03B1; is named GREEK SMALL LETTER ALPHA."
+
 
     context 'Identifier recognition:' do
       it 'should tokenize identifier' do
@@ -141,7 +142,7 @@ containing just one line"
         end
       end
     end # context
-
+=begin
     context 'Scanning Scheme sample code' do
       it 'should read examples from lis.py page' do
         # Shallow tokenizer testing
@@ -201,5 +202,6 @@ SCHEME
         match_expectations(subject, predicted)
       end
     end # context
+=end
   end # describe
 end # module

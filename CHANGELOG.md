@@ -1,3 +1,11 @@
+## [0.0.4] - 2018-08-29
+### Added
+- File `s_expr_nodes.rb` with initial implementation of `SExprTerminalNode` classes.
+
+### Changed
+- Class`Tokenizer` converts literal into Ruby "native" objects
+
+
 ## [0.0.3] - 2018-08-25
 ### Added
 - File `grammar.rb` with minimalist grammar.
