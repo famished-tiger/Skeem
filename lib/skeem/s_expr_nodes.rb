@@ -13,7 +13,7 @@ module Skeem
 
     # This method can be overriden
     def init_value(aValue)
-      self.value = aValue.dup
+      self.value = aValue
     end
 
     def symbol()
@@ -39,6 +39,7 @@ module Skeem
   end # class
   
   class SExprNumberNode < SExprTerminalNode
+  end # class  
   
   class SExprRealNode < SExprNumberNode
   end # class
@@ -47,6 +48,17 @@ module Skeem
   end # class
   
   class SExprStringNode < SExprTerminalNode
+    # Override
+    def init_value(aValue)
+      self.value = aValue.dup
+    end  
+  end # class
+  
+  class SExprIdentifierNode < SExprTerminalNode
+    # Override
+    def init_value(aValue)
+      self.value = aValue.dup
+    end  
   end # class
   
 =begin

@@ -84,7 +84,8 @@ module Skeem
           # couple [raw input, expected]
           ["\t\t3.45e+6", 3.45e+6],
           ['+3.45e+6', +3.45e+6],
-          ['-3.45e+6', -3.45e+6]
+          ['-3.45e+6', -3.45e+6],
+          ['123e+45', 1.23e+47]
         ]
 
         tests.each do |(input, prediction)|
@@ -96,7 +97,6 @@ module Skeem
       end
     end # context
 
-    # TODO
     context 'String recognition:' do
       it 'should tokenize strings' do
         examples = [

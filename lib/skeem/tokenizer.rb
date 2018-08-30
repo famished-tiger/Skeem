@@ -77,7 +77,8 @@ module Skeem
         token = build_token('BOOLEAN', lexeme)
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
-      elsif (lexeme = scanner.scan(/[+-]?[0-9]+\.[0-9]+(?:(?:e|E)[+-]?[0-9]+)?/))
+      elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]+)?(?:(?:e|E)[+-]?[0-9]+)?/))
+        # Order dependency: must be tested after INTEGER case
         token = build_token('REAL', lexeme)
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
         token = build_token('STRING_LIT', lexeme)
@@ -130,8 +131,8 @@ module Skeem
         value = to_real(aLexeme, aFormat)
       when 'STRING_LIT'
         value = to_string(aLexeme, aFormat)
-      when 'SYMBOL'
-        value = to_string(aLexeme, aFormat)        
+      when 'IDENTIFIER'
+        value = to_identifier(aLexeme, aFormat)        
       else
         value = aLexeme
       end
@@ -170,7 +171,7 @@ module Skeem
       return value
     end  
 
-    def to_symbol(aLexeme, aFormat)
+    def to_identifier(aLexeme, aFormat)
       case aFormat
       when :default
         value = aLexeme

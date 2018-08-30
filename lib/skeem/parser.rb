@@ -1,5 +1,6 @@
 require_relative 'tokenizer'
 require_relative 'grammar'
+require_relative 's_expr_builder'
 
 module Skeem
   class Parser
@@ -7,7 +8,10 @@ module Skeem
     
     def initialize()
       # Create a Rley facade object
-      @engine = Rley::Engine.new { |cfg| cfg.diagnose = true }
+      @engine = Rley::Engine.new do |cfg| 
+        cfg.diagnose = true
+        cfg.repr_builder = SExprBuilder
+      end
 
       # Step 1. Load Skeem grammar
       @engine.use_grammar(Skeem::Grammar)
@@ -30,7 +34,7 @@ module Skeem
         raise StandardError, line1 + line2
       end
 
-      return result
+      return engine.to_ptree(result)
     end
   end # class
 end # module

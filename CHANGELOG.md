@@ -1,3 +1,10 @@
+## [0.0.5] - 2018-08-30
+Parser now generates correct parse trees for expressions consisting of a single literal.
+
+### Fixed
+- Class`Tokenizer` The regexp for real numbers was too restricitive: it didn't recognize real numbers without fractional part.
+
+
 ## [0.0.4] - 2018-08-29
 ### Added
 - File `s_expr_nodes.rb` with initial implementation of `SExprTerminalNode` classes.
