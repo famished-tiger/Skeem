@@ -21,7 +21,7 @@ module Skeem
     end
 
     def interpret()
-      return value
+      return self
     end
     
     def done!()

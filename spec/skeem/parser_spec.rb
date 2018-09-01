@@ -3,17 +3,16 @@ require_relative '../../lib/skeem/tokenizer' # Load the class under test
 
 module Skeem
   describe Parser do
-  
     context 'Initialization:' do
       it 'should be initialized without argument' do
         expect { Parser.new() }.not_to raise_error
       end
 
-      it 'should have its enginer initialized' do
+      it 'should have its parse engine initialized' do
         expect(subject.engine).to be_kind_of(Rley::Engine)
-      end        
+      end
     end # context
-    
+
     context 'Parsing literals:' do
       it 'should parse isolated booleans' do
         samples = [
@@ -26,9 +25,9 @@ module Skeem
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SExprBooleanNode)
           expect(ptree.root.value).to eq(predicted)
-        end 
+        end
       end
-      
+
       it 'should parse isolated integers' do
         samples = [
         ['0', 0],
@@ -41,9 +40,9 @@ module Skeem
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SExprIntegerNode)
           expect(ptree.root.value).to eq(predicted)
-        end 
+        end
       end
-      
+
       it 'should parse isolated real numbers' do
         samples = [
         ['0.0', 0.0],
@@ -56,7 +55,7 @@ module Skeem
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SExprRealNode)
           expect(ptree.root.value).to eq(predicted)
-        end 
+        end
       end
 
       it 'should parse isolated strings' do
@@ -67,7 +66,7 @@ module Skeem
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SExprStringNode)
           expect(ptree.root.value).to eq(predicted)
-        end 
+        end
       end
 
       it 'should parse isolated identifiers' do
@@ -78,11 +77,11 @@ module Skeem
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SExprIdentifierNode)
           expect(ptree.root.value).to eq(predicted)
-        end 
-      end      
+        end
+      end
     end # context
 
-    context 'Parsing forms:' do    
+    context 'Parsing forms:' do
       # it 'should parse definitions' do
         # source = '(define r 10)'
         # expect { subject.parse(source) }.not_to raise_error

@@ -1,3 +1,14 @@
+## [0.0.6] - 2018-09-01
+Initial (minimalistic) interpreter implementation.
+### Added
+- Class `Interpreter`.
+- Spec file `interpreter_spec.rb` initial test suite for the interpreter.
+
+### Changed
+- File `README.md` Udpates, sample code snippet added, link to other similar project `heist`.
+- Method `SExprTerminalNode#interpret` returns self instead of the `value` attribute.
+
+
 ## [0.0.5] - 2018-08-30
 Parser now generates correct parse trees for expressions consisting of a single literal.
 

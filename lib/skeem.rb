@@ -3,6 +3,6 @@
 # for a Skeem client.
 
 require_relative './skeem/version'
-require_relative './skeem/parser'
+require_relative './skeem/interpreter'
 
 # End of file
