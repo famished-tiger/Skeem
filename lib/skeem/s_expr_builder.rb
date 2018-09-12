@@ -11,11 +11,11 @@ module Skeem
   # nodes) and using a step by step approach.
   class SExprBuilder < Rley::ParseRep::ASTBaseBuilder
     Terminal2NodeClass = {
-      'BOOLEAN' => SExprBooleanNode,
-      'IDENTIFIER' => SExprIdentifierNode,
-      'INTEGER' => SExprIntegerNode,
-      'REAL' => SExprRealNode,
-      'STRING_LIT' => SExprStringNode
+      'BOOLEAN' => SExprBoolean,
+      'IDENTIFIER' => SExprIdentifier,
+      'INTEGER' => SExprInteger,
+      'REAL' => SExprReal,
+      'STRING_LIT' => SExprString
     }.freeze
 
     # Create a new AST builder instance.
@@ -33,6 +33,21 @@ module Skeem
 
     def terminal2node
       Terminal2NodeClass
+    end
+
+    # rule('proc_call_args' => 'LPAREN operator operand_plus RPAREN')
+    def reduce_proc_call_args(_production, aRange, _tokens, theChildren)
+      ProcedureCall.new(aRange, theChildren[1], theChildren[2])
+    end
+
+    # rule('operand_plus' => 'operand_plus operand').as 'multiple_operands'
+    def reduce_multiple_operands(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('operand_plus' => 'operand').as 'last_operand'
+    def reduce_last_operand(_production, _range, _tokens, theChildren)
+      [theChildren.last]
     end
   end # class
 end # module

@@ -1,3 +1,21 @@
+## [0.0.7] - 2018-09-12
+Proof of concept of a primitive function: '+' operator.  
+Demo works but code needs some polishing and testing.  
+
+### Added
+- Class `Environment`. Holds a mapping between symbol names and their associated value.
+- Class `PrimitiveBuilder`. Builder class that seeds the default environment with primitive functions (now, limited to '+')
+- Class `PrimitiveFunc` Internal representation of primitive functions.
+- Class `Runtime`. Holds all context data of the Skeem interpreter.
+- Methods `SExprBuilder#reduce_proc_call`, `SExprBuilder#reduce_multiple_operands`, SExprBuilder#reduce_last_operand
+
+### Changed
+- Class `Tokenize` Added support for Scheme semi-colon comments.
+- File `grammar.rb` Added syntax rules for procedure calling.
+- File `s_expr_nodes.rb` Class and code refactoring.
+- File `README.md` Changed demo snippet with example plus operator.
+
+
 ## [0.0.6] - 2018-09-01
 Initial (minimalistic) interpreter implementation.
 ### Added

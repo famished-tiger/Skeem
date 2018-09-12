@@ -185,6 +185,7 @@ module Skeem
 
       loop do
         ws_found = false
+        cmt_found = false
         found = scanner.skip(/[ \t\f]+/)
         ws_found = true if found
         found = scanner.skip(/(?:\r\n)|\r|\n/)
@@ -193,7 +194,12 @@ module Skeem
           @lineno += 1
           @line_start = scanner.pos
         end
-        break unless ws_found
+        next_ch = scanner.peek(1)
+        if next_ch == ';'
+          cmt_found = true
+          scanner.skip(/;[^\r\n]*(?:(?:\r\n)|\r|\n)?/)
+        end
+        break unless ws_found or cmt_found
       end
 
       curr_pos = scanner.pos

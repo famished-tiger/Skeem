@@ -101,7 +101,7 @@ module Skeem
       it 'should tokenize strings' do
         examples = [
           # Some examples taken from R7RS document
-          '"Hello world!"',
+          '"Hello, world"',
           '"The word \"recursion\" has many meanings."'
         ]
 
@@ -114,14 +114,11 @@ module Skeem
         end
       end
     end # context
-
-
 # For later:
 # "Another example:\ntwo lines of text"
 # "Here's text \
 # containing just one line"
 # "\x03B1; is named GREEK SMALL LETTER ALPHA."
-
 
     context 'Identifier recognition:' do
       it 'should tokenize identifier' do
@@ -142,6 +139,37 @@ module Skeem
         end
       end
     end # context
+
+    context 'Semi-colon comments:' do
+      it 'should skip heading comments' do
+        input = "; Starting comment\n \"Some text\""
+        subject.reinitialize(input)
+        token = subject.tokens.first
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('Some text')
+      end
+
+      it 'should skip trailing comments' do
+        input = "\"Some text\"; Trailing comment"
+        subject.reinitialize(input)
+        token = subject.tokens.first
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('Some text')
+      end
+
+      it 'should skip embedded comments' do
+        input = "\"First text\"; Middle comment\n\"Second text\""
+        subject.reinitialize(input)
+        tokens = subject.tokens
+        expect(tokens.size).to eq(2)
+        token = tokens[0]
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('First text')
+        token = tokens[1]
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('Second text')
+      end
+    end
 =begin
     context 'Scanning Scheme sample code' do
       it 'should read examples from lis.py page' do

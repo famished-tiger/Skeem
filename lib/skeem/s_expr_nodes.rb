@@ -1,29 +1,62 @@
 # Classes that implement nodes of Abstract Syntax Trees (AST) representing
 # Skeem parse results.
 
+require 'forwardable'
+
 module Skeem
+  # Abstract class. Generalization of any S-expr element.
+  SExprElement = Struct.new(:position) do
+    def initialize(aPosition)
+      self.position = aPosition
+    end
+
+    def evaluate(_runtime)
+      raise NotImplementedError
+    end
+
+    def done!()
+      # Do nothing
+    end
+
+    # Abstract method.
+    # Part of the 'visitee' role in Visitor design pattern.
+    # @param _visitor[ParseTreeVisitor] the visitor
+    def accept(_visitor)
+      raise NotImplementedError
+    end
+  end # struct
+
   # Abstract class. Root of class hierarchy needed for Interpreter
   # design pattern
-  SExprTerminalNode = Struct.new(:token, :value, :position) do
+  class SExprTerminal < SExprElement
+    attr_reader :token
+    attr_reader :value
+
     def initialize(aToken, aPosition)
-      self.token = aToken
-      self.position = aPosition
+      super(aPosition)
+      @token = aToken
       init_value(aToken.lexeme)
+    end
+
+    def self.create(aValue)
+      lightweight = self.allocate
+      lightweight.init_value(aValue)
+      return lightweight
     end
 
     # This method can be overriden
     def init_value(aValue)
-      self.value = aValue
+      @value = aValue
     end
 
     def symbol()
       token.terminal
     end
 
-    def interpret()
+    def evaluate(_runtime)
       return self
     end
-    
+
     def done!()
       # Do nothing
     end
@@ -33,44 +66,65 @@ module Skeem
     def accept(aVisitor)
       aVisitor.visit_terminal(self)
     end
-  end
+  end # class
 
-  class SExprBooleanNode < SExprTerminalNode
+  class SExprBoolean < SExprTerminal
   end # class
-  
-  class SExprNumberNode < SExprTerminalNode
-  end # class  
-  
-  class SExprRealNode < SExprNumberNode
+
+  class SExprNumber < SExprTerminal
   end # class
-  
-  class SExprIntegerNode < SExprRealNode
+
+  class SExprReal < SExprTerminal
   end # class
-  
-  class SExprStringNode < SExprTerminalNode
+
+  class SExprInteger < SExprReal
+  end # class
+
+  class SExprString < SExprTerminal
     # Override
     def init_value(aValue)
-      self.value = aValue.dup
-    end  
+      super(aValue.dup)
+    end
   end # class
-  
-  class SExprIdentifierNode < SExprTerminalNode
+
+  class SExprIdentifier < SExprTerminal
     # Override
     def init_value(aValue)
-      self.value = aValue.dup
-    end  
+      super(aValue.dup)
+    end
   end # class
-  
-=begin
-  class SExprCompositeNode
-    attr_accessor(:children)
-    attr_accessor(:symbol)
-    attr_accessor(:position)
 
-    def initialize(aSymbol, aPosition)
-      @symbol = aSymbol
-      @children = []
-      @position = aPosition
+  class SExprReserved < SExprIdentifier
+  end # class
+
+
+  class SExprList < SExprElement
+    attr_accessor(:members)
+    extend Forwardable
+
+    def_delegator :@members, :first, :empty?
+
+    def initialize()
+      super(nil)
+      @members = []
+    end
+
+    def rest()
+      members.slice(1..-1)
+    end
+
+    # Factory method.
+    # Construct an Enumerator that will return iteratively the result
+    # of 'evaluate' method of each members of self.
+    def to_eval_enum(aRuntime)
+      elements = self.members
+
+      new_enum = Enumerator.new do |result|
+        context = aRuntime
+        elements.each { |elem| result << elem.evaluate(context) }
+      end
+
+      new_enum
     end
 
     # Part of the 'visitee' role in Visitor design pattern.
@@ -78,21 +132,38 @@ module Skeem
     def accept(aVisitor)
       aVisitor.visit_nonterminal(self)
     end
-    
+
     def done!()
       # Do nothing
     end
 
-    alias subnodes children
+    alias children members
+    alias subnodes members
+    alias head first
+    alias tail rest
   end # class
 
-  class SExprUnaryOpNode < SExprCompositeNode
-    def initialize(aSymbol, aPosition)
-      super(aSymbol, aPosition)
+  class ProcedureCall < SExprElement
+    attr_reader :operator
+    attr_reader :operands
+
+    def initialize(aPosition, anOperator, theOperands)
+      super(aPosition)
+      @operator = anOperator
+      @operands = SExprList.new
+      @operands.instance_variable_set(:@members, theOperands)
     end
 
-    alias members children
+    def evaluate(aRuntime)
+      procedure_key = operator.evaluate(aRuntime)
+      err = StandardError
+      err_msg = "Unknown function #{procedure_key}"
+      raise err, err_msg unless aRuntime.include?(procedure_key.value)
+      procedure = aRuntime.environment.bindings[procedure_key.value]
+      result = procedure.call(aRuntime, self)
+    end
+
+    alias children operands
   end # class
-=end
 end # module
 # End of file

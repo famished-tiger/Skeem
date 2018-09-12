@@ -31,9 +31,12 @@ At this stage, the gem consists of a bare-bones interpreter.
   require 'skeem'
 
   schemer = Skeem::Interpreter.new
-  scheme_code = '"Hello, world"'
+  scheme_code =<<-SKEEM
+    ; Let's try the addition operator
+    (+ 3 4 5)
+  SKEEM
   result = schemer.run(scheme_code)
-  puts result.value # => "Hello, world"
+  puts result.value # => 12
 ```
 
 Roadmap:
