@@ -15,7 +15,7 @@ module Skeem
       it 'should have a runtime object' do
         expect(subject.runtime).to be_kind_of(Runtime)
       end
-      
+
       it 'should come with built-in functions' do
         expect(subject.runtime.environment).not_to be_empty
       end
@@ -88,12 +88,38 @@ module Skeem
           expect(result.value).to eq(predicted)
         end
       end
+    end # context
 
-      it 'should support procedure calls' do
-        result = subject.run('(+ 3 4)')
+    context 'Built-in primitive functions' do
+      it 'should support the addition of integers' do
+        result = subject.run('(+ 2 2)')
         expect(result).to be_kind_of(SExprInteger)
-        expect(result.value).to eq(7)
+        expect(result.value).to eq(4)
       end
+
+      it 'should support the addition of real numbers' do
+        result = subject.run('(+ 2 2.34)')
+        expect(result).to be_kind_of(SExprReal)
+        expect(result.value).to eq(4.34)
+      end
+      
+      it 'should support the product of numbers' do
+        result = subject.run('(* 2 3 4)')
+        expect(result).to be_kind_of(SExprInteger)
+        expect(result.value).to eq(24)      
+      end 
+
+      it 'should support the division of numbers' do
+        result = subject.run('(/ 24 3)')
+        expect(result).to be_kind_of(SExprInteger)
+        expect(result.value).to eq(8)      
+      end      
+      
+      it 'should support the arithmetic expressions' do      
+        result = subject.run('(+ (* 2 100) (* 1 10))')
+        expect(result).to be_kind_of(SExprInteger)
+        expect(result.value).to eq(210)
+      end       
     end # context
   end # describe
 end # module

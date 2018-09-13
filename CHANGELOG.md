@@ -1,6 +1,18 @@
+## [0.0.8] - 2018-09-13
+Added primitive operators: '-', '*', '/' operators.
+
+### Added
+- Class `PrimitiveBuilder`. Added methods to implement the arithmetic operators - (subtraction), * (product), / (division)
+- Class `SExprList`. Class refactoring
+- Class `PrimitiveFunc` Internal representation of primitive functions.
+
+### Changed
+- File `interpreter_spec.rb` Added tests for arithmetic expressions.
+- File `README.md` Changed demo snippet with example of arithmetic expression.
+
 ## [0.0.7] - 2018-09-12
-Proof of concept of a primitive function: '+' operator.  
-Demo works but code needs some polishing and testing.  
+Proof of concept of a primitive function: '+' operator.
+Demo works but code needs some polishing and testing.
 
 ### Added
 - Class `Environment`. Holds a mapping between symbol names and their associated value.
@@ -62,7 +74,7 @@ Parser now generates correct parse trees for expressions consisting of a single 
 
 ## [0.0.0] - 2018-08-24
 ### Added
-- Initial Github commit 
+- Initial Github commit
 
 ## Unreleased
 ### Added

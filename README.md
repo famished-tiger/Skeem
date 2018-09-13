@@ -32,11 +32,11 @@ At this stage, the gem consists of a bare-bones interpreter.
 
   schemer = Skeem::Interpreter.new
   scheme_code =<<-SKEEM
-    ; Let's try the addition operator
-    (+ 3 4 5)
+    ; Let's try some arithmetic expression
+    (+ (* 2 100) (* 1 10))
   SKEEM
   result = schemer.run(scheme_code)
-  puts result.value # => 12
+  puts result.value # => 210
 ```
 
 Roadmap:

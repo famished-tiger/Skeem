@@ -104,13 +104,17 @@ module Skeem
 
     def_delegator :@members, :first, :empty?
 
-    def initialize()
+    def initialize(theMembers)
       super(nil)
-      @members = []
+      @members = theMembers.nil? ? [] : theMembers
     end
 
-    def rest()
-      members.slice(1..-1)
+    def head()
+      return members.first
+    end
+    
+    def tail()
+      SExprList.new(members.slice(1..-1))
     end
 
     # Factory method.
@@ -139,8 +143,6 @@ module Skeem
 
     alias children members
     alias subnodes members
-    alias head first
-    alias tail rest
   end # class
 
   class ProcedureCall < SExprElement
@@ -150,16 +152,18 @@ module Skeem
     def initialize(aPosition, anOperator, theOperands)
       super(aPosition)
       @operator = anOperator
-      @operands = SExprList.new
-      @operands.instance_variable_set(:@members, theOperands)
+      @operands = SExprList.new(theOperands)
     end
 
     def evaluate(aRuntime)
-      procedure_key = operator.evaluate(aRuntime)
-      err = StandardError
-      err_msg = "Unknown function #{procedure_key}"
-      raise err, err_msg unless aRuntime.include?(procedure_key.value)
-      procedure = aRuntime.environment.bindings[procedure_key.value]
+      proc_key = operator.evaluate(aRuntime)
+      unless aRuntime.include?(proc_key.value)
+        err = StandardError
+        key = proc_key.kind_of?(SExprIdentifier) ? proc_key.value : proc_key
+        err_msg = "Unknown function '#{key}'"
+        raise err, err_msg
+      end
+      procedure = aRuntime.environment.bindings[proc_key.value]
       result = procedure.call(aRuntime, self)
     end
 
