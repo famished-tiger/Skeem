@@ -1,3 +1,16 @@
+## [0.0.10] - 2018-09-15
+Added primitive procedures: 'boolean?', 'string?', 'symbol?', and 'not' 
+
+### Added
+- Class `PrimitiveBuilder`. Added methods to implement the predicates 'boolean?', 'string?', 'symbol?', and 'not'
+- File `interpreter_spec.rb` methods to implement the predicates 'boolean?', 'string?', 'symbol?'
+
+### Changed
+- Class hierarchy `SExprElement`. Prefix `SExpr` in class names changed into 'Skm'
+
+### Fixed
+- Method `PrimitiveBuilder#create_minus` When '-' has only one argument then it means sign change.
+
 ## [0.0.9] - 2018-09-15
 Added primitive procedures: 'number?', 'real?', 'integer?'.
 

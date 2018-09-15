@@ -102,6 +102,22 @@ module Skeem
         expect(result).to be_kind_of(SkmReal)
         expect(result.value).to eq(4.34)
       end
+      
+      it 'should implement the negation of integer' do
+        result = subject.run('(- 3)')
+        expect(result).to be_kind_of(SkmInteger)
+        expect(result.value).to eq(-3)
+      end
+
+      it 'should implement the substraction of integers' do
+        result = subject.run('(- 3 4)')
+        expect(result).to be_kind_of(SkmInteger)
+        expect(result.value).to eq(-1)
+        
+        result = subject.run('(- 3 4 5)')
+        expect(result).to be_kind_of(SkmInteger)
+        expect(result.value).to eq(-6)        
+      end       
 
       it 'should implement the product of numbers' do
         result = subject.run('(* 2 3 4)')
@@ -159,7 +175,53 @@ module Skeem
           result = subject.run(skeem_expr)
           expect(result.value).to eq(expectation)
         end
-      end       
+      end
+
+      it 'should implement the not procedure' do
+        checks = [
+          ['(not #t)', false],
+          ['(not 3)', false],
+          ['(not #f)', true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the boolean? procedure' do
+        checks = [
+          ['(boolean? #f)', true],
+          ['(boolean? 0)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the string? procedure' do
+        checks = [
+          ['(string? #f)', false],
+          ['(string? 3)', false],
+          ['(string? "hi")', true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the symbol? procedure' do
+        checks = [
+          ['(symbol? #f)', false],
+          ['(symbol? "bar")', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end      
     end # context
   end # describe
 end # module

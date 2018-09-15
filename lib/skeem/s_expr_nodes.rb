@@ -29,6 +29,18 @@ module Skeem
     def integer?
       false
     end
+    
+    def boolean?
+      false
+    end
+
+    def string?
+      false
+    end    
+
+    def symbol?
+      false
+    end    
 
     # Abstract method.
     # Part of the 'visitee' role in Visitor design pattern.
@@ -81,6 +93,9 @@ module Skeem
   end # class
 
   class SkmBoolean < SkmTerminal
+    def boolean?
+      true
+    end  
   end # class
 
   class SkmNumber < SkmTerminal
@@ -106,6 +121,10 @@ module Skeem
     def init_value(aValue)
       super(aValue.dup)
     end
+    
+    def string?
+      true
+    end     
   end # class
 
   class SkmIdentifier < SkmTerminal
@@ -113,6 +132,10 @@ module Skeem
     def init_value(aValue)
       super(aValue.dup)
     end
+    
+    def symbol?
+      true
+    end     
   end # class
 
   class SkmReserved < SkmIdentifier
@@ -123,7 +146,7 @@ module Skeem
     attr_accessor(:members)
     extend Forwardable
 
-    def_delegator :@members, :first, :empty?
+    def_delegators :@members, :first, :length, :empty?
 
     def initialize(theMembers)
       super(nil)
