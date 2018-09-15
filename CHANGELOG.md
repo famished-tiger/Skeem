@@ -1,3 +1,11 @@
+## [0.0.9] - 2018-09-15
+Added primitive procedures: 'number?', 'real?', 'integer?'.
+
+### Added
+- Class `PrimitiveBuilder`. Added methods to implement the predicates number?, real?, integer?
+### Changed
+- Class hierarchy `SExprElement`. Prefix `SExpr` in class names changed into 'Skm'
+
 ## [0.0.8] - 2018-09-13
 Added primitive operators: '-', '*', '/' operators.
 

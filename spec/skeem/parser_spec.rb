@@ -23,7 +23,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SExprBoolean)
+          expect(ptree.root).to be_kind_of(SkmBoolean)
           expect(ptree.root.value).to eq(predicted)
         end
       end
@@ -38,7 +38,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SExprInteger)
+          expect(ptree.root).to be_kind_of(SkmInteger)
           expect(ptree.root.value).to eq(predicted)
         end
       end
@@ -53,7 +53,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SExprReal)
+          expect(ptree.root).to be_kind_of(SkmReal)
           expect(ptree.root.value).to eq(predicted)
         end
       end
@@ -64,7 +64,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SExprString)
+          expect(ptree.root).to be_kind_of(SkmString)
           expect(ptree.root.value).to eq(predicted)
         end
       end
@@ -75,7 +75,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SExprIdentifier)
+          expect(ptree.root).to be_kind_of(SkmIdentifier)
           expect(ptree.root.value).to eq(predicted)
         end
       end

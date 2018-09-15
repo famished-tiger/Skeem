@@ -10,7 +10,7 @@ module Skeem
       # Create a Rley facade object
       @engine = Rley::Engine.new do |cfg| 
         cfg.diagnose = true
-        cfg.repr_builder = SExprBuilder
+        cfg.repr_builder = SkmBuilder
       end
 
       # Step 1. Load Skeem grammar

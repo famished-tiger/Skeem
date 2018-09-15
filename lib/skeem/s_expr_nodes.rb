@@ -5,17 +5,29 @@ require 'forwardable'
 
 module Skeem
   # Abstract class. Generalization of any S-expr element.
-  SExprElement = Struct.new(:position) do
+  SkmElement = Struct.new(:position) do
     def initialize(aPosition)
       self.position = aPosition
     end
 
     def evaluate(_runtime)
-      raise NotImplementedError
+      raise NotImplementedError, "Missing implementation of #{self.class.name}"
     end
 
     def done!()
       # Do nothing
+    end
+
+    def number?
+      false
+    end
+
+    def real?
+      false
+    end
+
+    def integer?
+      false
     end
 
     # Abstract method.
@@ -28,7 +40,7 @@ module Skeem
 
   # Abstract class. Root of class hierarchy needed for Interpreter
   # design pattern
-  class SExprTerminal < SExprElement
+  class SkmTerminal < SkmElement
     attr_reader :token
     attr_reader :value
 
@@ -68,37 +80,46 @@ module Skeem
     end
   end # class
 
-  class SExprBoolean < SExprTerminal
+  class SkmBoolean < SkmTerminal
   end # class
 
-  class SExprNumber < SExprTerminal
+  class SkmNumber < SkmTerminal
+    def number?
+      true
+    end
   end # class
 
-  class SExprReal < SExprTerminal
+  class SkmReal < SkmNumber
+    def real?
+      true
+    end
   end # class
 
-  class SExprInteger < SExprReal
+  class SkmInteger < SkmReal
+    def integer?
+      true
+    end
   end # class
 
-  class SExprString < SExprTerminal
+  class SkmString < SkmTerminal
     # Override
     def init_value(aValue)
       super(aValue.dup)
     end
   end # class
 
-  class SExprIdentifier < SExprTerminal
+  class SkmIdentifier < SkmTerminal
     # Override
     def init_value(aValue)
       super(aValue.dup)
     end
   end # class
 
-  class SExprReserved < SExprIdentifier
+  class SkmReserved < SkmIdentifier
   end # class
 
 
-  class SExprList < SExprElement
+  class SkmList < SkmElement
     attr_accessor(:members)
     extend Forwardable
 
@@ -112,9 +133,19 @@ module Skeem
     def head()
       return members.first
     end
-    
+
     def tail()
-      SExprList.new(members.slice(1..-1))
+      SkmList.new(members.slice(1..-1))
+    end
+
+    def evaluate(aRuntime)
+      result = nil
+
+      members.each do |elem|
+        result = elem.evaluate(aRuntime)
+      end
+
+      result
     end
 
     # Factory method.
@@ -145,21 +176,21 @@ module Skeem
     alias subnodes members
   end # class
 
-  class ProcedureCall < SExprElement
+  class ProcedureCall < SkmElement
     attr_reader :operator
     attr_reader :operands
 
     def initialize(aPosition, anOperator, theOperands)
       super(aPosition)
       @operator = anOperator
-      @operands = SExprList.new(theOperands)
+      @operands = SkmList.new(theOperands)
     end
 
     def evaluate(aRuntime)
       proc_key = operator.evaluate(aRuntime)
       unless aRuntime.include?(proc_key.value)
         err = StandardError
-        key = proc_key.kind_of?(SExprIdentifier) ? proc_key.value : proc_key
+        key = proc_key.kind_of?(SkmIdentifier) ? proc_key.value : proc_key
         err_msg = "Unknown function '#{key}'"
         raise err, err_msg
       end

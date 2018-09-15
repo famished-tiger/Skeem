@@ -9,13 +9,13 @@ module Skeem
   # The Builder pattern creates a complex object
   # (say, a parse tree) from simpler objects (terminal and non-terminal
   # nodes) and using a step by step approach.
-  class SExprBuilder < Rley::ParseRep::ASTBaseBuilder
+  class SkmBuilder < Rley::ParseRep::ASTBaseBuilder
     Terminal2NodeClass = {
-      'BOOLEAN' => SExprBoolean,
-      'IDENTIFIER' => SExprIdentifier,
-      'INTEGER' => SExprInteger,
-      'REAL' => SExprReal,
-      'STRING_LIT' => SExprString
+      'BOOLEAN' => SkmBoolean,
+      'IDENTIFIER' => SkmIdentifier,
+      'INTEGER' => SkmInteger,
+      'REAL' => SkmReal,
+      'STRING_LIT' => SkmString
     }.freeze
 
     # Create a new AST builder instance.

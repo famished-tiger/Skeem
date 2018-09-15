@@ -31,7 +31,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           result = subject.run(source)
-          expect(result).to be_kind_of(SExprBoolean)
+          expect(result).to be_kind_of(SkmBoolean)
           expect(result.value).to eq(predicted)
         end
       end
@@ -46,7 +46,7 @@ module Skeem
         ]
         samples.each do |source, predicted|
           result = subject.run(source)
-          expect(result).to be_kind_of(SExprInteger)
+          expect(result).to be_kind_of(SkmInteger)
           expect(result.value).to eq(predicted)
         end
       end
@@ -61,7 +61,7 @@ module Skeem
         ]
         samples.each do |source, predicted|
           result = subject.run(source)
-          expect(result).to be_kind_of(SExprReal)
+          expect(result).to be_kind_of(SkmReal)
           expect(result.value).to eq(predicted)
         end
       end
@@ -72,7 +72,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           result = subject.run(source)
-          expect(result).to be_kind_of(SExprString)
+          expect(result).to be_kind_of(SkmString)
           expect(result.value).to eq(predicted)
         end
       end
@@ -84,41 +84,81 @@ module Skeem
         ]
         samples.each do |source, predicted|
           result = subject.run(source)
-          expect(result).to be_kind_of(SExprIdentifier)
+          expect(result).to be_kind_of(SkmIdentifier)
           expect(result.value).to eq(predicted)
         end
       end
     end # context
 
-    context 'Built-in primitive functions' do
-      it 'should support the addition of integers' do
+    context 'Built-in primitive procedures' do
+      it 'should implement the addition of integers' do
         result = subject.run('(+ 2 2)')
-        expect(result).to be_kind_of(SExprInteger)
+        expect(result).to be_kind_of(SkmInteger)
         expect(result.value).to eq(4)
       end
 
-      it 'should support the addition of real numbers' do
+      it 'should implement the addition of real numbers' do
         result = subject.run('(+ 2 2.34)')
-        expect(result).to be_kind_of(SExprReal)
+        expect(result).to be_kind_of(SkmReal)
         expect(result.value).to eq(4.34)
       end
-      
-      it 'should support the product of numbers' do
-        result = subject.run('(* 2 3 4)')
-        expect(result).to be_kind_of(SExprInteger)
-        expect(result.value).to eq(24)      
-      end 
 
-      it 'should support the division of numbers' do
+      it 'should implement the product of numbers' do
+        result = subject.run('(* 2 3 4)')
+        expect(result).to be_kind_of(SkmInteger)
+        expect(result.value).to eq(24)
+      end
+
+      it 'should implement the division of numbers' do
         result = subject.run('(/ 24 3)')
-        expect(result).to be_kind_of(SExprInteger)
-        expect(result.value).to eq(8)      
-      end      
-      
-      it 'should support the arithmetic expressions' do      
+        expect(result).to be_kind_of(SkmInteger)
+        expect(result.value).to eq(8)
+      end
+
+      it 'should implement the arithmetic expressions' do
         result = subject.run('(+ (* 2 100) (* 1 10))')
-        expect(result).to be_kind_of(SExprInteger)
+        expect(result).to be_kind_of(SkmInteger)
         expect(result.value).to eq(210)
+      end
+      
+      it 'should implement the number? predicate' do
+        checks = [
+          ['(number? 3.1)', true],
+          ['(number? 3)', true],
+          ['(number? "3")', false],
+          ['(number? #t)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+      
+      it 'should implement the real? predicate' do
+        checks = [
+          ['(real? 3.1)', true],
+          ['(real? 3)', true],
+          ['(real? "3")', false],
+          ['(real? #t)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the integer? predicate' do
+        checks = [
+          ['(integer? 3.1)', false],
+          # ['(integer? 3.0)', true], TODO: should pass when exact? will be implemented
+          ['(integer? 3)', true],
+          ['(integer? "3")', false],
+          ['(integer? #t)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
       end       
     end # context
   end # describe
