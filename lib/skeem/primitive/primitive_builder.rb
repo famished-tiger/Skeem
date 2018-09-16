@@ -5,6 +5,7 @@ module Skeem
     module PrimitiveBuilder
       def add_primitives(aRuntime)
         add_arithmetic(aRuntime)
+        add_comparison(aRuntime)
         add_number_predicates(aRuntime)
         add_boolean_procedures(aRuntime)
         add_string_procedures(aRuntime)
@@ -18,6 +19,14 @@ module Skeem
         def_procedure(aRuntime, create_minus)
         def_procedure(aRuntime, create_multiply)
         def_procedure(aRuntime, create_divide)
+      end
+
+      def add_comparison(aRuntime)
+        def_procedure(aRuntime, create_equal)
+        def_procedure(aRuntime, create_lt)
+        def_procedure(aRuntime, create_gt)
+        def_procedure(aRuntime, create_lte)
+        def_procedure(aRuntime, create_gte)
       end
 
       def add_number_predicates(aRuntime)
@@ -89,6 +98,70 @@ module Skeem
         end
 
         ['/', divide_code]
+      end
+
+      def create_equal
+        equal_code = ->(runtime, arglist) do
+          first_one = arglist.head.evaluate(runtime)
+          operands = arglist.tail.to_eval_enum(runtime)
+          first_value = first_one.value
+          all_equal = operands.all? { |elem| first_value == elem.value }
+          to_skm(all_equal)
+        end
+
+        ['=', equal_code]
+      end
+
+      def create_lt
+        lt_code = ->(runtime, arglist) do
+          operands = arglist.to_eval_enum(runtime)
+          result = true
+          operands.each_cons(2) do |(elem1, elem2)|
+            result &&= elem1.value < elem2.value
+          end
+          to_skm(result)
+        end
+
+        ['<', lt_code]
+      end
+
+      def create_gt
+        gt_code = ->(runtime, arglist) do
+          operands = arglist.to_eval_enum(runtime)
+          result = true
+          operands.each_cons(2) do |(elem1, elem2)|
+            result &&= elem1.value > elem2.value
+          end
+          to_skm(result)
+        end
+
+        ['>', gt_code]
+      end
+
+      def create_lte
+        lte_code = ->(runtime, arglist) do
+          operands = arglist.to_eval_enum(runtime)
+          result = true
+          operands.each_cons(2) do |(elem1, elem2)|
+            result &&= elem1.value <= elem2.value
+          end
+          to_skm(result)
+        end
+
+        ['<=', lte_code]
+      end
+
+      def create_gte
+        gte_code = ->(runtime, arglist) do
+          operands = arglist.to_eval_enum(runtime)
+          result = true
+          operands.each_cons(2) do |(elem1, elem2)|
+            result &&= elem1.value >= elem2.value
+          end
+          to_skm(result)
+        end
+
+        ['>=', gte_code]
       end
 
       def create_number?()

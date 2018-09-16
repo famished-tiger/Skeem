@@ -102,7 +102,7 @@ module Skeem
         expect(result).to be_kind_of(SkmReal)
         expect(result.value).to eq(4.34)
       end
-      
+
       it 'should implement the negation of integer' do
         result = subject.run('(- 3)')
         expect(result).to be_kind_of(SkmInteger)
@@ -113,11 +113,11 @@ module Skeem
         result = subject.run('(- 3 4)')
         expect(result).to be_kind_of(SkmInteger)
         expect(result.value).to eq(-1)
-        
+
         result = subject.run('(- 3 4 5)')
         expect(result).to be_kind_of(SkmInteger)
-        expect(result.value).to eq(-6)        
-      end       
+        expect(result.value).to eq(-6)
+      end
 
       it 'should implement the product of numbers' do
         result = subject.run('(* 2 3 4)')
@@ -136,7 +136,79 @@ module Skeem
         expect(result).to be_kind_of(SkmInteger)
         expect(result.value).to eq(210)
       end
+
+      it 'should implement the equality operator' do
+        checks = [
+          ['(= 3 3)', true],
+          ['(= 3 (+ 1 2) (- 4 1))', true],
+          ['(= "foo" "foo")', true],
+          ['(= 3 4)', false],
+          ['(= "foo" "bar")', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the less than operator' do
+        checks = [
+          ['(< 3 4)', true],
+          ['(< 3 (+ 2 2) (+ 4 1))', true],
+          ['(< 3 3)', false],
+          ['(< 3 2)', false],
+          ['(< 3 4 5 4)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the greater than operator' do
+        checks = [
+          ['(> 3 2)', true],
+          ['(> 3 (- 4 2) (- 2 1))', true],
+          ['(> 3 3)', false],
+          ['(> 3 4)', false],
+          ['(> 3 2 1 2)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the less or equal than operator' do
+        checks = [
+          ['(<= 3 4)', true],
+          ['(<= 3 (+ 2 2) (+ 4 1))', true],
+          ['(<= 3 3)', true],
+          ['(<= 3 2)', false],
+          ['(<= 3 4 5 4)', false],
+          ['(<= 3 4 5 5)', true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
       
+      it 'should implement the greater or equal than operator' do
+        checks = [
+          ['(>= 3 2)', true],
+          ['(>= 3 (- 4 2) (- 2 1))', true],
+          ['(>= 3 3)', true],
+          ['(>= 3 4)', false],
+          ['(>= 3 2 1 2)', false],
+          ['(>= 3 2 1 1)', true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end      
+
       it 'should implement the number? predicate' do
         checks = [
           ['(number? 3.1)', true],
@@ -149,7 +221,7 @@ module Skeem
           expect(result.value).to eq(expectation)
         end
       end
-      
+
       it 'should implement the real? predicate' do
         checks = [
           ['(real? 3.1)', true],
@@ -221,7 +293,7 @@ module Skeem
           result = subject.run(skeem_expr)
           expect(result.value).to eq(expectation)
         end
-      end      
+      end
     end # context
   end # describe
 end # module

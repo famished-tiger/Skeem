@@ -1,9 +1,16 @@
+## [0.0.11] - 2018-09-16
+Added primitive procedures: `=`, `<`, `>`, `>=`, `<=`
+
+### Added
+- Class `PrimitiveBuilder`. Added methods to implement the comparison operators `=`, `<`, `>`, `>=`, `<=`
+- File `interpreter_spec.rb` added tests for `<`, `>`, `>=`, `<=`
+
 ## [0.0.10] - 2018-09-15
 Added primitive procedures: 'boolean?', 'string?', 'symbol?', and 'not' 
 
 ### Added
 - Class `PrimitiveBuilder`. Added methods to implement the predicates 'boolean?', 'string?', 'symbol?', and 'not'
-- File `interpreter_spec.rb` methods to implement the predicates 'boolean?', 'string?', 'symbol?'
+- File `interpreter_spec.rb` added tests for 'boolean?', 'string?', 'symbol?'
 
 ### Changed
 - Class hierarchy `SExprElement`. Prefix `SExpr` in class names changed into 'Skm'
