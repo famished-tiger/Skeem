@@ -199,25 +199,74 @@ module Skeem
     alias subnodes members
   end # class
 
+  class SkmDefinition < SkmElement
+    attr_reader :variable
+    attr_reader :expression
+
+    def initialize(aPosition, aVariable, theExpression)
+      super(aPosition)
+      @variable = aVariable
+      @expression = theExpression
+    end
+
+    def evaluate(aRuntime)
+      var_key = variable.evaluate(aRuntime)
+      aRuntime.define(var_key, self)
+      self
+    end
+  end # class
+  
+  class SkmVariableReference  < SkmElement
+    attr_reader :variable
+    
+    def initialize(aPosition, aVariable)
+      super(aPosition)
+      @variable = aVariable
+    end
+
+    def evaluate(aRuntime)
+      var_key = variable.evaluate(aRuntime)
+      unless aRuntime.include?(var_key.value)
+        err = StandardError
+        key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
+        err_msg = "Unknown variable '#{key}'"
+        raise err, err_msg
+      end
+      definition = aRuntime.environment.bindings[var_key.value]
+      result = definition.expression.evaluate(aRuntime)
+    end
+
+    # Confusing!
+    # Value, here, means the value of the identifier (the variable's name).
+    def value()
+      variable.value
+    end
+  end
+
   class ProcedureCall < SkmElement
     attr_reader :operator
     attr_reader :operands
 
     def initialize(aPosition, anOperator, theOperands)
       super(aPosition)
-      @operator = anOperator
+      if anOperator.kind_of?(SkmVariableReference)
+        # Kinky: variable names are procedure names, not variable reference
+        @operator = SkmIdentifier.create(anOperator.value)
+      else
+        @operator = anOperator
+      end
       @operands = SkmList.new(theOperands)
     end
 
     def evaluate(aRuntime)
-      proc_key = operator.evaluate(aRuntime)
-      unless aRuntime.include?(proc_key.value)
+      var_key = operator.evaluate(aRuntime)
+      unless aRuntime.include?(var_key.value)
         err = StandardError
-        key = proc_key.kind_of?(SkmIdentifier) ? proc_key.value : proc_key
-        err_msg = "Unknown function '#{key}'"
+        key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
+        err_msg = "Unknown procedure '#{key}'"
         raise err, err_msg
       end
-      procedure = aRuntime.environment.bindings[proc_key.value]
+      procedure = aRuntime.environment.bindings[var_key.value]
       result = procedure.call(aRuntime, self)
     end
 

@@ -1,3 +1,16 @@
+## [0.0.12] - 2018-09-17
+Added primitive `define` and variable reference
+
+### Added
+- Class `SkmDefinition` for representing a specific definition.
+- Class `SkmVariableReference` for representing a variable reference (i.e. retrieving its value)
+- Module `Convertible` implementing utility methods for converting "native" Ruby objects into their Skeem counterpart.
+- Class `SkmBuilder`. Added methods to implement the semantic actions for `define` and variable reference.
+- File `interpreter_spec.rb` added tests for `define` and variable reference.
+
+### Changed
+- File `README.md` Changed demo snippet with example of variable definition and variable reference.
+
 ## [0.0.11] - 2018-09-16
 Added primitive procedures: `=`, `<`, `>`, `>=`, `<=`
 

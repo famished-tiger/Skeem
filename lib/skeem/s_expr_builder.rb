@@ -34,6 +34,40 @@ module Skeem
     def terminal2node
       Terminal2NodeClass
     end
+    
+    # rule('program' => 'cmd_or_def_plus').as 'main'
+    def reduce_main(_production, _range, _tokens, theChildren)
+      last_child = theChildren.last
+      result = if last_child.members.size == 1
+                  last_child.members[0]
+                else
+                  last_child
+                end
+    end    
+    
+    
+
+    # rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
+    def reduce_multiple_cmd_def(_production, _range, _tokens, theChildren)
+      theChildren[0].members << theChildren[1]
+      theChildren[0]
+    end
+
+    # rule('cmd_or_def_plus' => 'cmd_or_def').as 'last_cmd_def'
+    def reduce_last_cmd_def(_production, _range, _tokens, theChildren)
+      SkmList.new([theChildren.last])
+    end
+
+    # rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN')
+    #  .as 'definition'
+    def reduce_definition(_production, aRange, _tokens, theChildren)
+      SkmDefinition.new(aRange, theChildren[2], theChildren[3])
+    end
+    
+    # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
+    def reduce_variable_reference(_production, aRange, _tokens, theChildren)
+      SkmVariableReference.new(aRange, theChildren[0])
+    end
 
     # rule('proc_call_args' => 'LPAREN operator operand_plus RPAREN')
     def reduce_proc_call_args(_production, aRange, _tokens, theChildren)

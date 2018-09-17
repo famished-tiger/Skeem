@@ -76,18 +76,24 @@ module Skeem
           expect(result.value).to eq(predicted)
         end
       end
-
-      it 'should evaluate isolated identifiers' do
-        samples = [
-          ['the-word-recursion-has-many-meanings',
-          'the-word-recursion-has-many-meanings']
-        ]
-        samples.each do |source, predicted|
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmIdentifier)
-          expect(result.value).to eq(predicted)
-        end
+    end # context
+   
+    context 'Built-in primitives' do      
+      it 'should implement variable definition' do
+        result = subject.run('(define x 28)')
+        expect(result).to be_kind_of(SkmDefinition)
       end
+      
+      it 'should implement variable reference' do
+        source = <<-SKEEM
+  ; Example from R7RS section 4.1.1
+  (define x 28)
+  x
+SKEEM
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmInteger)
+        expect(result.value).to eq(28)
+      end      
     end # context
 
     context 'Built-in primitive procedures' do
@@ -120,9 +126,14 @@ module Skeem
       end
 
       it 'should implement the product of numbers' do
-        result = subject.run('(* 2 3 4)')
-        expect(result).to be_kind_of(SkmInteger)
-        expect(result.value).to eq(24)
+        checks = [
+          ['(* 5 8)', 40],
+          ['(* 2 3 4)', 24]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
       end
 
       it 'should implement the division of numbers' do

@@ -21,14 +21,14 @@ module Skeem
     # add_terminals('BEGIN', 'DEFINE')
     add_terminals('DEFINE')
     
-    rule 'program' => 'cmd_or_def_plus'
-    rule 'cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def'
-    rule 'cmd_or_def_plus' => 'cmd_or_def'
+    rule('program' => 'cmd_or_def_plus').as 'main'
+    rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
+    rule('cmd_or_def_plus' => 'cmd_or_def').as 'last_cmd_def'
     rule 'cmd_or_def' => 'command'
     rule 'cmd_or_def' => 'definition'
     rule 'command' => 'expression'
-    rule 'definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN'
-    rule 'expression' =>  'IDENTIFIER'
+    rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN').as 'definition'
+    rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     rule 'expression' =>  'literal'
     rule 'expression' =>  'procedure_call'
     rule 'literal' => 'self-evaluating'

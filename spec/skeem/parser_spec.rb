@@ -75,7 +75,7 @@ module Skeem
       ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SkmIdentifier)
+          expect(ptree.root).to be_kind_of(SkmVariableReference)
           expect(ptree.root.value).to eq(predicted)
         end
       end

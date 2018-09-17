@@ -1,8 +1,10 @@
 require_relative '../primitive_procedure'
+require_relative '../convertible'
 
 module Skeem
   module Primitive
     module PrimitiveBuilder
+      include Convertible
       def add_primitives(aRuntime)
         add_arithmetic(aRuntime)
         add_comparison(aRuntime)
@@ -237,18 +239,6 @@ module Skeem
 
       def define(aRuntime, aKey, anEntry)
         aRuntime.define(aKey, anEntry)
-      end
-
-      # Convert Ruby object into its Skeem counterpart
-      def to_skm(native_obj)
-        case native_obj
-          when TrueClass, FalseClass
-            SkmBoolean.create(native_obj)
-          when Float
-            SkmReal.create(native_obj)
-          when Integer
-            SkmInteger.create(native_obj)
-        end
       end
     end # module
   end # module
