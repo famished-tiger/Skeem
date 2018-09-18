@@ -31,15 +31,25 @@ At this stage, the gem consists of a bare-bones interpreter.
   require 'skeem'
 
   schemer = Skeem::Interpreter.new
+  
   scheme_code =<<-SKEEM
+    ; This heredoc consists of Scheme code...
     ; Let's define a Scheme variable
     (define foobar (* 2 3 7))
 
     ; Now test its value against a lower value
     (if (> foobar 40) #true #false)
   SKEEM
+
+  # Ask Ruby to execute Scheme code
   result = schemer.run(scheme_code)
   puts result.value # => true
+
+  # The interpreter object keeps the bindings of variable
+  # Let's test that...
+  scheme_code = '(* foobar foobar)'
+  result = schemer.run(scheme_code)
+  puts result.value # => 1764
 ```
 
 Roadmap:
