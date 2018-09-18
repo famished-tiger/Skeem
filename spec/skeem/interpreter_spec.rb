@@ -93,7 +93,37 @@ SKEEM
         result = subject.run(source)
         expect(result).to be_kind_of(SkmInteger)
         expect(result.value).to eq(28)
-      end      
+      end
+
+      it 'should implement the simple conditional form' do
+         checks = [
+          ['(if (> 3 2) "yes")', 'yes'],
+          ['(if (> 2 3) "yes")', :UNDEFINED]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end      
+      end
+      
+      it 'should implement the complete conditional form' do
+         checks = [
+          ['(if (> 3 2) "yes" "no")', 'yes'],
+          ['(if (> 2 3) "yes" "no")', 'no']
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+        source = <<-SKEEM
+  ; Example from R7RS section 4.1.5
+  (if (> 3 2)
+    (- 3 2)
+    (+ 3 2))
+SKEEM
+        result = subject.run(source)
+        expect(result.value).to eq(1)      
+      end
     end # context
 
     context 'Built-in primitive procedures' do

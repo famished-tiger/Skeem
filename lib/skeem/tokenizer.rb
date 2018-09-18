@@ -28,6 +28,7 @@ module Skeem
     # Here are all the SRL keywords (in uppercase)
     @@keywords = %w[
       BEGIN
+      IF
       DEFINE
     ].map { |x| [x, x] } .to_h
 

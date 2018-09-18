@@ -8,8 +8,8 @@ module Skeem
   # https://bitbucket.org/cowan/r7rs/src/draft-10/rnrs/r7rs.pdf
   # Names of grammar elements are based on the R7RS documentation
   builder = Rley::Syntax::GrammarBuilder.new do
-    # Delimitersn, separators...
-    # add_terminals('APOSTROPHE', 'BACKQUOTE')    
+    # Delimiters, separators...
+    # add_terminals('APOSTROPHE', 'BACKQUOTE')
     add_terminals('LPAREN', 'RPAREN')
     # add_terminals('PERIOD')
 
@@ -18,9 +18,8 @@ module Skeem
     add_terminals('STRING_LIT', 'IDENTIFIER')
 
     # Keywords...
-    # add_terminals('BEGIN', 'DEFINE')
-    add_terminals('DEFINE')
-    
+    add_terminals('DEFINE', 'IF')
+
     rule('program' => 'cmd_or_def_plus').as 'main'
     rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
     rule('cmd_or_def_plus' => 'cmd_or_def').as 'last_cmd_def'
@@ -31,6 +30,7 @@ module Skeem
     rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     rule 'expression' =>  'literal'
     rule 'expression' =>  'procedure_call'
+    rule 'expression' =>  'conditional'
     rule 'literal' => 'self-evaluating'
     rule 'self-evaluating' => 'BOOLEAN'
     rule 'self-evaluating' => 'number'
@@ -41,6 +41,11 @@ module Skeem
     rule('operand_plus' => 'operand').as 'last_operand'
     rule 'operator' => 'expression'
     rule 'operand' => 'expression'
+    rule('conditional' => 'LPAREN IF test consequent alternate RPAREN').as 'conditional'
+    rule 'test' => 'expression'
+    rule 'consequent' => 'expression'
+    rule 'alternate' => 'expression'
+    rule 'alternate' => []
     rule 'number' => 'INTEGER'
     rule 'number' => 'REAL'
   end

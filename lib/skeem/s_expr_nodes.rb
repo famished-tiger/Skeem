@@ -4,6 +4,13 @@
 require 'forwardable'
 
 module Skeem
+  class SkmUndefined
+    def value
+      :UNDEFINED
+    end
+  end # class
+
+
   # Abstract class. Generalization of any S-expr element.
   SkmElement = Struct.new(:position) do
     def initialize(aPosition)
@@ -271,6 +278,30 @@ module Skeem
     end
 
     alias children operands
+  end # class
+  
+  class SkmCondition < SkmElement
+    attr_reader :test
+    attr_reader :consequent
+    attr_reader :alternate
+
+    def initialize(aPosition, aTest, aConsequent, anAlternate)
+      super(aPosition)
+      @test = aTest
+      @consequent = aConsequent
+      @alternate = anAlternate
+    end
+
+    def evaluate(aRuntime)
+      test_result = test.evaluate(aRuntime)
+      condition_result = nil
+      if test_result.boolean? && test_result.value == false
+        # Only #f is considered as false, everything else is true
+        condition_result = alternate ? alternate.evaluate(aRuntime) : SkmUndefined.new
+      else
+        condition_result = consequent.evaluate(aRuntime)
+      end
+    end
   end # class
 end # module
 # End of file

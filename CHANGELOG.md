@@ -1,3 +1,15 @@
+## [0.0.13] - 2018-09-18
+Added primitive `if` (conditional form)
+
+### Added
+- Class `SkmCondition` for representing a specific conditional.
+
+### Changed
+- File `grammar.rb` Added syntax rules for conditional expression.
+- Class `SkmBuilder`. Added method to implement the semantic action for `if`.
+- File `interpreter_spec.rb` added tests for `if`.
+- File `README.md` Changed demo snippet with example of conditional expression.
+
 ## [0.0.12] - 2018-09-17
 Added primitive `define` and variable reference
 

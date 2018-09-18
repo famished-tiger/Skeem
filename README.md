@@ -35,11 +35,11 @@ At this stage, the gem consists of a bare-bones interpreter.
     ; Let's define a Scheme variable
     (define foobar (* 2 3 7))
 
-    ; Now retrieve its value
-    foobar
+    ; Now test its value against a lower value
+    (if (> foobar 40) #true #false)
   SKEEM
   result = schemer.run(scheme_code)
-  puts result.value # => 42
+  puts result.value # => true
 ```
 
 Roadmap:

@@ -34,7 +34,7 @@ module Skeem
     def terminal2node
       Terminal2NodeClass
     end
-    
+
     # rule('program' => 'cmd_or_def_plus').as 'main'
     def reduce_main(_production, _range, _tokens, theChildren)
       last_child = theChildren.last
@@ -43,9 +43,7 @@ module Skeem
                 else
                   last_child
                 end
-    end    
-    
-    
+    end
 
     # rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
     def reduce_multiple_cmd_def(_production, _range, _tokens, theChildren)
@@ -63,7 +61,7 @@ module Skeem
     def reduce_definition(_production, aRange, _tokens, theChildren)
       SkmDefinition.new(aRange, theChildren[2], theChildren[3])
     end
-    
+
     # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
       SkmVariableReference.new(aRange, theChildren[0])
@@ -83,6 +81,11 @@ module Skeem
     def reduce_last_operand(_production, _range, _tokens, theChildren)
       [theChildren.last]
     end
+    
+    # rule('conditional' => 'LPAREN IF test consequent alternate RPAREN').as 'conditional'
+    def reduce_conditional(_production, aRange, _tokens, theChildren)
+      SkmCondition.new(aRange, theChildren[2], theChildren[3], theChildren[4])
+    end    
   end # class
 end # module
 # End of file
