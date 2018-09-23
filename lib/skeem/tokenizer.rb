@@ -30,6 +30,7 @@ module Skeem
       BEGIN
       IF
       DEFINE
+      LAMBDA
     ].map { |x| [x, x] } .to_h
 
     class ScanError < StandardError; end

@@ -82,10 +82,53 @@ module Skeem
       [theChildren.last]
     end
     
+    # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
+    def reduce_lambda_expression(_production, _range, _tokens, theChildren)
+      lmbd = SkmLambda.new(_range, theChildren[2], theChildren[3])
+      # puts lmbd.inspect
+      lmbd
+    end
+    
+    # rule('formals' => 'LPAREN identifier_star RPAREN').as 'identifiers_as_formals'
+    def reduce_identifiers_as_formals(_production, _range, _tokens, theChildren)
+      theChildren[1]
+    end
+
+    # rule('identifier_star' => 'identifier_star IDENTIFIER').as 'identifier_star'
+    def reduce_identifier_star(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('identifier_star' => []).as 'no_identifier_yet'
+    def reduce_no_identifier_yet(_production, _range, _tokens, theChildren)
+      []
+    end
+
+    # rule('body' => 'definition_star sequence').as 'body'
+    def reduce_body(_production, _range, _tokens, theChildren)
+      definitions = theChildren[0].nil? ? [] : theChildren[0]
+      { defs: definitions, sequence: theChildren[1] }
+    end
+
+    # rule('sequence' => 'command_star expression').as 'sequence'
+    def reduce_sequence(_production, _range, _tokens, theChildren)
+      SkmList.new(theChildren[0] << theChildren[1])
+    end
+
+    # rule('command_star' => 'command_star command').as 'multiple_commands'
+    def reduce_multiple_commands(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('command_star' => []).as 'no_command_yet'
+    def reduce_no_command_yet(_production, _range, _tokens, theChildren)
+      []
+    end
+
     # rule('conditional' => 'LPAREN IF test consequent alternate RPAREN').as 'conditional'
     def reduce_conditional(_production, aRange, _tokens, theChildren)
       SkmCondition.new(aRange, theChildren[2], theChildren[3], theChildren[4])
-    end    
+    end
   end # class
 end # module
 # End of file

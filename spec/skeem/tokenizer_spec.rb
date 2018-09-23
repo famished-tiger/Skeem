@@ -134,7 +134,11 @@ module Skeem
         examples.each do |input|
           subject.reinitialize(input)
           token = subject.tokens.first
-          expect(token.terminal).to eq('IDENTIFIER')
+          if token.lexeme == 'lambda'
+            expect(token.terminal).to eq('LAMBDA')
+          else
+            expect(token.terminal).to eq('IDENTIFIER')
+          end
           expect(token.lexeme).to eq(input)
         end
       end

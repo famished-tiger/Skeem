@@ -7,11 +7,22 @@ module Skeem
     end
 
     def include?(anIdentifier)
-      environment.bindings.include?(normalize_key(anIdentifier))
+      environment.include?(normalize_key(anIdentifier))
     end
 
     def define(aKey, anEntry)
       environment.define(normalize_key(aKey), anEntry)
+    end
+    
+    def nest()
+      nested = Environment.new(environment)
+      @environment = nested
+    end
+    
+    def unnest()
+      raise StandardError, 'Cannot unnest environment' unless environment.outer
+      environment.bindings.clear
+      @environment = environment.outer
     end
 
     private

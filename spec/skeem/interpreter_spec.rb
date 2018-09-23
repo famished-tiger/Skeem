@@ -77,13 +77,13 @@ module Skeem
         end
       end
     end # context
-   
-    context 'Built-in primitives' do      
+
+    context 'Built-in primitives' do
       it 'should implement variable definition' do
         result = subject.run('(define x 28)')
         expect(result).to be_kind_of(SkmDefinition)
       end
-      
+
       it 'should implement variable reference' do
         source = <<-SKEEM
   ; Example from R7RS section 4.1.1
@@ -103,9 +103,9 @@ SKEEM
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
           expect(result.value).to eq(expectation)
-        end      
+        end
       end
-      
+
       it 'should implement the complete conditional form' do
          checks = [
           ['(if (> 3 2) "yes" "no")', 'yes'],
@@ -122,8 +122,49 @@ SKEEM
     (+ 3 2))
 SKEEM
         result = subject.run(source)
-        expect(result.value).to eq(1)      
+        expect(result.value).to eq(1)
       end
+
+      it 'should implement the lambda function with one arg' do
+        source = <<-SKEEM
+  ; Simplified 'abs' function implementation
+  (define abs (lambda(x)
+    (if (< x 0) (- x) x)))
+SKEEM
+        subject.run(source)
+        result = subject.run('(abs -3)')
+        expect(result.value).to eq(3)
+        result = subject.run('(abs 0)')
+        expect(result.value).to eq(0)
+        result = subject.run('(abs 3)')
+        expect(result.value).to eq(3)
+      end
+      
+      it 'should implement the lambda function with two args' do
+        source = <<-SKEEM
+  ; Simplified 'min' function implementation
+  (define min (lambda(x y)
+    (if (< x y) x y)))
+SKEEM
+        subject.run(source)
+        result = subject.run('(min 1 2)')
+        expect(result.value).to eq(1)
+        result = subject.run('(min 2 1)')
+        expect(result.value).to eq(1)
+        result = subject.run('(min 2 2)')
+        expect(result.value).to eq(2)
+      end      
+      
+      # it 'should implement recursive functions' do
+        # source = <<-SKEEM
+  # ; Example from R7RS section 4.1.5
+  # (define fact (lambda (n) 
+    # (if (<= n 1) 1 (* n (fact (- n 1))))))
+  # (fact 10)
+# SKEEM
+        # subject.run(source)
+        # expect(result.value).to eq(3628800)    
+      # end
     end # context
 
     context 'Built-in primitive procedures' do
@@ -234,7 +275,7 @@ SKEEM
           expect(result.value).to eq(expectation)
         end
       end
-      
+
       it 'should implement the greater or equal than operator' do
         checks = [
           ['(>= 3 2)', true],
@@ -248,7 +289,7 @@ SKEEM
           result = subject.run(skeem_expr)
           expect(result.value).to eq(expectation)
         end
-      end      
+      end
 
       it 'should implement the number? predicate' do
         checks = [

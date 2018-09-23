@@ -27,11 +27,13 @@ Or install it yourself as:
 The __Skeem__ project has just started.  
 At this stage, the gem consists of a bare-bones interpreter.
 
+### Example 1 (Variable definition)
+
 ```ruby
   require 'skeem'
 
   schemer = Skeem::Interpreter.new
-  
+
   scheme_code =<<-SKEEM
     ; This heredoc consists of Scheme code...
     ; Let's define a Scheme variable
@@ -50,6 +52,32 @@ At this stage, the gem consists of a bare-bones interpreter.
   scheme_code = '(* foobar foobar)'
   result = schemer.run(scheme_code)
   puts result.value # => 1764
+```
+
+### Example 2 (Defining a function)
+Remark: Skeem 0.0.14 doesn't support recursive functions yet.
+
+```ruby
+  require 'skeem'
+
+  schemer = Skeem::Interpreter.new
+
+  scheme_code =<<-SKEEM
+    ; Let's implement the 'min' function
+    (define min (lambda(x y) (if (< x y) x y)))
+
+    ; What is the minimum of 2 and 3?
+    (min 2 3)
+  SKEEM
+
+  # Ask Ruby to execute Scheme code
+  result = schemer.run(scheme_code)
+  puts result.value # => 2
+
+  # Let's retry with other values
+  scheme_code = '(min 42 3)'
+  result = schemer.run(scheme_code)
+  puts result.value # => 3
 ```
 
 Roadmap:

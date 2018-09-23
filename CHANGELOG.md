@@ -1,3 +1,18 @@
+## [0.0.14] - 2018-09-23
+Added `lambda` (anonymous function). This is an initial implementation that doesn't support recursion yet.
+
+### Added
+- Class `SkmLambda` for representing a specific definition.
+
+### Changed
+- Class `Environment`. Now supports the nesting of environments. If an environment doesn't find a variable, then it forwards the serach to the outer environment.
+- File `grammar.rb` Added syntax rules for lambda expression.
+- Class `Runtime` added methods `nest` and `unnest` that adds or removes an nested environment.
+- Class `SkmBuilder`. Added method to implement the semantic action for `lambda` expressions.
+- Class `Tokenizer` Added keyword `lambda`
+- File `README.md` Added demo snippet with example of lambda expression.
+- Files `*_spec.rb` Added more tests. Skeem passes the 100 'RSpec examples' mark.
+
 ## [0.0.13] - 2018-09-18
 Added primitive `if` (conditional form)
 
