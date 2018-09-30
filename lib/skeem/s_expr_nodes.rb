@@ -325,7 +325,11 @@ module Skeem
         raise err, err_msg
       end
       procedure = aRuntime.environment.fetch(var_key.value)
+      # puts "## CALL(#{var_key.value}) ###################"
+      # puts operands.inspect
       result = procedure.call(aRuntime, self)
+      # puts "## RETURN #{result.inspect}"
+      result
     end
 
     def inspect
@@ -367,21 +371,6 @@ module Skeem
       result
     end
   end # class
-  
-=begin
-<Skeem::SkmLambda: 
-  @formals [<Skeem::SkmIdentifier: x>]
-  @definitions nil
-  @sequence <Skeem::SkmList: 
-    <Skeem::SkmCondition: 
-      @test <Skeem::ProcedureCall: <Skeem::SkmIdentifier: <>, 
-        <Skeem::SkmList: <Skeem::SkmVariableReference: <Skeem::SkmIdentifier: x>>, 
-        <Skeem::SkmInteger: 0>>>, 
-      @consequent <Skeem::ProcedureCall: 
-        <Skeem::SkmIdentifier: ->, 
-        <Skeem::SkmList: <Skeem::SkmVariableReference: <Skeem::SkmIdentifier: x>>>>,
-      @alternate <Skeem::SkmVariableReference: <Skeem::SkmIdentifier: x>>>>>
-=end
 
   class SkmLambda < SkmElement
     # @!attribute [r] formals
@@ -427,12 +416,14 @@ module Skeem
       formals.each_with_index do |arg_name, index|
         arg = arguments[index]
         if arg.nil?
-          p aProcedureCall.operands.members
           raise StandardError, "Unbound variable: '#{arg_name.value}'"
         end
-
+        
+        # IMPORTANT: execute procedure call in argument list now
+        arg = arg.evaluate(aRuntime) if arg.kind_of?(ProcedureCall)
         a_def = SkmDefinition.new(position, arg_name, arg)
         a_def.evaluate(aRuntime)
+        # puts "LOCAL #{a_def.inspect}"
       end
     end
 

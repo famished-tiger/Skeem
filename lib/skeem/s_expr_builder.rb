@@ -85,8 +85,6 @@ module Skeem
     # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
     def reduce_lambda_expression(_production, _range, _tokens, theChildren)
       lmbd = SkmLambda.new(_range, theChildren[2], theChildren[3])
-      # puts lmbd.inspect
-      lmbd
     end
     
     # rule('formals' => 'LPAREN identifier_star RPAREN').as 'identifiers_as_formals'

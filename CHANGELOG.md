@@ -1,3 +1,17 @@
+## [0.0.15] - 2018-09-30
+Recursive functions are now supported.  
+Interpreter pre-loads a Scheme file with standard procedures (zero?, positive?, negative?, abs)
+
+### Added
+- File `base.skm` with standard Scheme procedures `zero?`, `positive?`, `negative?`, `abs`
+
+### Changed
+- Class `Interpreter#initialize` now execute a Scheme file containing a number of standard procedures.
+- File `README.md` Added third demo snippet showing example of recursive lambda function.
+
+### Fixed
+- Method `SkmLambda#bind_locals` now execute any procedure call in argument list before executing the lambda itself.
+
 ## [0.0.14] - 2018-09-23
 Added `lambda` (anonymous function). This is an initial implementation that doesn't support recursion yet.
 

@@ -8,8 +8,8 @@ module Skeem
         expect { Interpreter.new() }.not_to raise_error
       end
 
-      it 'should not have a parser' do
-        expect(subject.parser).to be_nil
+      it 'should have a parser' do
+        expect(subject.parser).not_to be_nil
       end
 
       it 'should have a runtime object' do
@@ -154,17 +154,17 @@ SKEEM
         result = subject.run('(min 2 2)')
         expect(result.value).to eq(2)
       end      
-      
-      # it 'should implement recursive functions' do
-        # source = <<-SKEEM
-  # ; Example from R7RS section 4.1.5
-  # (define fact (lambda (n) 
-    # (if (<= n 1) 1 (* n (fact (- n 1))))))
-  # (fact 10)
-# SKEEM
-        # subject.run(source)
-        # expect(result.value).to eq(3628800)    
-      # end
+     
+      it 'should implement recursive functions' do
+        source = <<-SKEEM
+  ; Example from R7RS section 4.1.5
+  (define fact (lambda (n) 
+    (if (<= n 1) 1 (* n (fact (- n 1))))))
+  (fact 10)
+SKEEM
+        result = subject.run(source)
+        expect(result.value).to eq(3628800)    
+      end
     end # context
 
     context 'Built-in primitive procedures' do
@@ -376,6 +376,83 @@ SKEEM
           expect(result.value).to eq(expectation)
         end
       end
+    end # context
+    
+    context 'Built-in standard procedures' do
+      it 'should implement the zero? predicate' do
+        checks = [
+          ['(zero? 3.1)', false],
+          ['(zero? -3.1)', false],       
+          ['(zero? 0)', true],
+          ['(zero? 0.0)', true],
+          ['(zero? 3)', false],
+          ['(zero? -3)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the positive? predicate' do      
+        checks = [
+          ['(positive? 3.1)', true],
+          ['(positive? -3.1)', false],       
+          ['(positive? 0)', true],
+          ['(positive? 0.0)', true],
+          ['(positive? 3)', true],
+          ['(positive? -3)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the positive? predicate' do      
+        checks = [
+          ['(positive? 3.1)', true],
+          ['(positive? -3.1)', false],       
+          ['(positive? 0)', true],
+          ['(positive? 0.0)', true],
+          ['(positive? 3)', true],
+          ['(positive? -3)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the negative? predicate' do      
+        checks = [
+          ['(negative? 3.1)', false],
+          ['(negative? -3.1)', true],       
+          ['(negative? 0)', false],
+          ['(negative? 0.0)', false],
+          ['(negative? 3)', false],
+          ['(negative? -3)', true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the abs function' do      
+        checks = [
+          ['(abs 3.1)', 3.1],
+          ['(abs -3.1)', 3.1],       
+          ['(abs 0)', 0],
+          ['(abs 0.0)', 0],
+          ['(abs 3)', 3],
+          ['(abs -7)', 7]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end       
     end # context
   end # describe
 end # module

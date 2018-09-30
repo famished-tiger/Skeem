@@ -55,7 +55,6 @@ At this stage, the gem consists of a bare-bones interpreter.
 ```
 
 ### Example 2 (Defining a function)
-Remark: Skeem 0.0.14 doesn't support recursive functions yet.
 
 ```ruby
   require 'skeem'
@@ -78,6 +77,21 @@ Remark: Skeem 0.0.14 doesn't support recursive functions yet.
   scheme_code = '(min 42 3)'
   result = schemer.run(scheme_code)
   puts result.value # => 3
+```
+### Example 3 (Defining a recursive function)
+```ruby
+  require 'skeem'
+
+  schemer = Skeem::Interpreter.new
+  scheme_code = <<-SKEEM
+    ; Compute the factorial of 100
+    (define fact (lambda (n)
+      (if (<= n 1) 1 (* n (fact (- n 1))))))
+    (fact 100)
+  SKEEM
+
+  result = schemer.run(scheme_code)
+  puts result.value # => 9332621544394415268169923885626670049071596826438162146859296389521759999322991560894146397615651828625369792082722375825118521091686400000000000000000000000 
 ```
 
 Roadmap:

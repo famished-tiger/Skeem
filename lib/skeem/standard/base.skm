@@ -1,0 +1,25 @@
+; Standard R7RS procedures from section 6.2.6
+(define zero? 
+  (lambda (z)
+    (if (= z 0)
+      #t
+      #f)))
+
+; Return true if x greater or equal to zero; false otherwise
+(define positive? 
+  (lambda (x)
+    (if (>= x 0)
+      #t
+      #f)))
+
+(define negative? 
+  (lambda (x)
+    (if (< x 0)
+      #t
+      #f)))
+      
+(define abs 
+  (lambda (x)
+    (if (>= x 0)
+      x
+      (- x))))

@@ -19,6 +19,7 @@ module PkgExtending
       'bin/*.rb',
       'lib/*.*',
       'lib/**/*.rb',
+      'lib/**/*.skm',
       'spec/**/*.rb',
     ]
     aPackage.files = file_list
