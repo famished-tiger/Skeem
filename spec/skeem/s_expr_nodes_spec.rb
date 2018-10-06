@@ -330,7 +330,7 @@ describe SkmIdentifier do
     context 'Provided services:' do
       it 'should return its text representation' do
         txt1 = '<Skeem::ProcedureCall: <Skeem::SkmIdentifier: +>, '
-        txt2 = '<Skeem::SkmList: 1, 2, 3>>'
+        txt2 = '@operands <Skeem::SkmList: 1, 2, 3>>'
         expect(subject.inspect).to eq(txt1 + txt2)
       end
     end # context

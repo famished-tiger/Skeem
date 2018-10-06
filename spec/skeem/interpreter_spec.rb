@@ -171,16 +171,22 @@ SKEEM
         expect(result.value).to eq(3628800)    
       end
       
-    it 'should implement the compact define + lambda syntax' do
-        source = <<-SKEEM
+      it 'should implement the compact define + lambda syntax' do
+          source = <<-SKEEM
   ; Alternative syntax to: (define f (lambda x (+ x 42)))
   (define (f x)
     (+ x 42))
   (f 23)
 SKEEM
+          result = subject.run(source)
+          expect(result.value).to eq(65)      
+      end
+      
+      it 'should call anonymous procedure' do
+        source = '((lambda (x) (+ x x)) 4)'
         result = subject.run(source)
-        expect(result.value).to eq(65)      
-    end
+        expect(result.value).to eq(8)        
+      end
     end # context
 
     context 'Built-in primitive procedures' do

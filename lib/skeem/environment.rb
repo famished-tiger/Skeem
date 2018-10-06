@@ -48,8 +48,8 @@ module Skeem
       my_result
     end
     
-    # The number of outer parents the current environment has.
-    # The nesting levels
+    # The number of outer parents the current environment has. 
+    # @return [Integer] The nesting levels
     def depth
       count = 0
       

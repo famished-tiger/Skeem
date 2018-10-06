@@ -18,6 +18,7 @@ module Skeem
     def run(source)
       @parser ||= Parser.new
       @ptree = parser.parse(source)
+      # $stderr.puts @ptree.root.inspect
       return @ptree.root.evaluate(runtime)
     end
     

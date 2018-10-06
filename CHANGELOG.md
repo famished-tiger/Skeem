@@ -1,3 +1,9 @@
+## [0.0.17] - 2018-10-06
+- Fix: now support calls of anonymous lambda procedures.
+
+### Fixed
+- Method `SkmProcedureCall#evaluate` Fix: no procedure name lookup for anonymous ones!
+
 ## [0.0.16] - 2018-10-06
 - Added built-in procedures `odd?`, `even?`, `square`, and `floor-remainder` (`modulo`).
 - Supports procedures without argument.

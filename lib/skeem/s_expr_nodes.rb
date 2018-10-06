@@ -340,16 +340,20 @@ module Skeem
     end
 
     def evaluate(aRuntime)
-      var_key = operator.evaluate(aRuntime)
-      unless aRuntime.include?(var_key.value)
-        err = StandardError
-        key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
-        err_msg = "Unknown procedure '#{key}'"
-        raise err, err_msg
+      if operator.kind_of?(SkmLambda)
+        procedure = operator
+      else
+        var_key = operator.evaluate(aRuntime)
+        unless aRuntime.include?(var_key.value)
+          err = StandardError
+          key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
+          err_msg = "Unknown procedure '#{key}'"
+          raise err, err_msg
+        end
+        procedure = aRuntime.environment.fetch(var_key.value)
+        # $stderr.puts "## CALL(#{var_key.value}) ###################"
+        # $stderr.puts operands.inspect
       end
-      procedure = aRuntime.environment.fetch(var_key.value)
-      # $stderr.puts "## CALL(#{var_key.value}) ###################"
-      # $stderr.puts operands.inspect
       result = procedure.call(aRuntime, self)
       # $stderr.puts "## RETURN #{result.inspect}"
       result
@@ -357,7 +361,7 @@ module Skeem
 
     def inspect
       result = inspect_prefix + operator.inspect + ', '
-      result << operands.inspect + inspect_suffix
+      result << '@operands ' + operands.inspect + inspect_suffix
       result
     end
 
