@@ -24,6 +24,21 @@ module Skeem
       environment.bindings.clear
       @environment = environment.outer
     end
+    
+    def depth()
+      return environment.depth
+    end
+    
+    # Make the outer enviromnent thecurrent one inside the provided block
+    def pop
+      env = environment
+      @environment = environment.outer
+      env
+    end
+    
+    def push(anEnvironment)
+      @environment = anEnvironment
+    end
 
     private
 

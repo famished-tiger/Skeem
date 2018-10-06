@@ -32,17 +32,24 @@ module Skeem
       end
 
       it 'should add nested environment' do
+        expect(subject.depth).to be_zero
         env_before = subject.environment
         subject.nest
+        
         expect(subject.environment).not_to eq(env_before)
         expect(subject.environment.outer).to eq(env_before)
+        expect(subject.depth).to eq(1)
       end
 
       it 'should remove nested environment' do
+        expect(subject.depth).to be_zero
         subject.nest
         outer_before = subject.environment.outer
+        expect(subject.depth).to eq(1)
+        
         subject.unnest
         expect(subject.environment).to eq(outer_before)
+        expect(subject.depth).to be_zero
       end
     end # context
   end # describe

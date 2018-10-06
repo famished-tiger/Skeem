@@ -1,3 +1,18 @@
+## [0.0.16] - 2018-10-06
+- Added built-in procedures `odd?`, `even?`, `square`, and `floor-remainder` (`modulo`).
+- Supports procedures without argument.
+- Implements second syntax form for variable definition. 
+- Fixed nasty bug when same variable name used in nested procedure calls.
+
+### Added
+- Method `Environment#depth to count the nesting levels
+- File `primitive_builder.rb` implementation of: `odd?`, `even?`, `square`, `floor-remainder`, `modulo` procedures.
+- File `grammar.rb` rule for second syntax form for variable definition.
+- File `grammar.rb` rule for calling procedures without argument.
+
+### Fixed
+- Method `SkmDefinition#evaluate` Infinite recursion when a variable, say x, referred to a variable with same name in outer scope.
+
 ## [0.0.15] - 2018-09-30
 Recursive functions are now supported.  
 Interpreter pre-loads a Scheme file with standard procedures (zero?, positive?, negative?, abs)

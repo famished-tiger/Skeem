@@ -1,3 +1,4 @@
+require 'stringio'
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/interpreter' # Load the class under test
 
@@ -128,8 +129,9 @@ SKEEM
       it 'should implement the lambda function with one arg' do
         source = <<-SKEEM
   ; Simplified 'abs' function implementation
-  (define abs (lambda(x)
-    (if (< x 0) (- x) x)))
+  (define abs 
+    (lambda (x)
+      (if (< x 0) (- x) x)))
 SKEEM
         subject.run(source)
         result = subject.run('(abs -3)')
@@ -143,8 +145,9 @@ SKEEM
       it 'should implement the lambda function with two args' do
         source = <<-SKEEM
   ; Simplified 'min' function implementation
-  (define min (lambda(x y)
-    (if (< x y) x y)))
+  (define min 
+    (lambda (x y)
+      (if (< x y) x y)))
 SKEEM
         subject.run(source)
         result = subject.run('(min 1 2)')
@@ -159,12 +162,25 @@ SKEEM
         source = <<-SKEEM
   ; Example from R7RS section 4.1.5
   (define fact (lambda (n) 
-    (if (<= n 1) 1 (* n (fact (- n 1))))))
+    (if (<= n 1) 
+      1 
+      (* n (fact (- n 1))))))
   (fact 10)
 SKEEM
         result = subject.run(source)
         expect(result.value).to eq(3628800)    
       end
+      
+    it 'should implement the compact define + lambda syntax' do
+        source = <<-SKEEM
+  ; Alternative syntax to: (define f (lambda x (+ x 42)))
+  (define (f x)
+    (+ x 42))
+  (f 23)
+SKEEM
+        result = subject.run(source)
+        expect(result.value).to eq(65)      
+    end
     end # context
 
     context 'Built-in primitive procedures' do
@@ -217,6 +233,20 @@ SKEEM
         result = subject.run('(+ (* 2 100) (* 1 10))')
         expect(result).to be_kind_of(SkmInteger)
         expect(result.value).to eq(210)
+      end
+      
+      it 'should implement the floor-remainder (modulo) procedure' do
+        checks = [
+          ['(modulo 16 4)', 0],
+          ['(modulo 5 2)', 1],
+          ['(modulo -45.0 7)', 4.0],
+          ['(modulo 10.0 -3.0)', -2.0],
+          ['(modulo -17 -9)', -8]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
       end
 
       it 'should implement the equality operator' do
@@ -376,6 +406,14 @@ SKEEM
           expect(result.value).to eq(expectation)
         end
       end
+      
+      it 'should implement the newline procedure' do
+        default_stdout = $stdout
+        $stdout = StringIO.new()
+        subject.run('(newline) (newline) (newline)')
+        expect($stdout.string).to match(/\n\n\n$/)
+        $stdout = default_stdout
+      end      
     end # context
     
     context 'Built-in standard procedures' do
@@ -439,6 +477,32 @@ SKEEM
         end
       end
 
+      it 'should implement the even? predicate' do      
+        checks = [
+          ['(even? 0)', true],
+          ['(even? 1)', false],       
+          ['(even? 2.0)', true],
+          ['(even? -120762398465)', false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the odd? predicate' do      
+        checks = [
+          ['(odd? 0)', false],
+          ['(odd? 1)', true],       
+          ['(odd? 2.0)', false],
+          ['(odd? -120762398465)', true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end       
+
       it 'should implement the abs function' do      
         checks = [
           ['(abs 3.1)', 3.1],
@@ -452,7 +516,19 @@ SKEEM
           result = subject.run(skeem_expr)
           expect(result.value).to eq(expectation)
         end
-      end       
+      end
+
+      it 'should implement the square function' do      
+        checks = [
+          ['(square 42)', 1764],
+          ['(square 2.0)', 4.0],       
+          ['(square -7)', 49]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end      
     end # context
   end # describe
 end # module

@@ -1,25 +1,41 @@
 ; Standard R7RS procedures from section 6.2.6
-(define zero? 
+(define zero?
   (lambda (z)
     (if (= z 0)
       #t
       #f)))
 
 ; Return true if x greater or equal to zero; false otherwise
-(define positive? 
+(define positive?
   (lambda (x)
     (if (>= x 0)
       #t
       #f)))
 
-(define negative? 
+(define negative?
   (lambda (x)
     (if (< x 0)
       #t
       #f)))
-      
-(define abs 
+
+(define odd?
+  (lambda (n)
+    (if (= (modulo n 2) 1)
+      #t
+      #f)))
+
+(define even?
+  (lambda (n)
+    (if (= (modulo n 2) 0)
+      #t
+      #f)))
+
+(define abs
   (lambda (x)
     (if (>= x 0)
       x
       (- x))))
+
+(define square
+  (lambda (z)
+    (* z z)))

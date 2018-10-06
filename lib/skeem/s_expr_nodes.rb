@@ -200,6 +200,7 @@ module Skeem
     # Construct an Enumerator that will return iteratively the result
     # of 'evaluate' method of each members of self.
     def to_eval_enum(aRuntime)
+=begin
       elements = self.members
 
       new_enum = Enumerator.new do |result|
@@ -208,6 +209,8 @@ module Skeem
       end
 
       new_enum
+=end
+      members.map { |elem| elem.evaluate(aRuntime) }
     end
 
     # Part of the 'visitee' role in Visitor design pattern.
@@ -245,9 +248,29 @@ module Skeem
 
     def evaluate(aRuntime)
       var_key = variable.evaluate(aRuntime)
-      aRuntime.define(var_key, self)
-      expression.evaluate(aRuntime) if expression.kind_of?(SkmLambda)
-      self
+      aRuntime.define(var_key, self)      
+      case expression
+        when SkmLambda
+          result = expression.evaluate(aRuntime) 
+          
+        when SkmVariableReference
+          other_key = expression.variable.evaluate(aRuntime)
+          if var_key.value != other_key.value
+            result = expression.evaluate(aRuntime)
+           else
+            # INFINITE LOOP DANGER: definition of 'x' is a reference to 'x'!
+            # Way out: the lookup for the reference should start from outer
+            # environment.
+            env = aRuntime.pop
+            @expression = expression.evaluate(aRuntime)
+            aRuntime.push(env)
+            result = expression
+          end
+        else
+          result = self
+      end
+
+      result
     end
 
     # call method should only invoked when the expression is a SkmLambda
@@ -325,10 +348,10 @@ module Skeem
         raise err, err_msg
       end
       procedure = aRuntime.environment.fetch(var_key.value)
-      # puts "## CALL(#{var_key.value}) ###################"
-      # puts operands.inspect
+      # $stderr.puts "## CALL(#{var_key.value}) ###################"
+      # $stderr.puts operands.inspect
       result = procedure.call(aRuntime, self)
-      # puts "## RETURN #{result.inspect}"
+      # $stderr.puts "## RETURN #{result.inspect}"
       result
     end
 
@@ -394,7 +417,7 @@ module Skeem
       aRuntime.nest
       bind_locals(aRuntime, aProcedureCall)
       # TODO remove next line
-      # puts aRuntime.environment.inspect
+      # $stderr.puts aRuntime.environment.inspect
       result = evaluate_defs(aRuntime)
       result = evaluate_sequence(aRuntime)
       aRuntime.unnest
@@ -418,12 +441,12 @@ module Skeem
         if arg.nil?
           raise StandardError, "Unbound variable: '#{arg_name.value}'"
         end
-        
+
         # IMPORTANT: execute procedure call in argument list now
         arg = arg.evaluate(aRuntime) if arg.kind_of?(ProcedureCall)
         a_def = SkmDefinition.new(position, arg_name, arg)
         a_def.evaluate(aRuntime)
-        # puts "LOCAL #{a_def.inspect}"
+        # $stderr.puts "LOCAL #{a_def.inspect}"
       end
     end
 

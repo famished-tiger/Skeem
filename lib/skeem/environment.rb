@@ -47,5 +47,19 @@ module Skeem
 
       my_result
     end
+    
+    # The number of outer parents the current environment has.
+    # The nesting levels
+    def depth
+      count = 0
+      
+      curr_env = self
+      while curr_env.outer
+        count += 1
+        curr_env = curr_env.outer
+      end
+      
+      count
+    end
   end # class
 end # module

@@ -3,13 +3,25 @@ require_relative '../../lib/skeem/environment' # Load the class under test
 
 module Skeem
   describe Environment do
+    let(:sample_env) { Environment.new }
     context 'Initialization:' do
-      it 'should be initialized with opional argument' do
+      it 'could be initialized without argument' do
         expect { Environment.new() }.not_to raise_error
+      end
+      
+      it 'could be initialized with optional argument' do
+        expect { Environment.new(sample_env) }.not_to raise_error
       end
 
       it 'should have no default bindings' do
         expect(subject).to be_empty
+      end
+      
+      it 'should have depth of zero or one' do
+        expect(subject.depth).to be_zero
+        
+        instance = Environment.new(sample_env)
+        expect(instance.depth).to eq(1)
       end
     end # context
 

@@ -61,10 +61,22 @@ module Skeem
     def reduce_definition(_production, aRange, _tokens, theChildren)
       SkmDefinition.new(aRange, theChildren[2], theChildren[3])
     end
+    
+    # rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'
+    # Equivalent to: (define IDENTIFIER (lambda (formals) body))
+    def reduce_alt_definition(_production, aRange, _tokens, theChildren)
+      lmbd = SkmLambda.new(aRange, theChildren[4], theChildren[6])
+      SkmDefinition.new(aRange, theChildren[3], lmbd)
+    end
 
     # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
       SkmVariableReference.new(aRange, theChildren[0])
+    end
+    
+    # rule('procedure_call' => 'LPAREN operator RPAREN').as 'proc_call_nullary'
+    def reduce_proc_call_nullary(_production, aRange, _tokens, theChildren)
+      ProcedureCall.new(aRange, theChildren[1], [])
     end
 
     # rule('proc_call_args' => 'LPAREN operator operand_plus RPAREN')
@@ -83,9 +95,17 @@ module Skeem
     end
     
     # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
-    def reduce_lambda_expression(_production, _range, _tokens, theChildren)
-      lmbd = SkmLambda.new(_range, theChildren[2], theChildren[3])
+    def reduce_lambda_expression(_production, aRange, _tokens, theChildren)
+      lmbd = SkmLambda.new(aRange, theChildren[2], theChildren[3])
+      # $stderr.puts lmbd.inspect
+      lmbd
     end
+    
+    # rule('def_formals' => 'identifier_star period identifier').as 'dotted_formals'
+    def reduce_last_operand(_production, _range, _tokens, theChildren)
+      [theChildren.last]
+    end    
+    
     
     # rule('formals' => 'LPAREN identifier_star RPAREN').as 'identifiers_as_formals'
     def reduce_identifiers_as_formals(_production, _range, _tokens, theChildren)

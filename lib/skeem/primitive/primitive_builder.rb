@@ -12,6 +12,8 @@ module Skeem
         add_boolean_procedures(aRuntime)
         add_string_procedures(aRuntime)
         add_symbol_procedures(aRuntime)
+        add_output_procedures(aRuntime)
+        add_special_procedures(aRuntime)
       end
 
       private
@@ -21,6 +23,7 @@ module Skeem
         def_procedure(aRuntime, create_minus)
         def_procedure(aRuntime, create_multiply)
         def_procedure(aRuntime, create_divide)
+        def_procedure(aRuntime, create_modulo)
       end
 
       def add_comparison(aRuntime)
@@ -48,6 +51,14 @@ module Skeem
 
       def add_symbol_procedures(aRuntime)
         def_procedure(aRuntime, create_symbol?)
+      end
+
+      def add_output_procedures(aRuntime)
+        def_procedure(aRuntime, create_newline)
+      end
+
+      def add_special_procedures(aRuntime)
+         def_procedure(aRuntime, create_debug)
       end
 
       def create_plus()
@@ -101,6 +112,20 @@ module Skeem
 
         ['/', divide_code]
       end
+
+
+      def create_modulo()
+        modulo_code = ->(runtime, arglist) do
+          operand_1 = arglist.head.evaluate(runtime)
+          operands = arglist.tail.to_eval_enum(runtime)
+          operand_2 = operands.first.evaluate(runtime)
+          raw_result = operand_1.value.modulo(operand_2.value)
+          to_skm(raw_result)
+        end
+
+        ['floor-remainder', modulo_code, 'modulo', modulo_code]
+      end
+
 
       def create_equal
         equal_code = ->(runtime, arglist) do
@@ -232,9 +257,29 @@ module Skeem
         ['symbol?', pred_code]
       end
 
-      def def_procedure(aRuntime, aPair)
-        func = PrimitiveProcedure.new(aPair.first, aPair.last)
-        define(aRuntime, func.identifier, func)
+      def create_newline
+        nl_code = ->(runtime, arg) do
+          # @TODO: make output stream configurable
+          print "\n"
+        end
+
+        ['newline', nl_code]
+      end
+
+      def create_debug
+        debug_code = ->(runtime, arg) do
+          require 'debug'
+        end
+
+        ['debug', debug_code]
+      end
+
+
+      def def_procedure(aRuntime, pairs)
+        pairs.each_slice(2) do |(name, code)|
+          func = PrimitiveProcedure.new(name, code)
+          define(aRuntime, func.identifier, func)
+        end
       end
 
       def define(aRuntime, aKey, anEntry)
