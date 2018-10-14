@@ -61,7 +61,7 @@ module Skeem
     def reduce_definition(_production, aRange, _tokens, theChildren)
       SkmDefinition.new(aRange, theChildren[2], theChildren[3])
     end
-    
+
     # rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'
     # Equivalent to: (define IDENTIFIER (lambda (formals) body))
     def reduce_alt_definition(_production, aRange, _tokens, theChildren)
@@ -73,7 +73,7 @@ module Skeem
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
       SkmVariableReference.new(aRange, theChildren[0])
     end
-    
+
     # rule('procedure_call' => 'LPAREN operator RPAREN').as 'proc_call_nullary'
     def reduce_proc_call_nullary(_production, aRange, _tokens, theChildren)
       ProcedureCall.new(aRange, theChildren[1], [])
@@ -93,24 +93,34 @@ module Skeem
     def reduce_last_operand(_production, _range, _tokens, theChildren)
       [theChildren.last]
     end
+
+    # rule('operand_plus' => 'operand').as 'last_operand'
+    def reduce_last_operand(_production, _range, _tokens, theChildren)
+      [theChildren.last]
+    end
     
     # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
     def reduce_lambda_expression(_production, aRange, _tokens, theChildren)
       lmbd = SkmLambda.new(aRange, theChildren[2], theChildren[3])
       # $stderr.puts lmbd.inspect
       lmbd
-    end
-    
-    # rule('def_formals' => 'identifier_star period identifier').as 'dotted_formals'
-    def reduce_last_operand(_production, _range, _tokens, theChildren)
-      [theChildren.last]
     end    
-    
-    
-    # rule('formals' => 'LPAREN identifier_star RPAREN').as 'identifiers_as_formals'
-    def reduce_identifiers_as_formals(_production, _range, _tokens, theChildren)
-      theChildren[1]
+
+    # rule('formals' => 'LPAREN identifier_star RPAREN').as 'fixed_arity_formals'
+    def reduce_fixed_arity_formals(_production, _range, _tokens, theChildren)
+      SkmFormals.new(theChildren[1], :fixed)
     end
+
+    # rule('formals' => 'IDENTIFIER').as 'variadic_formals'
+    def reduce_variadic_formals(_production, _range, _tokens, theChildren)
+      SkmFormals.new([theChildren[0]], :variadic)
+    end
+    
+    # rule('formals' => 'LPAREN identifier_plus PERIOD IDENTIFIER RPAREN').as 'dotted_formals'
+    def reduce_dotted_formals(_production, _range, _tokens, theChildren)
+      formals = theChildren[1] << theChildren[3]
+      SkmFormals.new(formals, :variadic)
+    end    
 
     # rule('identifier_star' => 'identifier_star IDENTIFIER').as 'identifier_star'
     def reduce_identifier_star(_production, _range, _tokens, theChildren)
@@ -121,6 +131,16 @@ module Skeem
     def reduce_no_identifier_yet(_production, _range, _tokens, theChildren)
       []
     end
+    
+    # rule('identifier_plus' => 'identifier_plus IDENTIFIER').as 'multiple_identifiers'
+    def reduce_multiple_identifiers(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end    
+    
+    # rule('identifier_plus' => 'IDENTIFIER').as 'last_identifier'
+    def reduce_last_identifier(_production, _range, _tokens, theChildren)
+      [theChildren[0]]
+    end    
 
     # rule('body' => 'definition_star sequence').as 'body'
     def reduce_body(_production, _range, _tokens, theChildren)

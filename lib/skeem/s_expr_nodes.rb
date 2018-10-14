@@ -171,7 +171,7 @@ module Skeem
     attr_accessor(:members)
     extend Forwardable
 
-    def_delegators :@members, :each, :first, :length, :empty?
+    def_delegators :@members, :each, :first, :last, :length, :empty?, :size
 
     def initialize(theMembers)
       super(nil)
@@ -187,13 +187,8 @@ module Skeem
     end
 
     def evaluate(aRuntime)
-      result = nil
-
-      members.each do |elem|
-        result = elem.evaluate(aRuntime)
-      end
-
-      result
+      list_evaluated = members.map { |elem| elem.evaluate(aRuntime) }
+      SkmList.new(list_evaluated)
     end
 
     # Factory method.
@@ -233,6 +228,7 @@ module Skeem
 
     alias children members
     alias subnodes members
+    alias to_a members  
     alias rest tail
   end # class
 
@@ -248,11 +244,11 @@ module Skeem
 
     def evaluate(aRuntime)
       var_key = variable.evaluate(aRuntime)
-      aRuntime.define(var_key, self)      
+      aRuntime.define(var_key, self)
       case expression
         when SkmLambda
-          result = expression.evaluate(aRuntime) 
-          
+          result = expression.evaluate(aRuntime)
+
         when SkmVariableReference
           other_key = expression.variable.evaluate(aRuntime)
           if var_key.value != other_key.value
@@ -399,6 +395,75 @@ module Skeem
     end
   end # class
 
+  SkmArity = Struct.new(:low, :high) do
+    def nullary?
+      low.zero? && high == 0
+    end
+
+    def variadic?
+      high == '*'
+    end
+
+    def ==(other)
+      return true if self.object_id == other.object_id
+      result = false
+
+      case other
+        when SkmArity
+          result = true if (low == other.low) && (high == other.high)
+        when Array
+          result = true if (low == other.first) && (high == other.last)
+        when Integer
+          result = true if (low == other) && (high == other)
+      end
+
+      result
+    end
+  end
+
+  class SkmFormals
+    attr_reader :formals
+    attr_reader :arity
+
+    # @param arityKind [Symbol] One of the following: :fixed, :variadic
+    def initialize(theFormals, arityKind)
+      @formals = theFormals
+      arity_set(arityKind)
+    end
+
+    def evaluate(aRuntime)
+      formals.map! { |param| param.evaluate(aRuntime) }
+    end
+
+    def nullary?
+      arity.nullary?
+    end
+
+    def variadic?
+      arity.variadic?
+    end
+
+    def required_arity
+      (arity.high == '*') ? arity.low : arity.high
+    end
+
+    private
+
+    def arity_set(arityKind)
+      fixed_arity = formals.size
+
+      if arityKind == :fixed
+        @arity = SkmArity.new(fixed_arity, fixed_arity)
+      else # :variadic
+        if formals.empty?
+          raise StandardError, 'Internal error: inconsistent arity'
+        else
+          @arity = SkmArity.new(fixed_arity - 1, '*')
+        end
+      end
+    end
+  end # class
+
   class SkmLambda < SkmElement
     # @!attribute [r] formals
     # @return [Array<SkmIdentifier>] the argument names
@@ -414,7 +479,7 @@ module Skeem
     end
 
     def evaluate(aRuntime)
-      formals.map! { |param| param.evaluate(aRuntime) }
+      formals.evaluate(aRuntime)
     end
 
     def call(aRuntime, aProcedureCall)
@@ -429,6 +494,14 @@ module Skeem
       result
     end
 
+    def arity
+      formals.arity
+    end
+
+    def required_arity
+      formals.required_arity
+    end
+
     def inspect
       result = inspect_prefix + '@formals ' + formals.inspect + ', '
       result << '@definitions ' + definitions.inspect + ', '
@@ -439,18 +512,29 @@ module Skeem
     private
 
     def bind_locals(aRuntime, aProcedureCall)
-      arguments =  aProcedureCall.operands.members
-      formals.each_with_index do |arg_name, index|
-        arg = arguments[index]
-        if arg.nil?
-          raise StandardError, "Unbound variable: '#{arg_name.value}'"
+      actuals =  aProcedureCall.operands.members
+      count_actuals = actuals.size
+      
+      if (count_actuals < required_arity) ||
+        ((count_actuals > required_arity) && !formals.variadic?)
+        raise StandardError, msg_arity_mismatch(aProcedureCall)
+      end
+      return if count_actuals.zero?
+      bind_required_locals(aRuntime, aProcedureCall)
+      
+      if formals.variadic?
+        variadic_part_raw = actuals.drop(required_arity)
+        variadic_part = variadic_part_raw.map do |actual|
+          if actual.kind_of?(ProcedureCall)
+            actual.evaluate(aRuntime)           
+          else
+            actual
+          end
         end
-
-        # IMPORTANT: execute procedure call in argument list now
-        arg = arg.evaluate(aRuntime) if arg.kind_of?(ProcedureCall)
-        a_def = SkmDefinition.new(position, arg_name, arg)
-        a_def.evaluate(aRuntime)
-        # $stderr.puts "LOCAL #{a_def.inspect}"
+        variadic_arg_name = formals.formals.last
+        args_coll = SkmList.new(variadic_part)
+        a_def = SkmDefinition.new(position, variadic_arg_name, args_coll)
+        a_def.evaluate(aRuntime)        
       end
     end
 
@@ -465,6 +549,33 @@ module Skeem
       end
 
       result
+    end
+
+    def bind_required_locals(aRuntime, aProcedureCall)
+      max_index = required_arity - 1
+      actuals =  aProcedureCall.operands.members
+
+      formals.formals.each_with_index do |arg_name, index|
+        arg = actuals[index]
+        if arg.nil?
+          raise StandardError, "Unbound variable: '#{arg_name.value}'"
+        end
+
+        # IMPORTANT: execute procedure call in argument list now
+        arg = arg.evaluate(aRuntime) if arg.kind_of?(ProcedureCall)
+        a_def = SkmDefinition.new(position, arg_name, arg)
+        a_def.evaluate(aRuntime)
+        # $stderr.puts "LOCAL #{a_def.inspect}"
+        break if index >= max_index
+      end
+    end
+    
+    def msg_arity_mismatch(aProcedureCall)
+      # *** ERROR: wrong number of arguments for #<closure morph> (required 2, got 1)
+      msg1 = "Wrong number of arguments for procedure #{operator} "
+      count_actuals = aProcedureCall.operands.members.size
+      msg2 = "(required #{required_arity}, got #{count_actuals})"
+      msg1 + msg2
     end
   end # class
 end # module

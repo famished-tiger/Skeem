@@ -151,6 +151,7 @@ module Skeem
         token = subject.tokens.first
         expect(token.terminal).to eq('STRING_LIT')
         expect(token.lexeme).to eq('Some text')
+        expect(token.position.line).to eq(2)
       end
 
       it 'should skip trailing comments' do

@@ -22,7 +22,8 @@ module Skeem
       "'" => 'APOSTROPHE',
       '`' => 'BACKQUOTE',
       '(' => 'LPAREN',
-      ')' => 'RPAREN'
+      ')' => 'RPAREN',
+      '.' => 'PERIOD'
     }.freeze
 
     # Here are all the SRL keywords (in uppercase)
@@ -73,7 +74,7 @@ module Skeem
       if "()'`".include? curr_ch
         # Delimiters, separators => single character token
         token = build_token(@@lexeme2name[curr_ch], scanner.getch)
-      elsif (lexeme = scanner.scan(/#(?:\.)(?=\s|[|()";]|$)/)) # Single char occurring alone
+      elsif (lexeme = scanner.scan(/(?:\.)(?=\s|[|()";]|$)/)) # Single char occurring alone
         token = build_token('PERIOD', lexeme)
       elsif (lexeme = scanner.scan(/#(?:t|f|true|false)(?=\s|[|()";]|$)/))
         token = build_token('BOOLEAN', lexeme)
@@ -193,19 +194,24 @@ module Skeem
         found = scanner.skip(/(?:\r\n)|\r|\n/)
         if found
           ws_found = true
-          @lineno += 1
-          @line_start = scanner.pos
+          next_line
         end
         next_ch = scanner.peek(1)
         if next_ch == ';'
           cmt_found = true
           scanner.skip(/;[^\r\n]*(?:(?:\r\n)|\r|\n)?/)
+          next_line
         end
         break unless ws_found or cmt_found
       end
 
       curr_pos = scanner.pos
       return if curr_pos == pre_pos
+    end
+    
+    def next_line
+      @lineno += 1
+      @line_start = scanner.pos
     end
   end # class
 end # module

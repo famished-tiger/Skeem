@@ -1,3 +1,18 @@
+## [0.0.18] - 2018-10-14
+Reworked procedure argument-passing. 
+
+### Added
+- Classes `SkmArity`, `SkmFormals` implement the core argument counting checks.
+
+### Changed
+- Class `PrimitiveProcedure` vastly reworked to support Scheme's argument passing convention.
+- Class `PrimitiveBuilder` primitive procedures now check the number of arguments.
+- Class `SkmLambda` vastly reworked to support Scheme's argument passing convention. 
+
+### Fixed
+- Method `Tokenizer#skip_whitespaces` Fix: comment lines were ignored in line counting.
+- Method `Tokenizer#_next_token` Fix: mistake in regex for period (dot) recognition.
+
 ## [0.0.17] - 2018-10-06
 - Fix: now support calls of anonymous lambda procedures.
 

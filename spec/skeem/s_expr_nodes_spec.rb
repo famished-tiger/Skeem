@@ -231,6 +231,9 @@ describe SkmIdentifier do
 
       it 'should know its members' do
         expect(subject.members).to eq(sample_members)
+        
+        other = SkmList.new([])
+        expect(other.members).to be_empty
       end
     end # context
 

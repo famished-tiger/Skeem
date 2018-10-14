@@ -18,6 +18,11 @@
       #t
       #f)))
 
+; For backwards compatibility      
+(define modulo
+  (lambda (x y)
+    (floor-remainder x y)))
+      
 (define odd?
   (lambda (n)
     (if (= (modulo n 2) 1)
@@ -39,3 +44,6 @@
 (define square
   (lambda (z)
     (* z z)))
+    
+(define list
+  (lambda args args))
