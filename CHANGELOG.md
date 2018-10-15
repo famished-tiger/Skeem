@@ -1,3 +1,14 @@
+## [0.0.19] - 2018-10-15
+Added primitive procedures `list?`, `null?`, `length`
+
+### Added
+- File `primitive_builder.rb` implementation of: `list?`, `null?`, `length` procedures.
+- File `primitive_builder_spec.rb` spec examples for: `list?`, `null?`, `length` procedures.
+
+### Fixed
+- Method `SkmLambda#bind_locals` Fix: a variadic procedure with no argument provided, should have empty list as actual argument.
+- File `interpreter_spec.rb` Added test case for calling `list` procedure without argument.
+
 ## [0.0.18] - 2018-10-14
 Reworked procedure argument-passing. 
 

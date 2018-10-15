@@ -12,6 +12,7 @@ module Skeem
         add_boolean_procedures(aRuntime)
         add_string_procedures(aRuntime)
         add_symbol_procedures(aRuntime)
+        add_list_procedures(aRuntime)
         add_io_procedures(aRuntime)
         add_special_procedures(aRuntime)
       end
@@ -71,6 +72,12 @@ module Skeem
 
       def add_symbol_procedures(aRuntime)
         create_symbol?(aRuntime)
+      end
+      
+      def add_list_procedures(aRuntime)
+        create_list?(aRuntime)
+        create_null?(aRuntime)
+        create_length(aRuntime)
       end
 
       def add_io_procedures(aRuntime)(aRuntime)
@@ -316,6 +323,38 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'symbol?', unary, primitive)
+      end
+      
+      def create_list?(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          to_skm(arg_evaluated.list?)
+        end
+
+        define_primitive_proc(aRuntime, 'list?', unary, primitive)
+      end
+
+      def create_null?(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          to_skm(arg_evaluated.null?)
+        end
+
+        define_primitive_proc(aRuntime, 'null?', unary, primitive)
+      end       
+      
+      def create_length(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          unless arg_evaluated.kind_of?(SkmList)
+            msg1 = "Procedure 'length': list argument required,"
+            msg2 = "but got #{arg_evaluated.value}"
+            raise StandardError, msg1 + ' ' + msg2
+          end
+          to_skm(arg_evaluated.length)
+        end
+
+        define_primitive_proc(aRuntime, 'length', unary, primitive)
       end
 
       def create_newline(aRuntime)

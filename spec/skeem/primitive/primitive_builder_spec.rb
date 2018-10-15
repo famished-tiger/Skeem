@@ -242,6 +242,51 @@ module Skeem
         end
       end # context
       
+      context 'List procedures:' do      
+        it 'should implement the list? procedure' do
+          checks = [
+            ['(list? #f)', false],
+            ['(list? 1)', false],
+            ['(list? "bar")', false],
+            ['(list? (list 1 2 3))', true],
+            ['(list? (list))', true]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end
+        
+          it 'should implement the null? procedure' do
+          checks = [
+            ['(null? #f)', false],
+            ['(null? 1)', false],
+            ['(null? 0)', false],
+            ['(null? "bar")', false],
+            ['(null? "")', false],
+            ['(null? (list 1 2 3))', false],
+            ['(list? (list))', true]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end 
+
+        it 'should implement the length procedure' do
+          checks = [
+            ['(length (list))', 0],
+            ['(length (list 1))', 1],
+            ['(length (list 1 2))', 2],
+            ['(length (list 1 2 3))', 3]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end         
+      end # context      
+      
       context 'IO procedures:' do          
         it 'should implement the newline procedure' do
           default_stdout = $stdout

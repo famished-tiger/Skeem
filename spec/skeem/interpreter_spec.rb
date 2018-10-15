@@ -352,7 +352,7 @@ SKEEM
       
       it 'should implement the list procedure' do
         checks = [
-          #['(list)', []],
+          ['(list)', []],
           ['(list 1)', [1]],
           ['(list 1 2 3 4)', [1, 2, 3, 4]]
         ]

@@ -48,6 +48,14 @@ module Skeem
     def symbol?
       false
     end
+    
+    def list?
+      false
+    end
+    
+    def null?
+      false
+    end
 
     # Abstract method.
     # Part of the 'visitee' role in Visitor design pattern.
@@ -184,6 +192,14 @@ module Skeem
 
     def tail()
       SkmList.new(members.slice(1..-1))
+    end
+    
+    def list?
+      true
+    end
+    
+    def null?
+      empty?
     end
 
     def evaluate(aRuntime)
@@ -519,9 +535,8 @@ module Skeem
         ((count_actuals > required_arity) && !formals.variadic?)
         raise StandardError, msg_arity_mismatch(aProcedureCall)
       end
-      return if count_actuals.zero?
+      return if count_actuals.zero? && !formals.variadic?
       bind_required_locals(aRuntime, aProcedureCall)
-      
       if formals.variadic?
         variadic_part_raw = actuals.drop(required_arity)
         variadic_part = variadic_part_raw.map do |actual|
@@ -558,7 +573,11 @@ module Skeem
       formals.formals.each_with_index do |arg_name, index|
         arg = actuals[index]
         if arg.nil?
-          raise StandardError, "Unbound variable: '#{arg_name.value}'"
+          if actuals.empty? && formals.variadic?
+            arg = SkmList.new([])
+          else
+            raise StandardError, "Unbound variable: '#{arg_name.value}'"
+          end
         end
 
         # IMPORTANT: execute procedure call in argument list now
