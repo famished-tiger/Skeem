@@ -1,3 +1,14 @@
+## [0.0.20] - 2018-10-21
+### Added
+- Added support for quotation: (quote foo) or 'foo
+- Added support for vectors #( 1 2 3 "foo")
+- Added primitive procedures `vector?`, `vector`, `vector-length`  
+
+### Changed
+- File `README.md` enhanced with detailed implementation status.
+- Class `PrimitiveBuilder` in addition to new Skeem procedures, the class was vastly refactored.
+- Class `Tokenizer` extended to cope with quotation and vectors.
+
 ## [0.0.19] - 2018-10-15
 Added primitive procedures `list?`, `null?`, `length`
 

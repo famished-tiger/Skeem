@@ -56,6 +56,10 @@ module Skeem
     def null?
       false
     end
+    
+    def vector?
+      false
+    end
 
     # Abstract method.
     # Part of the 'visitee' role in Visitor design pattern.
@@ -246,6 +250,42 @@ module Skeem
     alias subnodes members
     alias to_a members  
     alias rest tail
+  end # class
+  
+  class SkmVector < SkmElement
+    attr_accessor(:elements)
+    extend Forwardable
+
+    def_delegators :@elements, :each, :length, :empty?, :size    
+    
+    def initialize(theElements)
+      super(nil)
+      @elements = theElements.nil? ? [] : theElements
+    end
+    
+    def vector?
+      true
+    end
+
+    def evaluate(aRuntime)
+      elements_evaluated = elements.map { |elem| elem.evaluate(aRuntime) }
+      SkmVector.new(elements_evaluated)
+    end    
+  
+  end # class
+  
+  
+  class SkmQuotation < SkmElement
+    attr_accessor(:datum)  
+    
+    def initialize(aDatum)
+      super(nil)
+      @datum = aDatum
+    end
+
+    def evaluate(aRuntime)
+      datum
+    end
   end # class
 
   class SkmDefinition < SkmElement

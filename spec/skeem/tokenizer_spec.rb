@@ -144,6 +144,26 @@ module Skeem
       end
     end # context
 
+    context 'Vector recognition' do
+      it 'should tokenize vectors' do
+        input = '#(0 -2 "Sue")'
+        subject.reinitialize(input)
+        predictions = [
+          ['VECTOR_BEGIN', '#(', 1],
+          ['INTEGER', 0, 3],
+          ['INTEGER', -2, 5],
+          ['STRING_LIT', 'Sue', 8],
+          ['RPAREN', ')', 13],
+        ]
+        tokens = subject.tokens
+        predictions.each_with_index do |(pr_terminal, pr_lexeme, pr_position), i|
+          expect(tokens[i].terminal).to eq(pr_terminal)
+          expect(tokens[i].lexeme).to eq(pr_lexeme)
+          expect(tokens[i].position.column).to eq(pr_position)
+        end
+      end
+    end
+
     context 'Semi-colon comments:' do
       it 'should skip heading comments' do
         input = "; Starting comment\n \"Some text\""

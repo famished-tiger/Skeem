@@ -285,6 +285,57 @@ module Skeem
             expect(result.value).to eq(expectation)
           end
         end         
+      end # context  
+
+      context 'Vector procedures:' do          
+        it 'should implement the vector? procedure' do
+          checks = [
+            ['(vector? #f)', false],
+            ['(vector? 1)', false],
+            ['(vector? "bar")', false],
+            ['(vector? (list 1 2 3))', false],
+            ['(vector? #(1 #f "cool"))', true]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end
+        
+        it 'should implement the vector procedure' do
+          source = '(vector)'
+          result = subject.run(source)
+          expect(result).to be_kind_of(SkmVector)
+          expect(result).to be_empty
+          
+          source = '(vector 1 2 3)'
+          result = subject.run(source)
+          expect(result).to be_kind_of(SkmVector)
+          expect(result.elements.map(&:value)).to eq([1, 2, 3])
+        end
+
+        it 'should implement the vector-length procedure' do
+          checks = [
+            ['(vector-length (vector))', 0],
+            ['(vector-length #())', 0],
+            ['(vector-length (vector 1))', 1],
+            ['(vector-length #(1))', 1],
+            ['(vector-length (vector 1 2))', 2],
+            ['(vector-length #(1 2))', 2],
+            ['(vector-length (vector 1 2 3))', 3]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end 
+
+        # it 'should implement the vector-ref procedure' do
+          # source = "(vector-ref '#(1 1 2 3 5 8 13 21) 5)"
+          # result = subject.run(source)
+          # expect(result).to be_kind_of(SkmInteger)
+          # expect(result.value).to eq(8)         
+        # end         
       end # context      
       
       context 'IO procedures:' do          

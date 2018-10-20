@@ -1,5 +1,6 @@
 # Skeem
 [![Linux Build Status](https://travis-ci.org/famished-tiger/Skeem.svg?branch=master)](https://travis-ci.org/famished-tiger/Skeem)
+[![Build status](https://ci.appveyor.com/api/projects/status/qs19wn6o6bpo8lm6?svg=true)](https://ci.appveyor.com/project/famished-tiger/skeem)
 [![Gem Version](https://badge.fury.io/rb/skeem.svg)](https://badge.fury.io/rb/skeem)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/famished-tiger/Skeem/blob/master/LICENSE.txt)
 
@@ -91,8 +92,68 @@ At this stage, the gem consists of a bare-bones interpreter.
   SKEEM
 
   result = schemer.run(scheme_code)
-  puts result.value # => 9332621544394415268169923885626670049071596826438162146859296389521759999322991560894146397615651828625369792082722375825118521091686400000000000000000000000 
+  puts result.value # => 9332621544394415268169923885626670049071596826438162146859296389521759999322991560894146397615651828625369792082722375825118521091686400000000000000000000000
 ```
+
+## Currently implemented R7RS features
+### Data type literals
+- Booleans: `#t`, `#true`, `#f`, `#false`
+- Of the number hierarchy:  
+  `real` (e.g. 2.718, 6.671e-11),  
+  `integer` (42, -3)
+- Strings: `"Hello, world."`
+- Identifiers (symbols): `really-cool-procedure`
+- Vectors: `#(1 2 "three")`
+
+### Scheme Expressions
+- Variable references
+- Procedure calls
+- Lambda expressions
+- If conditionals
+- Definitions
+
+### Standard syntactic forms
+#### define  
+__Purpose:__ Create a new variable and bind an expression/value to it.  
+__Syntax:__   
+* (define <identifier\> <expression\>)
+
+#### if  
+__Purpose:__ Conditional evaluation based on a test expression.  
+__Syntax:__   
+* (if <test\> <consequent\> <alternate\>)  
+
+
+#### lambda  
+__Purpose:__ Definition of a procedure.  
+__Syntax:__   
+* (lambda <formals\> <body\>)
+
+### Standard library
+This section lists the implemented standard procedures
+
+#### Boolean procedures
+* `boolean?`, `not`
+
+#### Numerical operations
+* Number-level: `number?`, `real?`, `integer?`, `zero?`, `+`, `-`, `*`, `/`, `=`, `square`
+* Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `floor-remainder`
+* Integer-level: `even?`, `odd?`
+
+#### List procedures
+* `list?`, `null?`, `list`, `length`
+
+#### String procedures
+* `string?`
+
+#### Symbol procedures
+* `symbol?`
+
+#### Vector procedures
+* `vector?`, `vector`, `vector-length`
+
+#### Input/output procedures
+* `newline`
 
 Roadmap:
 - Extend language support
@@ -107,12 +168,9 @@ Roadmap:
 Good to know:
 Online book: [The Scheme Programming Language (4th Ed.)](https://www.scheme.com/tspl4/). Remark: covers an older version of Scheme.
 
-## Implemented Scheme R7RS features:
 
-### Literals
-* Boolean literals: `#t`, `#true`, `#f` and `#false`
-* Numeric literals for integers and reals.
-* `string` and `identifier` literals
+
+
 
 ## Other similar Ruby projects
 __Skeem__ isn't the sole implementation of the Scheme language in Ruby.  

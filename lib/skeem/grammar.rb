@@ -9,9 +9,10 @@ module Skeem
   # Names of grammar elements are based on the R7RS documentation
   builder = Rley::Syntax::GrammarBuilder.new do
     # Delimiters, separators...
-    # add_terminals('APOSTROPHE', 'BACKQUOTE')
+    add_terminals('APOSTROPHE') #, 'BACKQUOTE')
     add_terminals('LPAREN', 'RPAREN')
     add_terminals('PERIOD')
+    add_terminals('VECTOR_BEGIN')
 
     # Literal values...
     add_terminals('BOOLEAN', 'INTEGER', 'REAL')
@@ -19,6 +20,7 @@ module Skeem
 
     # Keywords...
     add_terminals('DEFINE', 'IF', 'LAMBDA')
+    add_terminals('QUOTE')
 
     rule('program' => 'cmd_or_def_plus').as 'main'
     rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
@@ -33,10 +35,30 @@ module Skeem
     rule 'expression' =>  'procedure_call'
     rule 'expression' =>  'lambda_expression'
     rule 'expression' =>  'conditional'
+    rule 'literal' => 'quotation'
     rule 'literal' => 'self-evaluating'
+    rule('quotation' => 'APOSTROPHE datum').as 'quotation_abbrev'
+    rule('quotation' => 'LPAREN QUOTE datum RPAREN').as 'quotation'
     rule 'self-evaluating' => 'BOOLEAN'
     rule 'self-evaluating' => 'number'
     rule 'self-evaluating' => 'STRING_LIT'
+    rule 'self-evaluating' => 'vector'
+    rule 'datum' => 'simple_datum'
+    rule 'datum' => 'compound_datum'
+    rule 'simple_datum' => 'BOOLEAN'
+    rule 'simple_datum' => 'number'
+    rule 'simple_datum' => 'STRING_LIT' 
+    rule 'simple_datum' => 'symbol'
+    rule 'compound_datum' => 'list'
+    rule 'compound_datum' => 'vector'
+    rule 'list' => 'LPAREN datum_star RPAREN'
+    rule 'list' => 'LPAREN datum_plus PERIOD datum RPAREN'
+    rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
+    rule('datum_plus' => 'datum_plus datum').as 'multiple_datums'
+    rule('datum_plus' => 'datum').as 'last_datum'    
+    rule('datum_star' => 'datum_star datum').as 'datum_star'
+    rule('datum_star' => []).as 'no_datum_yet'
+    rule 'symbol' => 'IDENTIFIER'
     rule('procedure_call' => 'LPAREN operator RPAREN').as 'proc_call_nullary'
     rule('procedure_call' => 'LPAREN operator operand_plus RPAREN').as 'proc_call_args'
     rule('operand_plus' => 'operand_plus operand').as 'multiple_operands'

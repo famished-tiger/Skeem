@@ -13,30 +13,31 @@ module Skeem
         add_string_procedures(aRuntime)
         add_symbol_procedures(aRuntime)
         add_list_procedures(aRuntime)
+        add_vector_procedures(aRuntime)
         add_io_procedures(aRuntime)
         add_special_procedures(aRuntime)
       end
 
       private
-      
+
       def nullary
-        SkmArity.new(0, 0) 
+        SkmArity.new(0, 0)
       end
-      
+
       def unary
         SkmArity.new(1, 1)
       end
-      
+
       def binary
         SkmArity.new(2, 2)
       end
-      
+
       def zero_or_more
         SkmArity.new(0, '*')
       end
-      
+
       def one_or_more
-        SkmArity.new(1, '*') 
+        SkmArity.new(1, '*')
       end
 
       def add_arithmetic(aRuntime)
@@ -56,28 +57,35 @@ module Skeem
       end
 
       def add_number_predicates(aRuntime)
-        create_number?(aRuntime)
-        create_real?(aRuntime)
-        create_integer?(aRuntime)
+        create_object_predicate(aRuntime, 'number?')
+        create_object_predicate(aRuntime, 'real?')
+        create_object_predicate(aRuntime, 'integer?')
       end
 
       def add_boolean_procedures(aRuntime)
         create_not(aRuntime)
-        create_boolean?(aRuntime)
+        create_object_predicate(aRuntime, 'boolean?')
       end
 
       def add_string_procedures(aRuntime)
-        create_string?(aRuntime)
+        create_object_predicate(aRuntime, 'string?')
       end
 
       def add_symbol_procedures(aRuntime)
-        create_symbol?(aRuntime)
+        create_object_predicate(aRuntime, 'symbol?')
       end
-      
+
       def add_list_procedures(aRuntime)
-        create_list?(aRuntime)
-        create_null?(aRuntime)
+        create_object_predicate(aRuntime, 'list?')
+        create_object_predicate(aRuntime, 'null?')
         create_length(aRuntime)
+      end
+
+      def add_vector_procedures(aRuntime)
+        create_object_predicate(aRuntime, 'vector?')
+        create_vector(aRuntime)
+        create_vector_length(aRuntime)
+        # create_vector_ref(aRuntime)
       end
 
       def add_io_procedures(aRuntime)(aRuntime)
@@ -135,7 +143,7 @@ module Skeem
         define_primitive_proc(aRuntime, '*', zero_or_more, primitive)
       end
 
-      
+
       def create_divide(aRuntime)
         primitive = ->(runtime, first_operand, arglist) do
           first_one = first_operand.evaluate(runtime)
@@ -155,19 +163,19 @@ module Skeem
           end
           to_skm(raw_result)
         end
-        
+
         define_primitive_proc(aRuntime, '/', one_or_more, primitive)
       end
 
       def create_modulo(aRuntime)
-          primitive = ->(runtime, argument1, argument2) do 
+          primitive = ->(runtime, argument1, argument2) do
           operand_1 = argument1.evaluate(runtime)
           operand_2 = argument2.evaluate(runtime)
           raw_result = operand_1.value.modulo(operand_2.value)
           to_skm(raw_result)
         end
 
-        define_primitive_proc(aRuntime, 'floor-remainder', binary, primitive) 
+        define_primitive_proc(aRuntime, 'floor-remainder', binary, primitive)
       end
 
       def create_equal(aRuntime)
@@ -176,7 +184,7 @@ module Skeem
           if arglist.empty?
             to_skm(true)
           else
-            operands = evaluate_array(arglist, runtime)         
+            operands = evaluate_array(arglist, runtime)
             first_value = first_one.value
             all_equal = operands.all? { |elem| first_value == elem.value }
             to_skm(all_equal)
@@ -190,7 +198,7 @@ module Skeem
         primitive = ->(runtime, first_operand, arglist) do
           if arglist.empty?
             to_skm(false)
-          else        
+          else
             operands = [first_operand.evaluate(runtime)]
             operands.concat(evaluate_array(arglist, runtime))
             result = true
@@ -208,7 +216,7 @@ module Skeem
         primitive = ->(runtime, first_operand, arglist) do
           if arglist.empty?
             to_skm(false)
-          else        
+          else
             operands = [first_operand.evaluate(runtime)]
             operands.concat(evaluate_array(arglist, runtime))
             result = true
@@ -226,7 +234,7 @@ module Skeem
         primitive = ->(runtime, first_operand, arglist) do
           if arglist.empty?
             to_skm(true)
-          else        
+          else
             operands = [first_operand.evaluate(runtime)]
             operands.concat(evaluate_array(arglist, runtime))
             result = true
@@ -244,7 +252,7 @@ module Skeem
         primitive = ->(runtime, first_operand, arglist) do
           if arglist.empty?
             to_skm(true)
-          else        
+          else
             operands = [first_operand.evaluate(runtime)]
             operands.concat(evaluate_array(arglist, runtime))
             result = true
@@ -258,33 +266,6 @@ module Skeem
         define_primitive_proc(aRuntime, '>=', one_or_more, primitive)
       end
 
-      def create_number?(aRuntime)
-         primitive = ->(runtime, object) do
-          arg_evaluated = object.evaluate(runtime)
-          to_skm(arg_evaluated.number?)
-        end
-
-        define_primitive_proc(aRuntime, 'number?', unary, primitive)
-      end
-
-      def create_real?(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          to_skm(arg_evaluated.real?)
-        end
-
-        define_primitive_proc(aRuntime, 'real?', unary, primitive)
-      end
-
-      def create_integer?(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          to_skm(arg_evaluated.integer?)
-        end
-
-        define_primitive_proc(aRuntime, 'integer?', unary, primitive)
-      end
-
       def create_not(aRuntime)
         primitive = ->(runtime, arg) do
           arg_evaluated = arg.evaluate(runtime)
@@ -294,67 +275,57 @@ module Skeem
             to_skm(false)
           end
         end
-        
+
         define_primitive_proc(aRuntime, 'not', unary, primitive)
       end
 
-      def create_boolean?(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          to_skm(arg_evaluated.boolean?)
-        end
-
-        define_primitive_proc(aRuntime, 'boolean?', unary, primitive)
-      end
-
-      def create_string?(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          to_skm(arg_evaluated.string?)
-        end
-
-        define_primitive_proc(aRuntime, 'string?', unary, primitive)
-      end
-
-      def create_symbol?(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          to_skm(arg_evaluated.symbol?)
-        end
-
-        define_primitive_proc(aRuntime, 'symbol?', unary, primitive)
-      end
-      
-      def create_list?(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          to_skm(arg_evaluated.list?)
-        end
-
-        define_primitive_proc(aRuntime, 'list?', unary, primitive)
-      end
-
-      def create_null?(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          to_skm(arg_evaluated.null?)
-        end
-
-        define_primitive_proc(aRuntime, 'null?', unary, primitive)
-      end       
-      
       def create_length(aRuntime)
         primitive = ->(runtime, arg) do
           arg_evaluated = arg.evaluate(runtime)
-          unless arg_evaluated.kind_of?(SkmList)
-            msg1 = "Procedure 'length': list argument required,"
-            msg2 = "but got #{arg_evaluated.value}"
-            raise StandardError, msg1 + ' ' + msg2
-          end
+          check_argtype(arg_evaluated, SkmList, 'list', 'length')
           to_skm(arg_evaluated.length)
         end
 
         define_primitive_proc(aRuntime, 'length', unary, primitive)
+      end
+
+      def create_vector(aRuntime)
+        primitive = ->(runtime, arglist) do
+          if arglist.empty?
+            elements = []
+          else
+            elements = evaluate_array(arglist, aRuntime)
+          end
+
+          SkmVector.new(elements)
+        end
+
+        define_primitive_proc(aRuntime, 'vector', zero_or_more, primitive)
+      end
+
+      def create_vector_length(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, SkmVector, 'vector', 'vector-length')
+          to_skm(arg_evaluated.length)
+        end
+
+        define_primitive_proc(aRuntime, 'vector-length', unary, primitive)
+      end
+
+      def create_vector_ref(aRuntime)
+          # argument 1: a vector, argument 2: an index(integer)
+          primitive = ->(runtime, aVector, anIndex) do
+          vector = aVector.evaluate(runtime)
+          check_argtype(vector, SkmVector, 'vector', 'vector-ref')
+          index = anIndex.evaluate(runtime)
+          check_argtype(index, SkmInteger, 'integer', 'vector-ref')
+          # TODO: index checking
+          raw_result = vector.elements[index.value]
+          to_skm(raw_result)
+        end
+
+        define_primitive_proc(aRuntime, 'vector-ref', binary, primitive)
       end
 
       def create_newline(aRuntime)
@@ -374,6 +345,16 @@ module Skeem
         define_primitive_proc(aRuntime, 'debug', nullary, primitive)
       end
 
+      def create_object_predicate(aRuntime, predicate_name, msg_name = nil)
+        msg_name = predicate_name if msg_name.nil?
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          to_skm(arg_evaluated.send(msg_name))
+        end
+
+        define_primitive_proc(aRuntime, predicate_name, unary, primitive)
+      end
+
 
       def def_procedure(aRuntime, pairs)
         pairs.each_slice(2) do |(name, code)|
@@ -381,7 +362,7 @@ module Skeem
           define(aRuntime, func.identifier, func)
         end
       end
-      
+
       def define_primitive_proc(aRuntime, anIdentifier, anArity, aRubyLambda)
         primitive = PrimitiveProcedure.new(anIdentifier, anArity, aRubyLambda)
         define(aRuntime, primitive.identifier, primitive)
@@ -390,14 +371,22 @@ module Skeem
       def define(aRuntime, aKey, anEntry)
         aRuntime.define(aKey, anEntry)
       end
-      
+
       def evaluate_array(anArray, aRuntime)
         anArray.map { |elem| elem.evaluate(aRuntime) }
-      end      
-      
+      end
+
       def evaluate_tail(anArray, aRuntime)
         evaluate_array(anArray.drop(1), aRuntime)
-      end      
+      end
+
+      def check_argtype(argument, requiredRubyClass, requiredSkmType, aProcName)
+          unless argument.kind_of?(requiredRubyClass)
+            msg1 = "Procedure '#{aProcName}': #{requiredSkmType} argument required,"
+            msg2 = "but got #{argument.value}"
+            raise StandardError, msg1 + ' ' + msg2
+          end
+      end
     end # module
   end # module
 end # module

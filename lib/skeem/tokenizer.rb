@@ -23,15 +23,17 @@ module Skeem
       '`' => 'BACKQUOTE',
       '(' => 'LPAREN',
       ')' => 'RPAREN',
-      '.' => 'PERIOD'
+      '.' => 'PERIOD',
+      '#(' => 'VECTOR_BEGIN'
     }.freeze
 
     # Here are all the SRL keywords (in uppercase)
     @@keywords = %w[
       BEGIN
-      IF
       DEFINE
+      IF
       LAMBDA
+      QUOTE
     ].map { |x| [x, x] } .to_h
 
     class ScanError < StandardError; end
@@ -74,10 +76,10 @@ module Skeem
       if "()'`".include? curr_ch
         # Delimiters, separators => single character token
         token = build_token(@@lexeme2name[curr_ch], scanner.getch)
-      elsif (lexeme = scanner.scan(/(?:\.)(?=\s|[|()";]|$)/)) # Single char occurring alone
+      elsif (lexeme = scanner.scan(/(?:\.)(?=\s)/)) # Single char occurring alone
         token = build_token('PERIOD', lexeme)
-      elsif (lexeme = scanner.scan(/#(?:t|f|true|false)(?=\s|[|()";]|$)/))
-        token = build_token('BOOLEAN', lexeme)
+      elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
+        token = cardinal_token(lexeme)        
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]+)?(?:(?:e|E)[+-]?[0-9]+)?/))
@@ -107,6 +109,31 @@ module Skeem
         raise ScanError, "Unknown token #{erroneous} on line #{lineno}"
       end
 
+      return token
+    end
+    
+=begin
+#t #f These are the boolean constants (section 6.3), along
+with the alternatives #true and #false.
+#\ This introduces a character constant (section 6.6).
+#( This introduces a vector constant (section 6.8). Vector
+constants are terminated by ) .
+#u8( This introduces a bytevector constant (section 6.9).
+Bytevector constants are terminated by ) .
+#e #i #b #o #d #x These are used in the notation for
+numbers (section 6.2.5).
+#<n>= #<n># These are used for labeling and referencing
+other literal data (section 2.4).
+        # token = build_token('BOOLEAN', lexeme)
+=end    
+    def cardinal_token(aLexeme)
+      case aLexeme
+      when /^#true|false|t|f$/
+        token = build_token('BOOLEAN', aLexeme)
+      when '#('
+        token = build_token(@@lexeme2name[aLexeme], aLexeme)
+      end
+      
       return token
     end
 

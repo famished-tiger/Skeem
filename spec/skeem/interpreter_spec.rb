@@ -83,6 +83,22 @@ module Skeem
           expect(result.value).to eq(predicted)
         end
       end
+      
+      it 'should evaluate vector of constants' do
+        source = '#(2018 10 20 "Sat")'
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmVector)
+        predictions = [
+          [SkmInteger, 2018],
+          [SkmInteger, 10],
+          [SkmInteger, 20],
+          [SkmString, 'Sat']
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.elements[index]).to be_kind_of(type)
+          expect(result.elements[index].value).to eq(value)
+        end        
+      end
     end # context
 
     context 'Built-in primitives' do
@@ -115,7 +131,7 @@ SKEEM
       end
 
       it 'should implement the complete conditional form' do
-         checks = [
+        checks = [
           ['(if (> 3 2) "yes" "no")', 'yes'],
           ['(if (> 2 3) "yes" "no")', 'no']
         ]
@@ -132,6 +148,39 @@ SKEEM
         result = subject.run(source)
         expect(result.value).to eq(1)
       end
+
+      it 'should implement the quotation of constant literals' do
+         checks = [
+          ['(quote a)', 'a'],
+          ['(quote 145932)', 145932],
+          ['(quote "abc")', 'abc'],
+          ['(quote #t)', true],
+          ["'a", 'a'],
+          ["'145932", 145932],
+          ["'\"abc\"", 'abc'],
+          ["'#t", true]          
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.value).to eq(expectation)
+        end
+      end
+
+      it 'should implement the quotation of vector' do
+        source = '(quote #(a b c))'
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmVector)
+        predictions = [
+          [SkmIdentifier, 'a'],
+          [SkmIdentifier, 'b'],
+          [SkmIdentifier, 'c']
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.elements[index]).to be_kind_of(type)
+          expect(result.elements[index].value).to eq(value)
+        end        
+      end      
+      
 
       it 'should implement the lambda function with one arg' do
         source = <<-SKEEM
@@ -196,7 +245,7 @@ SKEEM
         expect(result).to be_kind_of(SkmList)
         expect(result.length).to eq(4)
       end
-      
+
       it 'should support procedures with dotted pair arguments' do
         # Example from R7RS section 4.1.4
         source = '((lambda (x y . z) z) 3 4 5 6)'
@@ -205,9 +254,7 @@ SKEEM
         expect(result.length).to eq(2)
         expect(result.head.value).to eq(5)
         expect(result.last.value).to eq(6)
-      end      
-      
-
+      end
 =begin
       it 'should implement the compact define + lambda syntax' do
           source = <<-SKEEM
@@ -349,7 +396,7 @@ SKEEM
           expect(result.value).to eq(expectation)
         end
       end
-      
+
       it 'should implement the list procedure' do
         checks = [
           ['(list)', []],
@@ -360,7 +407,7 @@ SKEEM
           result = subject.run(skeem_expr)
           expect(result.members.map(&:value)).to eq(expectation)
         end
-      end      
+      end
     end # context
   end # describe
 end # module

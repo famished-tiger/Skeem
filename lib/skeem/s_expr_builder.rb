@@ -73,7 +73,32 @@ module Skeem
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
       SkmVariableReference.new(aRange, theChildren[0])
     end
+    
+    # rule('quotation' => 'APOSTROPHE datum').as 'quotation_abbrev'
+    def reduce_quotation_abbrev(_production, aRange, _tokens, theChildren)
+      SkmQuotation.new(theChildren[1])
+    end      
 
+    # rule('quotation' => 'LPAREN QUOTE datum RPAREN').as 'quotation'
+    def reduce_quotation(_production, aRange, _tokens, theChildren)
+      SkmQuotation.new(theChildren[2])
+    end
+    
+    # rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
+    def reduce_vector(_production, aRange, _tokens, theChildren)
+      SkmVector.new(theChildren[1])
+    end    
+    
+    # rule('datum_star' => 'datum_star datum').as 'datum_star'
+    def reduce_datum_star(_production, aRange, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end    
+    
+    # rule('datum_star' => []).as 'no_datum_yet'
+    def reduce_no_datum_yet(_production, aRange, _tokens, theChildren)
+      []
+    end
+    
     # rule('procedure_call' => 'LPAREN operator RPAREN').as 'proc_call_nullary'
     def reduce_proc_call_nullary(_production, aRange, _tokens, theChildren)
       ProcedureCall.new(aRange, theChildren[1], [])
