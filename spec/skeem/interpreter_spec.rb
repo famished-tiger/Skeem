@@ -83,7 +83,7 @@ module Skeem
           expect(result.value).to eq(predicted)
         end
       end
-      
+
       it 'should evaluate vector of constants' do
         source = '#(2018 10 20 "Sat")'
         result = subject.run(source)
@@ -97,7 +97,7 @@ module Skeem
         predictions.each_with_index do |(type, value), index|
           expect(result.elements[index]).to be_kind_of(type)
           expect(result.elements[index].value).to eq(value)
-        end        
+        end
       end
     end # context
 
@@ -158,7 +158,7 @@ SKEEM
           ["'a", 'a'],
           ["'145932", 145932],
           ["'\"abc\"", 'abc'],
-          ["'#t", true]          
+          ["'#t", true]
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
@@ -178,9 +178,9 @@ SKEEM
         predictions.each_with_index do |(type, value), index|
           expect(result.elements[index]).to be_kind_of(type)
           expect(result.elements[index].value).to eq(value)
-        end        
-      end      
-      
+        end
+      end
+
 
       it 'should implement the lambda function with one arg' do
         source = <<-SKEEM
@@ -237,7 +237,6 @@ SKEEM
         expect(result.value).to eq(8)
       end
 
-
       it 'should support procedures with variable number of arguments' do
         # Example from R7RS section 4.1.4
         source = '((lambda x x) 3 4 5 6)'
@@ -255,7 +254,7 @@ SKEEM
         expect(result.head.value).to eq(5)
         expect(result.last.value).to eq(6)
       end
-=begin
+
       it 'should implement the compact define + lambda syntax' do
           source = <<-SKEEM
   ; Alternative syntax to: (define f (lambda x (+ x 42)))
@@ -264,9 +263,19 @@ SKEEM
   (f 23)
 SKEEM
           result = subject.run(source)
-          expect(result.value).to eq(65)
+          expect(result.last.value).to eq(65)
       end
-=end
+
+      it 'should implement the compact define + pair syntax' do
+          source = <<-SKEEM
+  ; Alternative syntax to: (define nlist (lambda args args))
+  (define (nlist . args)
+  args)
+  (nlist 0 1 2 3 4)
+SKEEM
+          result = subject.run(source)
+          expect(result.last.last.value).to eq(4)
+      end
     end # context
 
     context 'Built-in primitive procedures' do

@@ -15,10 +15,11 @@ module Skeem
       add_standard(runtime)
     end
 
-    def run(source)
+    def run(source, mode = nil)
       @parser ||= Parser.new
       @ptree = parser.parse(source)
-      # $stderr.puts @ptree.root.inspect
+      # $stderr.puts @ptree.root.inspect if mode.nil?
+      # require 'debug' if mode.nil?
       return @ptree.root.evaluate(runtime)
     end
     
@@ -37,7 +38,7 @@ module Skeem
       lib_source = nil
       File.open(aPathname, 'r') do |lib|
         lib_source = lib.read
-        run(lib_source)
+        run(lib_source, :silent)
       end
     end
   end # class

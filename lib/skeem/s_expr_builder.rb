@@ -66,6 +66,7 @@ module Skeem
     # Equivalent to: (define IDENTIFIER (lambda (formals) body))
     def reduce_alt_definition(_production, aRange, _tokens, theChildren)
       lmbd = SkmLambda.new(aRange, theChildren[4], theChildren[6])
+      # $stderr.puts lmbd.inspect
       SkmDefinition.new(aRange, theChildren[3], lmbd)
     end
 
@@ -123,6 +124,17 @@ module Skeem
     def reduce_last_operand(_production, _range, _tokens, theChildren)
       [theChildren.last]
     end
+    
+    # rule('def_formals' => 'identifier_star').as 'def_formals'
+    def reduce_def_formals(_production, _range, _tokens, theChildren)
+      SkmFormals.new(theChildren[0], :fixed)
+    end    
+    
+    # rule('def_formals' => 'identifier_star PERIOD identifier').as 'pair_formals'
+    def reduce_pair_formals(_production, _range, _tokens, theChildren)
+      formals = theChildren[0] << theChildren[2]
+      SkmFormals.new(formals, :variadic)      
+    end    
     
     # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
     def reduce_lambda_expression(_production, aRange, _tokens, theChildren)

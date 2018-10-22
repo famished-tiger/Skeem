@@ -330,12 +330,12 @@ module Skeem
           end
         end 
 
-        # it 'should implement the vector-ref procedure' do
-          # source = "(vector-ref '#(1 1 2 3 5 8 13 21) 5)"
-          # result = subject.run(source)
-          # expect(result).to be_kind_of(SkmInteger)
-          # expect(result.value).to eq(8)         
-        # end         
+        it 'should implement the vector-ref procedure' do
+          source = "(vector-ref '#(1 1 2 3 5 8 13 21) 5)"
+          result = subject.run(source)
+          expect(result).to be_kind_of(SkmInteger)
+          expect(result.value).to eq(8)         
+        end         
       end # context      
       
       context 'IO procedures:' do          

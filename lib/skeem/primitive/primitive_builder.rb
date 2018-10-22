@@ -85,7 +85,7 @@ module Skeem
         create_object_predicate(aRuntime, 'vector?')
         create_vector(aRuntime)
         create_vector_length(aRuntime)
-        # create_vector_ref(aRuntime)
+        create_vector_ref(aRuntime)
       end
 
       def add_io_procedures(aRuntime)(aRuntime)

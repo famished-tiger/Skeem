@@ -68,8 +68,8 @@ module Skeem
       raise NotImplementedError
     end
 
-   def inspect()
-      raise NotImplementedError
+   def inspect
+      raise NotImplementedError, "Missing #{self.class}#inspect method."
     end
 
     protected
@@ -270,7 +270,15 @@ module Skeem
     def evaluate(aRuntime)
       elements_evaluated = elements.map { |elem| elem.evaluate(aRuntime) }
       SkmVector.new(elements_evaluated)
-    end    
+    end
+
+    def inspect()
+      result = inspect_prefix
+      elements.each { |elem| result << elem.inspect + ', ' }
+      result.sub!(/, $/, '')
+      result << inspect_suffix
+      result
+    end   
   
   end # class
   
@@ -285,6 +293,13 @@ module Skeem
 
     def evaluate(aRuntime)
       datum
+    end
+    
+    def inspect
+      result = inspect_prefix
+      result << datum.inspect
+      result << inspect_suffix
+      result      
     end
   end # class
 

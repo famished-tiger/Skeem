@@ -1,3 +1,15 @@
+## [0.0.21] - 2018-10-22
+### Added
+- Added support for alternative `define` syntax.
+- File `primitive_builder.rb` implementation of: standard `vector-ref` procedure.
+- Added `SkmQuotation#inspect`, `SkmVector#inspect` method
+
+### Changed
+- File `README.md` added sub-section with links for Scheme language.
+
+### Fixed
+- Method `Convertible#to_skm` now returns a SkmElement-like object without attempting a convertion.
+
 ## [0.0.20] - 2018-10-21
 ### Added
 - Added support for quotation: (quote foo) or 'foo

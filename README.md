@@ -23,10 +23,27 @@ Or install it yourself as:
 
     $ gem install skeem
 
-## Usage
 
-The __Skeem__ project has just started.  
-At this stage, the gem consists of a bare-bones interpreter.
+The __Skeem__ project has started recently and at this stage, the gem supports  a small Scheme subset.
+
+## About Scheme
+
+The Scheme programming language is a Lisp dialect that supports multiple paradigms, including functional programming and imperative programming.
+
+### Resources on Scheme  
+Here are a few pointers for the Scheme programming language:  
+- Wikipedia article on [Scheme](https://en.m.wikipedia.org/wiki/Scheme_\(programming_language\))
+- Latest official Scheme standard: [R7RS](https://bitbucket.org/cowan/r7rs-wg1-infra/src/default/R7RSHomePage.md)
+#### Online tutorials and books:
+- [The Scheme Programming Language, 4th Edition](https://www.scheme.com/tspl4/) by Kent Dybvig. An complete, introductory textbook on Scheme based on the older R5RS standard.
+- [Teach Yourself Scheme in Fixnum Days](http://ds26gte.github.io/tyscheme/index.html) by Dorai Sitaram
+
+## Other similar Ruby projects
+__Skeem__ isn't the sole implementation of the Scheme language in Ruby.  
+Here are a few other ones:  
+- [Heist gem](https://rubygems.org/gems/heist) -- Probably one of best Scheme implementation in Ruby. Really worth a try. Alas, the [project](https://github.com/jcoglan/heist) seems to be dormant for several years.
+
+## Usage
 
 ### Example 1 (Variable definition)
 
@@ -116,12 +133,15 @@ At this stage, the gem consists of a bare-bones interpreter.
 #### define  
 __Purpose:__ Create a new variable and bind an expression/value to it.  
 __Syntax:__   
-* (define <identifier\> <expression\>)
+* (define <identifier\> <expression\>)  
+* (define (<variable\> <formals\>) <body\>)
 
 #### if  
 __Purpose:__ Conditional evaluation based on a test expression.  
 __Syntax:__   
+* (if <test\> <consequent\>)  
 * (if <test\> <consequent\> <alternate\>)  
+
 
 
 #### lambda  
@@ -163,19 +183,6 @@ Roadmap:
 - Make it pass the test suite
 - Extend the language in order to support [Minikanren](https://github.com/TheReasonedSchemer2ndEd/CodeFromTheReasonedSchemer2ndEd)
 - Make it pass all examples from the [Reasoned Schemer](https://mitpress.mit.edu/books/reasoned-schemer-second-edition) book.
-
-
-Good to know:
-Online book: [The Scheme Programming Language (4th Ed.)](https://www.scheme.com/tspl4/). Remark: covers an older version of Scheme.
-
-
-
-
-
-## Other similar Ruby projects
-__Skeem__ isn't the sole implementation of the Scheme language in Ruby.  
-Here are a few other ones:  
-- [Heist gem](https://rubygems.org/gems/heist) -- Probably one of best Scheme implementation in Ruby. Really worth a try. Alas, the [project](https://github.com/jcoglan/heist) seems to be dormant for several years.
 
 ## Contributing
 

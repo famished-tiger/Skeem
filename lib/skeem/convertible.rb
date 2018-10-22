@@ -4,6 +4,8 @@ module Skeem
   module Convertible
     # Convert Ruby object into its Skeem counterpart
     def to_skm(native_obj)
+      return native_obj if native_obj.kind_of?(SkmElement)
+
       case native_obj
         when TrueClass, FalseClass
           SkmBoolean.create(native_obj)
