@@ -1,3 +1,12 @@
+## [0.0.22] - 2018-10-23
+### Added
+- Class `SkmBuilder`added support for list datum.
+- File `primitive_builder.rb` implementation of: standard `and` procedure.
+
+### Fixed
+- File `interpreter_spec.rb` Added test example of list quotation.
+
+
 ## [0.0.21] - 2018-10-22
 ### Added
 - Added support for alternative `define` syntax.

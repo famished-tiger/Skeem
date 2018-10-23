@@ -1,6 +1,8 @@
 # Skeem
-[![Linux Build Status](https://travis-ci.org/famished-tiger/Skeem.svg?branch=master)](https://travis-ci.org/famished-tiger/Skeem)
-[![Build status](https://ci.appveyor.com/api/projects/status/qs19wn6o6bpo8lm6?svg=true)](https://ci.appveyor.com/project/famished-tiger/skeem)
+|Linux|Windows|  
+|:-:|:-:|  
+|[![Linux Build Status](https://travis-ci.org/famished-tiger/Skeem.svg?branch=master)](https://travis-ci.org/famished-tiger/Skeem)|[![Windows Build Status](https://ci.appveyor.com/api/projects/status/qs19wn6o6bpo8lm6?svg=true)](https://ci.appveyor.com/project/famished-tiger/skeem)|
+
 [![Gem Version](https://badge.fury.io/rb/skeem.svg)](https://badge.fury.io/rb/skeem)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/famished-tiger/Skeem/blob/master/LICENSE.txt)
 
@@ -170,7 +172,7 @@ This section lists the implemented standard procedures
 * `symbol?`
 
 #### Vector procedures
-* `vector?`, `vector`, `vector-length`
+* `vector?`, `vector`, `vector-length`, `vector-set!`
 
 #### Input/output procedures
 * `newline`

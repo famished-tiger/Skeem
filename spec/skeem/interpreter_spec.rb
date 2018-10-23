@@ -166,7 +166,7 @@ SKEEM
         end
       end
 
-      it 'should implement the quotation of vector' do
+      it 'should implement the quotation of vectors' do
         source = '(quote #(a b c))'
         result = subject.run(source)
         expect(result).to be_kind_of(SkmVector)
@@ -181,6 +181,25 @@ SKEEM
         end
       end
 
+      it 'should implement the quotation of lists' do
+        source = '(quote (+ 1 2))'
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmList)
+        predictions = [
+          [SkmIdentifier, '+'],
+          [SkmInteger, 1],
+          [SkmInteger, 2]
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index].value).to eq(value)
+        end
+        
+        source = "'()"
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_empty
+      end      
 
       it 'should implement the lambda function with one arg' do
         source = <<-SKEEM

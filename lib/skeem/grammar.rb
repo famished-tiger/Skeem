@@ -51,7 +51,7 @@ module Skeem
     rule 'simple_datum' => 'symbol'
     rule 'compound_datum' => 'list'
     rule 'compound_datum' => 'vector'
-    rule 'list' => 'LPAREN datum_star RPAREN'
+    rule('list' => 'LPAREN datum_star RPAREN').as 'list'
     rule 'list' => 'LPAREN datum_plus PERIOD datum RPAREN'
     rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
     rule('datum_plus' => 'datum_plus datum').as 'multiple_datums'

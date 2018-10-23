@@ -203,6 +203,24 @@ module Skeem
           end
         end
         
+        it 'should implement the and procedure' do
+          checks = [
+            ['(and (= 2 2) (> 2 1))', true],
+            ['(and (= 2 2) (< 2 1))', false],
+            ['(and)', true]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+          
+          # If all the expressions evaluate to true values,
+          # the values of the last expression are returned.
+          source = "(and 1 2 'c '(f g))"
+          result = subject.run(source)
+          p result
+        end        
+        
         it 'should implement the boolean? procedure' do
           checks = [
             ['(boolean? #f)', true],

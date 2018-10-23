@@ -85,6 +85,11 @@ module Skeem
       SkmQuotation.new(theChildren[2])
     end
     
+    # rule('list' => 'LPAREN datum_star RPAREN').as 'list'
+    def reduce_list(_production, aRange, _tokens, theChildren)
+      SkmList.new(theChildren[1])
+    end     
+    
     # rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
     def reduce_vector(_production, aRange, _tokens, theChildren)
       SkmVector.new(theChildren[1])

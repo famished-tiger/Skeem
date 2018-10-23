@@ -64,6 +64,7 @@ module Skeem
 
       def add_boolean_procedures(aRuntime)
         create_not(aRuntime)
+        create_and(aRuntime)
         create_object_predicate(aRuntime, 'boolean?')
       end
 
@@ -277,6 +278,27 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'not', unary, primitive)
+      end
+      
+      def create_and(aRuntime)
+        # arglist should be a Ruby Array
+        primitive = ->(runtime, arglist) do
+          if arglist.empty?
+            to_skm(true) # in conformance with 4.2.1
+          else
+            raw_result = true
+            last_result = nil
+            arglist.each do |raw_arg|
+              argument = raw_arg.evaluate(aRuntime)
+              last_result = argument
+              raw_result &&= !(argument.boolean? && !argument.value)
+              break unless raw_result
+            end
+            raw_result = last_result if raw_result
+            to_skm(raw_result)
+          end
+        end
+        define_primitive_proc(aRuntime, 'and', zero_or_more, primitive)      
       end
 
       def create_length(aRuntime)
