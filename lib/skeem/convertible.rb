@@ -13,6 +13,10 @@ module Skeem
           SkmReal.create(native_obj)
         when Integer
           SkmInteger.create(native_obj)
+        when String
+          SkmString.create(native_obj)
+        else
+          raise StandardError, "No conversion of #{native_obj.class}"
       end
     end
   end # module

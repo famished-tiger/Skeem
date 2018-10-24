@@ -125,6 +125,8 @@ Here are a few other ones:
 - Vectors: `#(1 2 "three")`
 
 ### Scheme Expressions
+- Constant literals
+- Quotations
 - Variable references
 - Procedure calls
 - Lambda expressions
@@ -145,20 +147,25 @@ __Syntax:__
 * (if <test\> <consequent\> <alternate\>)  
 
 
-
 #### lambda  
 __Purpose:__ Definition of a procedure.  
 __Syntax:__   
 * (lambda <formals\> <body\>)
 
+#### quote  
+__Purpose:__ Quoting an expression (leave it unevaluated).  
+__Syntax:__   
+* (quote <datum\>)
+* '<datum\>
+
 ### Standard library
 This section lists the implemented standard procedures
 
 #### Boolean procedures
-* `boolean?`, `not`
+* `boolean?`, `and`, `or`,  `not`
 
 #### Numerical operations
-* Number-level: `number?`, `real?`, `integer?`, `zero?`, `+`, `-`, `*`, `/`, `=`, `square`
+* Number-level: `number?`, `real?`, `integer?`, `zero?`, `+`, `-`, `*`, `/`, `=`, `square`, `number->string`
 * Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `floor-remainder`
 * Integer-level: `even?`, `odd?`
 
@@ -166,7 +173,7 @@ This section lists the implemented standard procedures
 * `list?`, `null?`, `list`, `length`
 
 #### String procedures
-* `string?`
+* `string?`, `string-append`, `string->symbol`,
 
 #### Symbol procedures
 * `symbol?`

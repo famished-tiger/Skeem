@@ -8,7 +8,7 @@ module Skeem
       def add_primitives(aRuntime)
         add_arithmetic(aRuntime)
         add_comparison(aRuntime)
-        add_number_predicates(aRuntime)
+        add_number_procedures(aRuntime)
         add_boolean_procedures(aRuntime)
         add_string_procedures(aRuntime)
         add_symbol_procedures(aRuntime)
@@ -56,20 +56,24 @@ module Skeem
         create_gte(aRuntime)
       end
 
-      def add_number_predicates(aRuntime)
+      def add_number_procedures(aRuntime)
         create_object_predicate(aRuntime, 'number?')
         create_object_predicate(aRuntime, 'real?')
         create_object_predicate(aRuntime, 'integer?')
+        create_number2string(aRuntime)
       end
 
       def add_boolean_procedures(aRuntime)
         create_not(aRuntime)
         create_and(aRuntime)
+        create_or(aRuntime)
         create_object_predicate(aRuntime, 'boolean?')
       end
 
       def add_string_procedures(aRuntime)
         create_object_predicate(aRuntime, 'string?')
+        create_string_append(aRuntime)
+        create_string2symbol(aRuntime)
       end
 
       def add_symbol_procedures(aRuntime)
@@ -267,6 +271,17 @@ module Skeem
         define_primitive_proc(aRuntime, '>=', one_or_more, primitive)
       end
 
+      def create_number2string(aRuntime)
+        # TODO: add support for radix argument
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, SkmNumber, 'number', 'number->string')
+          to_skm(arg_evaluated.value.to_s)
+        end
+
+        define_primitive_proc(aRuntime, 'number->string', unary, primitive)
+      end
+
       def create_not(aRuntime)
         primitive = ->(runtime, arg) do
           arg_evaluated = arg.evaluate(runtime)
@@ -279,7 +294,7 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'not', unary, primitive)
       end
-      
+
       def create_and(aRuntime)
         # arglist should be a Ruby Array
         primitive = ->(runtime, arglist) do
@@ -298,7 +313,53 @@ module Skeem
             to_skm(raw_result)
           end
         end
-        define_primitive_proc(aRuntime, 'and', zero_or_more, primitive)      
+        define_primitive_proc(aRuntime, 'and', zero_or_more, primitive)
+      end
+
+      def create_or(aRuntime)
+        # arglist should be a Ruby Array
+        primitive = ->(runtime, arglist) do
+          if arglist.empty?
+            to_skm(false) # in conformance with 4.2.1
+          else
+            raw_result = false
+            last_result = nil
+            arglist.each do |raw_arg|
+              argument = raw_arg.evaluate(aRuntime)
+              last_result = argument
+              raw_result ||= (!argument.boolean? || argument.value)
+              break if raw_result
+            end
+            raw_result = last_result if raw_result
+            to_skm(raw_result)
+          end
+        end
+        define_primitive_proc(aRuntime, 'or', zero_or_more, primitive)
+      end
+      
+      def create_string_append(aRuntime)
+        primitive = ->(runtime, arglist) do
+          if arglist.empty?
+            value = ''
+          else
+            parts = evaluate_array(arglist, aRuntime)
+            value = parts.reduce('') { |interim, substr| interim << substr.value }
+          end
+
+          SkmString.create(value)
+        end
+
+        define_primitive_proc(aRuntime, 'string-append', zero_or_more, primitive)      
+      end
+
+      def create_string2symbol(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, SkmString, 'string', 'string->symbol')
+          SkmIdentifier.create(arg_evaluated.value)
+        end
+
+        define_primitive_proc(aRuntime, 'string->symbol', unary, primitive)
       end
 
       def create_length(aRuntime)

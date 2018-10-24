@@ -1,3 +1,13 @@
+## [0.0.23] - 2018-10-24
+### Added
+- File `primitive_builder.rb` implementation of: standard `or`, `string->symbol`, `number->string`, `string-append` procedures.
+
+### Changed
+- File `README.md` udpated to reflect currently implemented features.
+
+### Fixed
+- Method `Convertible#to_skm` Now converts String argument into `SkmString` and raises an exception when unable to convert.
+
 ## [0.0.22] - 2018-10-23
 ### Added
 - Class `SkmBuilder`added support for list datum.
@@ -5,7 +15,6 @@
 
 ### Fixed
 - File `interpreter_spec.rb` Added test example of list quotation.
-
 
 ## [0.0.21] - 2018-10-22
 ### Added

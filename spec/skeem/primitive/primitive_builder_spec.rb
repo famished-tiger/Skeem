@@ -148,7 +148,7 @@ module Skeem
         end
       end # context
 
-      context 'Number predicates:' do
+      context 'Number procedures:' do
         it 'should implement the number? predicate' do
           checks = [
             ['(number? 3.1)', true],
@@ -161,7 +161,7 @@ module Skeem
             expect(result.value).to eq(expectation)
           end
         end
-        
+
         it 'should implement the real? predicate' do
           checks = [
             ['(real? 3.1)', true],
@@ -188,8 +188,21 @@ module Skeem
             expect(result.value).to eq(expectation)
           end
         end
+
+        it 'should implement the number->string procedure' do
+          checks = [
+            ['(number->string 3.4)', '3.4'],
+            ['(number->string 1e2)', '100.0'],
+            ['(number->string 1e-23)', '1.0e-23'],
+            ['(number->string -7)', '-7']
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end
       end # context
-      
+
       context 'Boolean procedures:' do
         it 'should implement the not procedure' do
           checks = [
@@ -202,7 +215,7 @@ module Skeem
             expect(result.value).to eq(expectation)
           end
         end
-        
+
         it 'should implement the and procedure' do
           checks = [
             ['(and (= 2 2) (> 2 1))', true],
@@ -213,14 +226,39 @@ module Skeem
             result = subject.run(skeem_expr)
             expect(result.value).to eq(expectation)
           end
-          
+
           # If all the expressions evaluate to true values,
           # the values of the last expression are returned.
           source = "(and 1 2 'c '(f g))"
           result = subject.run(source)
-          p result
-        end        
-        
+          expect(result).to be_kind_of(SkmList)
+          expect(result.head.value).to eq('f')
+          expect(result.last.value).to eq('g')
+        end
+
+        it 'should implement the or procedure' do
+          checks = [
+            ['(or (= 2 2) (> 2 1))', true],
+            ['(or (= 2 2) (< 2 1))', true],
+            ['(or)', false],
+            ['(or #f)', false],
+            ['(or #f #t)', true],
+            ['(or #f #f #f)', false],
+
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+
+          # When an expression evaluates to true value,
+          # the values of the this expression is returned.
+          source = "(or #f 'a #f)"
+          result = subject.run(source)
+          expect(result).to be_kind_of(SkmIdentifier)
+          expect(result.value).to eq('a')
+        end
+
         it 'should implement the boolean? procedure' do
           checks = [
             ['(boolean? #f)', true],
@@ -230,9 +268,9 @@ module Skeem
             result = subject.run(skeem_expr)
             expect(result.value).to eq(expectation)
           end
-        end          
+        end
       end # context
-      
+
       context 'String procedures:' do
         it 'should implement the string? procedure' do
           checks = [
@@ -244,10 +282,32 @@ module Skeem
             result = subject.run(skeem_expr)
             expect(result.value).to eq(expectation)
           end
-        end      
+        end
+
+        it 'should implement the string->symbol procedure' do
+          checks = [
+            ['(string->symbol "mISSISSIppi")', 'mISSISSIppi']
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end
+        
+        it 'should implement the string-append procedure' do
+          checks = [
+            ['(string-append)', ''],
+            ['(string-append "abc" "def")', 'abcdef'],
+            ['(string-append "Hey " "you " "there!")', 'Hey you there!']
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.value).to eq(expectation)
+          end
+        end
       end # context
-      
-      context 'Symbol procedures:' do      
+
+      context 'Symbol procedures:' do
         it 'should implement the symbol? procedure' do
           checks = [
             ['(symbol? #f)', false],
@@ -259,8 +319,8 @@ module Skeem
           end
         end
       end # context
-      
-      context 'List procedures:' do      
+
+      context 'List procedures:' do
         it 'should implement the list? procedure' do
           checks = [
             ['(list? #f)', false],
@@ -274,7 +334,7 @@ module Skeem
             expect(result.value).to eq(expectation)
           end
         end
-        
+
           it 'should implement the null? procedure' do
           checks = [
             ['(null? #f)', false],
@@ -289,7 +349,7 @@ module Skeem
             result = subject.run(skeem_expr)
             expect(result.value).to eq(expectation)
           end
-        end 
+        end
 
         it 'should implement the length procedure' do
           checks = [
@@ -302,10 +362,10 @@ module Skeem
             result = subject.run(skeem_expr)
             expect(result.value).to eq(expectation)
           end
-        end         
-      end # context  
+        end
+      end # context
 
-      context 'Vector procedures:' do          
+      context 'Vector procedures:' do
         it 'should implement the vector? procedure' do
           checks = [
             ['(vector? #f)', false],
@@ -319,13 +379,13 @@ module Skeem
             expect(result.value).to eq(expectation)
           end
         end
-        
+
         it 'should implement the vector procedure' do
           source = '(vector)'
           result = subject.run(source)
           expect(result).to be_kind_of(SkmVector)
           expect(result).to be_empty
-          
+
           source = '(vector 1 2 3)'
           result = subject.run(source)
           expect(result).to be_kind_of(SkmVector)
@@ -346,17 +406,17 @@ module Skeem
             result = subject.run(skeem_expr)
             expect(result.value).to eq(expectation)
           end
-        end 
+        end
 
         it 'should implement the vector-ref procedure' do
           source = "(vector-ref '#(1 1 2 3 5 8 13 21) 5)"
           result = subject.run(source)
           expect(result).to be_kind_of(SkmInteger)
-          expect(result.value).to eq(8)         
-        end         
-      end # context      
-      
-      context 'IO procedures:' do          
+          expect(result.value).to eq(8)
+        end
+      end # context
+
+      context 'IO procedures:' do
         it 'should implement the newline procedure' do
           default_stdout = $stdout
           $stdout = StringIO.new()
