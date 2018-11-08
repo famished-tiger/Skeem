@@ -22,7 +22,7 @@ module Skeem
       # require 'debug' if mode.nil?
       return @ptree.root.evaluate(runtime)
     end
-    
+
     def fetch(anIdentifier)
       runtime.environment.fetch(anIdentifier)
     end

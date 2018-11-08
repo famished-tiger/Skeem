@@ -9,8 +9,8 @@ module Skeem
   # Names of grammar elements are based on the R7RS documentation
   builder = Rley::Syntax::GrammarBuilder.new do
     # Delimiters, separators...
-    add_terminals('APOSTROPHE') #, 'BACKQUOTE')
-    add_terminals('LPAREN', 'RPAREN')
+    add_terminals('APOSTROPHE', 'COMMA', 'COMMA_AT_SIGN')
+    add_terminals('GRAVE_ACCENT', 'LPAREN', 'RPAREN')
     add_terminals('PERIOD')
     add_terminals('VECTOR_BEGIN')
 
@@ -20,7 +20,8 @@ module Skeem
 
     # Keywords...
     add_terminals('DEFINE', 'IF', 'LAMBDA')
-    add_terminals('QUOTE')
+    add_terminals('QUOTE', 'QUASIQUOTE', 'UNQUOTE')
+    add_terminals('UNQUOTE-SPLICING')
 
     rule('program' => 'cmd_or_def_plus').as 'main'
     rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
@@ -29,15 +30,16 @@ module Skeem
     rule 'cmd_or_def' => 'definition'
     rule 'command' => 'expression'
     rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN').as 'definition'
-    rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'    
+    rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'
     rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     rule 'expression' =>  'literal'
     rule 'expression' =>  'procedure_call'
     rule 'expression' =>  'lambda_expression'
     rule 'expression' =>  'conditional'
+    rule 'expression' =>  'derived_expression'
     rule 'literal' => 'quotation'
     rule 'literal' => 'self-evaluating'
-    rule('quotation' => 'APOSTROPHE datum').as 'quotation_abbrev'
+    rule('quotation' => 'APOSTROPHE datum').as 'quotation_short'
     rule('quotation' => 'LPAREN QUOTE datum RPAREN').as 'quotation'
     rule 'self-evaluating' => 'BOOLEAN'
     rule 'self-evaluating' => 'number'
@@ -47,7 +49,7 @@ module Skeem
     rule 'datum' => 'compound_datum'
     rule 'simple_datum' => 'BOOLEAN'
     rule 'simple_datum' => 'number'
-    rule 'simple_datum' => 'STRING_LIT' 
+    rule 'simple_datum' => 'STRING_LIT'
     rule 'simple_datum' => 'symbol'
     rule 'compound_datum' => 'list'
     rule 'compound_datum' => 'vector'
@@ -55,7 +57,7 @@ module Skeem
     rule 'list' => 'LPAREN datum_plus PERIOD datum RPAREN'
     rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
     rule('datum_plus' => 'datum_plus datum').as 'multiple_datums'
-    rule('datum_plus' => 'datum').as 'last_datum'    
+    rule('datum_plus' => 'datum').as 'last_datum'
     rule('datum_star' => 'datum_star datum').as 'datum_star'
     rule('datum_star' => []).as 'no_datum_yet'
     rule 'symbol' => 'IDENTIFIER'
@@ -66,7 +68,7 @@ module Skeem
     rule 'operator' => 'expression'
     rule 'operand' => 'expression'
     rule('def_formals' => 'identifier_star').as 'def_formals'
-    rule('def_formals' => 'identifier_star PERIOD IDENTIFIER').as 'pair_formals'    
+    rule('def_formals' => 'identifier_star PERIOD IDENTIFIER').as 'pair_formals'
     rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
     rule('formals' => 'LPAREN identifier_star RPAREN').as 'fixed_arity_formals'
     rule('formals' => 'IDENTIFIER').as 'variadic_formals'
@@ -88,6 +90,27 @@ module Skeem
     rule 'alternate' => []
     rule 'number' => 'INTEGER'
     rule 'number' => 'REAL'
+    rule 'derived_expression' => 'quasiquotation'
+    rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
+    rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'
+    rule 'qq_template' => 'simple_datum'
+    rule 'qq_template' => 'list_qq_template'
+    rule 'qq_template' => 'vector_qq_template'
+    rule 'qq_template' => 'unquotation'
+    rule('list_qq_template' => 'LPAREN qq_template_or_splice_star RPAREN').as 'list_qq'
+    rule 'list_qq_template' => 'LPAREN qq_template_or_splice_plus PERIOD qq_template RPAREN'
+    rule 'list_qq_template' => 'GRAVE_ACCENT qq_template'
+    rule('vector_qq_template' => 'VECTOR_BEGIN qq_template_or_splice_star RPAREN').as 'vector_qq'
+    rule('unquotation' => 'COMMA qq_template').as 'unquotation_short'
+    rule 'unquotation' => 'LPAREN UNQUOTE qq_template RPAREN'
+    rule('qq_template_or_splice_star' => 'qq_template_or_splice_star qq_template_or_splice').as 'multiple_template_splice'
+    rule('qq_template_or_splice_star' => []).as 'no_template_splice_yet'
+    rule 'qq_template_or_splice_plus' => 'qq_template_or_splice_plus qq_template_or_splice'
+    rule 'qq_template_or_splice_plus' => 'qq_template_or_splice'
+    rule 'qq_template_or_splice' => 'qq_template'
+    rule 'qq_template_or_splice' => 'splicing_unquotation'
+    rule 'splicing_unquotation' => 'COMMA_AT_SIGN qq_template'
+    rule 'splicing_unquotation' => 'LPAREN UNQUOTE-SPLICING qq_template RPAREN'
   end
 
   # And now build the grammar and make it accessible via a global constant

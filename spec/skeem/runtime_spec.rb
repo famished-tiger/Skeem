@@ -1,9 +1,13 @@
 require_relative '../spec_helper' # Use the RSpec framework
-require_relative '../../lib/skeem/environment' # Load the class under test
+require_relative '../../lib/skeem/datum_dsl'
+require_relative '../../lib/skeem/primitive/primitive_builder'
+
 require_relative '../../lib/skeem/runtime' # Load the class under test
 
 module Skeem
   describe Runtime do
+    include DatumDSL
+    
     let(:some_env) { Environment.new }
     subject { Runtime.new(some_env) }
 
@@ -30,7 +34,29 @@ module Skeem
         subject.define('dummy', entry)
         expect(subject.include?('dummy')).to be_truthy
       end
-
+    end # context
+      
+    context 'Evaluation:' do
+      include Primitive::PrimitiveBuilder
+      
+      it 'should evaluate a given entry' do
+        entry = double('three')
+        result = double('fake-procedure')
+        expect(entry).to receive(:expression).and_return(result)
+        expect(result).to receive(:evaluate).with(subject).and_return(integer(3))
+        subject.define('three', entry)
+        expect(subject.evaluate('three')).to eq(3)
+      end
+      
+      it 'should evaluate a given list' do
+        add_primitives(subject)
+        sum = list([identifier('+'), 3, 4])
+        
+        expect(subject.evaluate_form(sum)).to eq(7)
+      end
+    end # context
+      
+    context 'Environment nesting' do
       it 'should add nested environment' do
         expect(subject.depth).to be_zero
         env_before = subject.environment

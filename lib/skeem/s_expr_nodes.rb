@@ -1,309 +1,44 @@
 # Classes that implement nodes of Abstract Syntax Trees (AST) representing
 # Skeem parse results.
 
-require 'forwardable'
+require_relative 'skm_simple_datum'
+require_relative 'skm_compound_datum'
+require_relative 'skm_unary_expression'
 
 module Skeem
   class SkmUndefined
     def value
       :UNDEFINED
     end
+    
+    def ==(other)
+      return true if other.kind_of?(SkmUndefined)
+      
+      result = case other
+        when Symbol
+          self.value == other
+        when String
+          self.value.to_s == other
+        else 
+          raise StandardError, other.inspect
+      end
+    end
   end # class
-
-
-  # Abstract class. Generalization of any S-expr element.
-  SkmElement = Struct.new(:position) do
-    def initialize(aPosition)
-      self.position = aPosition
-    end
-
-    def evaluate(_runtime)
-      raise NotImplementedError, "Missing implementation of #{self.class.name}"
-    end
-
-    def done!()
-      # Do nothing
-    end
-
-    def number?
-      false
-    end
-
-    def real?
-      false
-    end
-
-    def integer?
-      false
-    end
-
-    def boolean?
-      false
-    end
-
-    def string?
-      false
-    end
-
-    def symbol?
-      false
-    end
-    
-    def list?
-      false
-    end
-    
-    def null?
-      false
-    end
-    
-    def vector?
-      false
-    end
-
-    # Abstract method.
+  
+  class SkmMultiExpression < SkmExpression
     # Part of the 'visitee' role in Visitor design pattern.
-    # @param _visitor[ParseTreeVisitor] the visitor
-    def accept(_visitor)
+    # @param _visitor [SkmElementVisitor] the visitor
+    def accept(aVisitor)
+      aVisitor.visit_multi_expression(self)
+    end
+    
+    # @return [Array] the names of attributes referencing child SkmElement.
+    def associations
       raise NotImplementedError
     end
+  end
 
-   def inspect
-      raise NotImplementedError, "Missing #{self.class}#inspect method."
-    end
-
-    protected
-
-    def inspect_prefix
-      "<#{self.class.name}: "
-    end
-
-    def inspect_suffix
-      '>'
-    end
-  end # struct
-
-  # Abstract class. Root of class hierarchy needed for Interpreter
-  # design pattern
-  class SkmTerminal < SkmElement
-    attr_reader :token
-    attr_reader :value
-
-    def initialize(aToken, aPosition)
-      super(aPosition)
-      @token = aToken
-      init_value(aToken.lexeme)
-    end
-
-    def self.create(aValue)
-      lightweight = self.allocate
-      lightweight.init_value(aValue)
-      return lightweight
-    end
-
-    def symbol()
-      token.terminal
-    end
-
-    def evaluate(_runtime)
-      return self
-    end
-
-    def inspect()
-      inspect_prefix + value.to_s + inspect_suffix
-    end
-
-    def done!()
-      # Do nothing
-    end
-
-    # Part of the 'visitee' role in Visitor design pattern.
-    # @param aVisitor[ParseTreeVisitor] the visitor
-    def accept(aVisitor)
-      aVisitor.visit_terminal(self)
-    end
-
-    # This method can be overriden
-    def init_value(aValue)
-      @value = aValue
-    end
-  end # class
-
-  class SkmBoolean < SkmTerminal
-    def boolean?
-      true
-    end
-  end # class
-
-  class SkmNumber < SkmTerminal
-    def number?
-      true
-    end
-  end # class
-
-  class SkmReal < SkmNumber
-    def real?
-      true
-    end
-  end # class
-
-  class SkmInteger < SkmReal
-    def integer?
-      true
-    end
-  end # class
-
-  class SkmString < SkmTerminal
-    # Override
-    def init_value(aValue)
-      super(aValue.dup)
-    end
-
-    def string?
-      true
-    end
-  end # class
-
-  class SkmIdentifier < SkmTerminal
-    # Override
-    def init_value(aValue)
-      super(aValue.dup)
-    end
-
-    def symbol?
-      true
-    end
-  end # class
-
-  class SkmReserved < SkmIdentifier
-  end # class
-
-
-  class SkmList < SkmElement
-    attr_accessor(:members)
-    extend Forwardable
-
-    def_delegators :@members, :each, :first, :last, :length, :empty?, :size
-
-    def initialize(theMembers)
-      super(nil)
-      @members = theMembers.nil? ? [] : theMembers
-    end
-
-    def head()
-      return members.first
-    end
-
-    def tail()
-      SkmList.new(members.slice(1..-1))
-    end
-    
-    def list?
-      true
-    end
-    
-    def null?
-      empty?
-    end
-
-    def evaluate(aRuntime)
-      list_evaluated = members.map { |elem| elem.evaluate(aRuntime) }
-      SkmList.new(list_evaluated)
-    end
-
-    # Factory method.
-    # Construct an Enumerator that will return iteratively the result
-    # of 'evaluate' method of each members of self.
-    def to_eval_enum(aRuntime)
-=begin
-      elements = self.members
-
-      new_enum = Enumerator.new do |result|
-        context = aRuntime
-        elements.each { |elem| result << elem.evaluate(context) }
-      end
-
-      new_enum
-=end
-      members.map { |elem| elem.evaluate(aRuntime) }
-    end
-
-    # Part of the 'visitee' role in Visitor design pattern.
-    # @param aVisitor[ParseTreeVisitor] the visitor
-    def accept(aVisitor)
-      aVisitor.visit_nonterminal(self)
-    end
-
-    def done!()
-      # Do nothing
-    end
-
-    def inspect()
-      result = inspect_prefix
-      members.each { |elem| result << elem.inspect + ', ' }
-      result.sub!(/, $/, '')
-      result << inspect_suffix
-      result
-    end
-
-    alias children members
-    alias subnodes members
-    alias to_a members  
-    alias rest tail
-  end # class
-  
-  class SkmVector < SkmElement
-    attr_accessor(:elements)
-    extend Forwardable
-
-    def_delegators :@elements, :each, :length, :empty?, :size    
-    
-    def initialize(theElements)
-      super(nil)
-      @elements = theElements.nil? ? [] : theElements
-    end
-    
-    def vector?
-      true
-    end
-
-    def evaluate(aRuntime)
-      elements_evaluated = elements.map { |elem| elem.evaluate(aRuntime) }
-      SkmVector.new(elements_evaluated)
-    end
-
-    def inspect()
-      result = inspect_prefix
-      elements.each { |elem| result << elem.inspect + ', ' }
-      result.sub!(/, $/, '')
-      result << inspect_suffix
-      result
-    end   
-  
-  end # class
-  
-  
-  class SkmQuotation < SkmElement
-    attr_accessor(:datum)  
-    
-    def initialize(aDatum)
-      super(nil)
-      @datum = aDatum
-    end
-
-    def evaluate(aRuntime)
-      datum
-    end
-    
-    def inspect
-      result = inspect_prefix
-      result << datum.inspect
-      result << inspect_suffix
-      result      
-    end
-  end # class
-
-  class SkmDefinition < SkmElement
+  class SkmDefinition < SkmMultiExpression
     attr_reader :variable
     attr_reader :expression
 
@@ -339,6 +74,17 @@ module Skeem
 
       result
     end
+    
+    def quasiquote(aRuntime)
+      quasi_var = variable.quasiquote(aRuntime)
+      quasi_expression = variable.quasiquote(aRuntime)
+      
+      if quasi_var.equal?(variable) && quasi_expression.equal?(expression)
+        self
+      else
+        self.class.new(position, quasi_var, quasi_expression)
+      end
+    end
 
     # call method should only invoked when the expression is a SkmLambda
     def call(aRuntime, aProcedureCall)
@@ -357,41 +103,13 @@ module Skeem
       result << inspect_suffix
       result
     end
-  end # class
-
-  class SkmVariableReference  < SkmElement
-    attr_reader :variable
-
-    def initialize(aPosition, aVariable)
-      super(aPosition)
-      @variable = aVariable
-    end
-
-    def evaluate(aRuntime)
-      var_key = variable.evaluate(aRuntime)
-      unless aRuntime.include?(var_key.value)
-        err = StandardError
-        key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
-        err_msg = "Unbound variable: '#{key}'"
-        raise err, err_msg
-      end
-      definition = aRuntime.environment.fetch(var_key.value)
-      result = definition.expression.evaluate(aRuntime)
-    end
-
-    # Confusing!
-    # Value, here, means the value of the identifier (the variable's name).
-    def value()
-      variable.value
-    end
-
-    def inspect
-      result = inspect_prefix + variable.inspect + inspect_suffix
-      result
+    
+    def associations
+      [:variable, :expression]
     end
   end # class
 
-  class ProcedureCall < SkmElement
+  class ProcedureCall < SkmMultiExpression
     attr_reader :operator
     attr_reader :operands
 
@@ -425,17 +143,28 @@ module Skeem
       # $stderr.puts "## RETURN #{result.inspect}"
       result
     end
+    
+    def quasiquote(aRuntime)
+      quasi_operator = operator.quasiquote(aRuntime)
+      quasi_operands = operands.map { |oper | oper.quasiquote(aRuntime) }
+      
+       self.class.new(position, quasi_operator, quasi_operands)   
+    end
 
     def inspect
       result = inspect_prefix + operator.inspect + ', '
       result << '@operands ' + operands.inspect + inspect_suffix
       result
     end
+    
+    def associations
+      [:operator, :operands]
+    end
 
     alias children operands
   end # class
 
-  class SkmCondition < SkmElement
+  class SkmCondition < SkmMultiExpression
     attr_reader :test
     attr_reader :consequent
     attr_reader :alternate
@@ -457,6 +186,14 @@ module Skeem
         condition_result = consequent.evaluate(aRuntime)
       end
     end
+    
+    def quasiquote(aRuntime)
+      quasi_test = test.quasiquote(aRuntime)
+      quasi_consequent = consequent.quasiquote(aRuntime)
+      quasi_alternate = alternate.quasiquote(aRuntime)
+      
+       self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)   
+    end    
 
     def inspect
       result = inspect_prefix + '@test ' + test.inspect + ', '
@@ -464,6 +201,10 @@ module Skeem
       result << '@alternate ' + alternate.inspect + inspect_suffix
       result
     end
+    
+    def associations
+      [:test, :consequent, :alternate]
+    end    
   end # class
 
   SkmArity = Struct.new(:low, :high) do
@@ -535,7 +276,7 @@ module Skeem
     end
   end # class
 
-  class SkmLambda < SkmElement
+  class SkmLambda < SkmMultiExpression
     # @!attribute [r] formals
     # @return [Array<SkmIdentifier>] the argument names
     attr_reader :formals
@@ -552,7 +293,16 @@ module Skeem
     def evaluate(aRuntime)
       formals.evaluate(aRuntime)
     end
-
+=begin    
+  TODO
+    def quasiquote(aRuntime)
+      quasi_test = test.quasiquote(aRuntime)
+      quasi_consequent = consequent.quasiquote(aRuntime)
+      quasi_alternate = alternate.quasiquote(aRuntime)
+      
+       self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)   
+    end    
+=end
     def call(aRuntime, aProcedureCall)
       aRuntime.nest
       bind_locals(aRuntime, aProcedureCall)
@@ -579,13 +329,17 @@ module Skeem
       result << '@sequence ' + sequence.inspect + inspect_suffix
       result
     end
+    
+    def associations
+      [:formals, :definitions, :sequence]
+    end
 
     private
 
     def bind_locals(aRuntime, aProcedureCall)
       actuals =  aProcedureCall.operands.members
       count_actuals = actuals.size
-      
+
       if (count_actuals < required_arity) ||
         ((count_actuals > required_arity) && !formals.variadic?)
         raise StandardError, msg_arity_mismatch(aProcedureCall)
@@ -596,7 +350,7 @@ module Skeem
         variadic_part_raw = actuals.drop(required_arity)
         variadic_part = variadic_part_raw.map do |actual|
           if actual.kind_of?(ProcedureCall)
-            actual.evaluate(aRuntime)           
+            actual.evaluate(aRuntime)
           else
             actual
           end
@@ -604,7 +358,7 @@ module Skeem
         variadic_arg_name = formals.formals.last
         args_coll = SkmList.new(variadic_part)
         a_def = SkmDefinition.new(position, variadic_arg_name, args_coll)
-        a_def.evaluate(aRuntime)        
+        a_def.evaluate(aRuntime)
       end
     end
 
@@ -643,7 +397,7 @@ module Skeem
         break if index >= max_index
       end
     end
-    
+
     def msg_arity_mismatch(aProcedureCall)
       # *** ERROR: wrong number of arguments for #<closure morph> (required 2, got 1)
       msg1 = "Wrong number of arguments for procedure #{operator} "

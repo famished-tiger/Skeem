@@ -39,7 +39,7 @@ module Skeem
         samples.each do |source, predicted|
           result = subject.run(source)
           expect(result).to be_kind_of(SkmBoolean)
-          expect(result.value).to eq(predicted)
+          expect(result).to eq(predicted)
         end
       end
 
@@ -54,7 +54,7 @@ module Skeem
         samples.each do |source, predicted|
           result = subject.run(source)
           expect(result).to be_kind_of(SkmInteger)
-          expect(result.value).to eq(predicted)
+          expect(result).to eq(predicted)
         end
       end
 
@@ -69,7 +69,7 @@ module Skeem
         samples.each do |source, predicted|
           result = subject.run(source)
           expect(result).to be_kind_of(SkmReal)
-          expect(result.value).to eq(predicted)
+          expect(result).to eq(predicted)
         end
       end
 
@@ -80,7 +80,7 @@ module Skeem
         samples.each do |source, predicted|
           result = subject.run(source)
           expect(result).to be_kind_of(SkmString)
-          expect(result.value).to eq(predicted)
+          expect(result).to eq(predicted)
         end
       end
 
@@ -95,8 +95,8 @@ module Skeem
           [SkmString, 'Sat']
         ]
         predictions.each_with_index do |(type, value), index|
-          expect(result.elements[index]).to be_kind_of(type)
-          expect(result.elements[index].value).to eq(value)
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
         end
       end
     end # context
@@ -116,7 +116,7 @@ SKEEM
         result = subject.run(source)
         end_result = result.last
         expect(end_result).to be_kind_of(SkmInteger)
-        expect(end_result.value).to eq(28)
+        expect(end_result).to eq(28)
       end
 
       it 'should implement the simple conditional form' do
@@ -126,7 +126,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -137,7 +137,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
         source = <<-SKEEM
   ; Example from R7RS section 4.1.5
@@ -146,7 +146,7 @@ SKEEM
     (+ 3 2))
 SKEEM
         result = subject.run(source)
-        expect(result.value).to eq(1)
+        expect(result).to eq(1)
       end
 
       it 'should implement the quotation of constant literals' do
@@ -162,7 +162,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -176,8 +176,8 @@ SKEEM
           [SkmIdentifier, 'c']
         ]
         predictions.each_with_index do |(type, value), index|
-          expect(result.elements[index]).to be_kind_of(type)
-          expect(result.elements[index].value).to eq(value)
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
         end
       end
 
@@ -192,13 +192,13 @@ SKEEM
         ]
         predictions.each_with_index do |(type, value), index|
           expect(result.members[index]).to be_kind_of(type)
-          expect(result.members[index].value).to eq(value)
+          expect(result.members[index]).to eq(value)
         end
-        
+
         source = "'()"
         result = subject.run(source)
         expect(result).to be_kind_of(SkmList)
-        expect(result).to be_empty
+        expect(result).to be_null
       end      
 
       it 'should implement the lambda function with one arg' do
@@ -212,11 +212,11 @@ SKEEM
         procedure = subject.fetch('abs').expression
         expect(procedure.arity).to eq(1)
         result = subject.run('(abs -3)')
-        expect(result.value).to eq(3)
+        expect(result).to eq(3)
         result = subject.run('(abs 0)')
-        expect(result.value).to eq(0)
+        expect(result).to eq(0)
         result = subject.run('(abs 3)')
-        expect(result.value).to eq(3)
+        expect(result).to eq(3)
       end
 
       it 'should implement the lambda function with two args' do
@@ -230,11 +230,11 @@ SKEEM
         procedure = subject.fetch('min').expression
         expect(procedure.arity).to eq(2)
         result = subject.run('(min 1 2)')
-        expect(result.value).to eq(1)
+        expect(result).to eq(1)
         result = subject.run('(min 2 1)')
-        expect(result.value).to eq(1)
+        expect(result).to eq(1)
         result = subject.run('(min 2 2)')
-        expect(result.value).to eq(2)
+        expect(result).to eq(2)
       end
 
       it 'should implement recursive functions' do
@@ -253,7 +253,7 @@ SKEEM
       it 'should accept calls to anonymous procedures' do
         source = '((lambda (x) (+ x x)) 4)'
         result = subject.run(source)
-        expect(result.value).to eq(8)
+        expect(result).to eq(8)
       end
 
       it 'should support procedures with variable number of arguments' do
@@ -270,8 +270,8 @@ SKEEM
         result = subject.run(source)
         expect(result).to be_kind_of(SkmList)
         expect(result.length).to eq(2)
-        expect(result.head.value).to eq(5)
-        expect(result.last.value).to eq(6)
+        expect(result.head).to eq(5)
+        expect(result.last).to eq(6)
       end
 
       it 'should implement the compact define + lambda syntax' do
@@ -297,17 +297,107 @@ SKEEM
       end
     end # context
 
+    context 'Quasiquotation:' do
+      it 'should implement the quasiquotation of constant literals' do
+         checks = [
+          ['(quasiquote a)', 'a'],
+          ['(quasiquote 145932)', 145932],
+          ['(quasiquote "abc")', 'abc'],
+          ['(quasiquote #t)', true],
+          ['`a', 'a'],
+          ['`145932', 145932],
+          ['`"abc"', 'abc'],
+          ['`#t', true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end
+
+      it 'should implement the quasiquotation of vectors' do
+        source = '(quasiquote #(a b c))'
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmVector)
+        predictions = [
+          [SkmIdentifier, 'a'],
+          [SkmIdentifier, 'b'],
+          [SkmIdentifier, 'c']
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
+        end
+      end
+            
+      it 'should implement the quasiquotation of lists' do
+        source = '(quasiquote (+ 1 2))'
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmList)
+        predictions = [
+          [SkmIdentifier, '+'],
+          [SkmInteger, 1],
+          [SkmInteger, 2]
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
+        end
+
+        source = "`()"
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_null
+      end
+      
+      it 'should implement the unquote of lists' do
+        source = '`(list ,(+ 1 2) 4)'
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmList)
+        predictions = [
+          [SkmIdentifier, 'list'],
+          [SkmInteger, 3],
+          [SkmInteger, 4]
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
+        end
+
+        source = "`()"
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_null
+      end
+=begin
+`(+ 2 ,(* 3 4))  (+ 2 12)
+`(a b (,(+ 2 3) c) d)  (a b (5 c) d)
+`(a b ,(reverse '(c d e)) f g)  (a b (e d c) f g)
+(let ([a 1] [b 2])
+  `(,a . ,b))  (1 . 2) 
+
+`(+ ,@(cdr '(* 2 3)))  (+ 2 3)
+`(a b ,@(reverse '(c d e)) f g)  (a b e d c f g)
+(let ([a 1] [b 2])
+  `(,a ,@b))  (1 . 2)
+`#(,@(list 1 2 3))  #(1 2 3) 
+
+'`,(cons 'a 'b)  `,(cons 'a 'b)
+`',(cons 'a 'b)  '(a . b) 
+=end
+    end # context
+
     context 'Built-in primitive procedures' do
       it 'should implement the division of numbers' do
         result = subject.run('(/ 24 3)')
         expect(result).to be_kind_of(SkmInteger)
-        expect(result.value).to eq(8)
+        expect(result).to eq(8)
       end
 
       it 'should handle arithmetic expressions' do
         result = subject.run('(+ (* 2 100) (* 1 10))')
         expect(result).to be_kind_of(SkmInteger)
-        expect(result.value).to eq(210)
+        expect(result).to eq(210)
       end
     end # context
 
@@ -323,7 +413,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -338,7 +428,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -353,7 +443,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -368,7 +458,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -381,7 +471,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -394,7 +484,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -409,7 +499,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -421,7 +511,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.value).to eq(expectation)
+          expect(result).to eq(expectation)
         end
       end
 
@@ -433,7 +523,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.members.map(&:value)).to eq(expectation)
+          expect(result.members).to eq(expectation)
         end
       end
     end # context

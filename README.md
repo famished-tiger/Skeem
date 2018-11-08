@@ -40,11 +40,6 @@ Here are a few pointers for the Scheme programming language:
 - [The Scheme Programming Language, 4th Edition](https://www.scheme.com/tspl4/) by Kent Dybvig. An complete, introductory textbook on Scheme based on the older R5RS standard.
 - [Teach Yourself Scheme in Fixnum Days](http://ds26gte.github.io/tyscheme/index.html) by Dorai Sitaram
 
-## Other similar Ruby projects
-__Skeem__ isn't the sole implementation of the Scheme language in Ruby.  
-Here are a few other ones:  
-- [Heist gem](https://rubygems.org/gems/heist) -- Probably one of best Scheme implementation in Ruby. Really worth a try. Alas, the [project](https://github.com/jcoglan/heist) seems to be dormant for several years.
-
 ## Usage
 
 ### Example 1 (Variable definition)
@@ -120,6 +115,7 @@ Here are a few other ones:
 - Of the number hierarchy:  
   `real` (e.g. 2.718, 6.671e-11),  
   `integer` (42, -3)
+- Lists (quoted) : '(1 two "three")
 - Strings: `"Hello, world."`
 - Identifiers (symbols): `really-cool-procedure`
 - Vectors: `#(1 2 "three")`
@@ -127,6 +123,7 @@ Here are a few other ones:
 ### Scheme Expressions
 - Constant literals
 - Quotations
+- Quasiquotation (without unquote-splicing)
 - Variable references
 - Procedure calls
 - Lambda expressions
@@ -173,7 +170,7 @@ This section lists the implemented standard procedures
 * `list?`, `null?`, `list`, `length`
 
 #### String procedures
-* `string?`, `string-append`, `string->symbol`,
+* `string?`, `string-append`, `string-length`, `string->symbol`,
 
 #### Symbol procedures
 * `symbol?`
@@ -192,6 +189,14 @@ Roadmap:
 - Make it pass the test suite
 - Extend the language in order to support [Minikanren](https://github.com/TheReasonedSchemer2ndEd/CodeFromTheReasonedSchemer2ndEd)
 - Make it pass all examples from the [Reasoned Schemer](https://mitpress.mit.edu/books/reasoned-schemer-second-edition) book.
+
+## Other Scheme implementation in Ruby
+__Skeem__ isn't the sole implementation of the Scheme language in Ruby.  
+Here are a few other ones:  
+- [Heist gem](https://rubygems.org/gems/heist) -- Probably one of best Scheme implementation in Ruby. Really worth a try. Alas, the [project](https://github.com/jcoglan/heist) seems to be dormant for several years.
+- [Schemerald gem](https://rubygems.org/gems/schemerald). The last commit for the [project](https://github.com/vntzy/schemerald) is October 2017.
+
+- [rubic gem](https://rubygems.org/gems/rubic). The last commit for the [project](https://github.com/notozeki/rubic) is June 2015.
 
 ## Contributing
 

@@ -1,3 +1,14 @@
+## [0.0.24] - 2018-11-08
+Many internal refactoring, augmented spec files base, initial quasiquotation implementation.  
+
+### Added
+- File `primitive_builder.rb` implementation of standard: `string->length`
+- File `datum_dsl.rb` to implement an internal DSL for building literal data elements.
+- Files `tokenizer.rb`, `grammar.rb`, `class SExprBuilder` Added support for quasiquotation: (quasiquote foo) or `foo and unquoting
+
+### Changed
+- File `README.md` udpated to reflect currently implemented features.
+
 ## [0.0.23] - 2018-10-24
 ### Added
 - File `primitive_builder.rb` implementation of: standard `or`, `string->symbol`, `number->string`, `string-append` procedures.

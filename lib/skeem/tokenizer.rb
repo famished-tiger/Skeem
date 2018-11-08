@@ -20,10 +20,12 @@ module Skeem
 
     @@lexeme2name = {
       "'" => 'APOSTROPHE',
-      '`' => 'BACKQUOTE',
+      '`' => 'GRAVE_ACCENT',
       '(' => 'LPAREN',
       ')' => 'RPAREN',
       '.' => 'PERIOD',
+      ',' => 'COMMA',
+      ',@' =>  'COMMA_AT_SIGN',
       '#(' => 'VECTOR_BEGIN'
     }.freeze
 
@@ -33,7 +35,10 @@ module Skeem
       DEFINE
       IF
       LAMBDA
+      QUASIQUOTE
       QUOTE
+      UNQUOTE
+      UNQUOTE-SPLICING
     ].map { |x| [x, x] } .to_h
 
     class ScanError < StandardError; end
@@ -78,6 +83,8 @@ module Skeem
         token = build_token(@@lexeme2name[curr_ch], scanner.getch)
       elsif (lexeme = scanner.scan(/(?:\.)(?=\s)/)) # Single char occurring alone
         token = build_token('PERIOD', lexeme)
+      elsif (lexeme = scanner.scan(/,@?/))
+        token = build_token(@@lexeme2name[lexeme], lexeme)
       elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
         token = cardinal_token(lexeme)        
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?=\s|[|()";]|$)/))

@@ -30,11 +30,14 @@ module Skeem
 
     context 'Delimiter and separator token recognition:' do
       it 'should tokenize single char delimiters' do
-        subject.reinitialize("( ) ' `")
+        subject.reinitialize("( ) ' ` . , ,@")
         tokens = subject.tokens
         tokens.each { |token| expect(token).to be_kind_of(SToken) }
         terminals = tokens.map(&:terminal)
-        prediction = %w[LPAREN RPAREN APOSTROPHE BACKQUOTE]
+        prediction = %w[LPAREN RPAREN APOSTROPHE
+          GRAVE_ACCENT PERIOD
+          COMMA COMMA_AT_SIGN
+        ]
         expect(terminals).to eq(prediction)
       end
     end # context
@@ -195,38 +198,8 @@ module Skeem
         expect(token.lexeme).to eq('Second text')
       end
     end
-=begin
+
     context 'Scanning Scheme sample code' do
-      it 'should read examples from lis.py page' do
-        # Shallow tokenizer testing
-        source = <<-SCHEME
-(if (> (val x) 0)
-    (fn (+ (aref A i) (* 3 i))
-        (quote (one two)))
-      end
-    end
-SCHEME
-        subject.reinitialize(source)
-        expect { subject.tokens }.not_to raise_error
-
-        source = "(define circle-area (lambda (r) (* pi (* r r))))"
-        subject.reinitialize(source)
-        expect { subject.tokens }.not_to raise_error
-
-        source = "(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"
-        subject.reinitialize(source)
-        expect { subject.tokens }.not_to raise_error
-
-        source = <<-SCHEME
-define first car)
-define rest cdr)
-define count (lambda (item L) (if L (+ (equal? item (first L)) (count item (rest L))) 0)))
-count 0 (list 0 1 2 3 0 0))
-SCHEME
-        subject.reinitialize(source)
-        expect { subject.tokens }.not_to raise_error
-      end
-
       it 'should produce a sequence of token objects' do
         # Deeper tokenizer testing
         source = "(define circle-area (lambda (r) (* pi (* r r))))"
@@ -236,7 +209,7 @@ SCHEME
           ['DEFINE', 'define'],
           ['IDENTIFIER', 'circle-area'],
           ['LPAREN', '('],
-          ['IDENTIFIER', 'lambda'],
+          ['LAMBDA', 'lambda'],
           ['LPAREN', '('],
           ['IDENTIFIER', 'r'],
           ['RPAREN', ')'],
@@ -255,6 +228,5 @@ SCHEME
         match_expectations(subject, predicted)
       end
     end # context
-=end
   end # describe
 end # module

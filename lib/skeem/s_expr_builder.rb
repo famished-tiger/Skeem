@@ -74,37 +74,37 @@ module Skeem
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
       SkmVariableReference.new(aRange, theChildren[0])
     end
-    
-    # rule('quotation' => 'APOSTROPHE datum').as 'quotation_abbrev'
-    def reduce_quotation_abbrev(_production, aRange, _tokens, theChildren)
+
+    # rule('quotation' => 'APOSTROPHE datum').as 'quotation_short'
+    def reduce_quotation_short(_production, aRange, _tokens, theChildren)
       SkmQuotation.new(theChildren[1])
-    end      
+    end
 
     # rule('quotation' => 'LPAREN QUOTE datum RPAREN').as 'quotation'
     def reduce_quotation(_production, aRange, _tokens, theChildren)
       SkmQuotation.new(theChildren[2])
     end
-    
+
     # rule('list' => 'LPAREN datum_star RPAREN').as 'list'
     def reduce_list(_production, aRange, _tokens, theChildren)
       SkmList.new(theChildren[1])
-    end     
-    
+    end
+
     # rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
     def reduce_vector(_production, aRange, _tokens, theChildren)
       SkmVector.new(theChildren[1])
-    end    
-    
+    end
+
     # rule('datum_star' => 'datum_star datum').as 'datum_star'
     def reduce_datum_star(_production, aRange, _tokens, theChildren)
       theChildren[0] << theChildren[1]
-    end    
-    
+    end
+
     # rule('datum_star' => []).as 'no_datum_yet'
     def reduce_no_datum_yet(_production, aRange, _tokens, theChildren)
       []
     end
-    
+
     # rule('procedure_call' => 'LPAREN operator RPAREN').as 'proc_call_nullary'
     def reduce_proc_call_nullary(_production, aRange, _tokens, theChildren)
       ProcedureCall.new(aRange, theChildren[1], [])
@@ -129,24 +129,24 @@ module Skeem
     def reduce_last_operand(_production, _range, _tokens, theChildren)
       [theChildren.last]
     end
-    
+
     # rule('def_formals' => 'identifier_star').as 'def_formals'
     def reduce_def_formals(_production, _range, _tokens, theChildren)
       SkmFormals.new(theChildren[0], :fixed)
-    end    
-    
+    end
+
     # rule('def_formals' => 'identifier_star PERIOD identifier').as 'pair_formals'
     def reduce_pair_formals(_production, _range, _tokens, theChildren)
       formals = theChildren[0] << theChildren[2]
-      SkmFormals.new(formals, :variadic)      
-    end    
-    
+      SkmFormals.new(formals, :variadic)
+    end
+
     # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
     def reduce_lambda_expression(_production, aRange, _tokens, theChildren)
       lmbd = SkmLambda.new(aRange, theChildren[2], theChildren[3])
       # $stderr.puts lmbd.inspect
       lmbd
-    end    
+    end
 
     # rule('formals' => 'LPAREN identifier_star RPAREN').as 'fixed_arity_formals'
     def reduce_fixed_arity_formals(_production, _range, _tokens, theChildren)
@@ -157,12 +157,12 @@ module Skeem
     def reduce_variadic_formals(_production, _range, _tokens, theChildren)
       SkmFormals.new([theChildren[0]], :variadic)
     end
-    
+
     # rule('formals' => 'LPAREN identifier_plus PERIOD IDENTIFIER RPAREN').as 'dotted_formals'
     def reduce_dotted_formals(_production, _range, _tokens, theChildren)
       formals = theChildren[1] << theChildren[3]
       SkmFormals.new(formals, :variadic)
-    end    
+    end
 
     # rule('identifier_star' => 'identifier_star IDENTIFIER').as 'identifier_star'
     def reduce_identifier_star(_production, _range, _tokens, theChildren)
@@ -173,16 +173,16 @@ module Skeem
     def reduce_no_identifier_yet(_production, _range, _tokens, theChildren)
       []
     end
-    
+
     # rule('identifier_plus' => 'identifier_plus IDENTIFIER').as 'multiple_identifiers'
     def reduce_multiple_identifiers(_production, _range, _tokens, theChildren)
       theChildren[0] << theChildren[1]
-    end    
-    
+    end
+
     # rule('identifier_plus' => 'IDENTIFIER').as 'last_identifier'
     def reduce_last_identifier(_production, _range, _tokens, theChildren)
       [theChildren[0]]
-    end    
+    end
 
     # rule('body' => 'definition_star sequence').as 'body'
     def reduce_body(_production, _range, _tokens, theChildren)
@@ -209,6 +209,45 @@ module Skeem
     def reduce_conditional(_production, aRange, _tokens, theChildren)
       SkmCondition.new(aRange, theChildren[2], theChildren[3], theChildren[4])
     end
+
+    # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
+    def reduce_quasiquotation(_production, aRange, _tokens, theChildren)
+      SkmQuasiquotation.new(theChildren[2])
+    end
+
+    # rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'
+    def reduce_quasiquotation_short(_production, aRange, _tokens, theChildren)
+      # $stderr.puts theChildren[1].inspect
+      SkmQuasiquotation.new(theChildren[1])
+    end
+    
+    # rule('list_qq_template' => 'LPAREN qq_template_or_splice_star RPAREN').as 'list_qq'
+    def reduce_list_qq(_production, _range, _tokens, theChildren)
+      SkmList.new(theChildren[1])
+    end    
+
+    # rule('vector_qq_template' => 'VECTOR_BEGIN qq_template_or_splice_star RPAREN').as 'vector_qq'
+    def reduce_vector_qq(_production, _range, _tokens, theChildren)
+      SkmVector.new(theChildren[1])
+    end
+    
+    # rule('unquotation' => 'COMMA qq_template').as 'unquotation_short'
+    def reduce_unquotation_short(_production, aRange, _tokens, theChildren)
+      SkmUnquotation.new(theChildren[1])
+    end
+    
+
+    # rule('qq_template_or_splice_star' => 'qq_template_or_splice_star qq_template_or_splice').as 'multiple_template_splice'
+    def reduce_multiple_template_splice(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('qq_template_or_splice_star' => []).as 'no_template_splice_yet'
+    def reduce_no_template_splice_yet(_production, _range, _tokens, theChildren)
+      []
+    end
+
+
   end # class
 end # module
 # End of file
