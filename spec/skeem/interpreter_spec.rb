@@ -1,9 +1,12 @@
 require 'stringio'
 require_relative '../spec_helper' # Use the RSpec framework
+require_relative '../../lib/skeem/datum_dsl'
 require_relative '../../lib/skeem/interpreter' # Load the class under test
 
 module Skeem
   describe Interpreter do
+    include DatumDSL
+
     context 'Initialization:' do
       it 'should be initialized without argument' do
         expect { Interpreter.new() }.not_to raise_error
@@ -329,6 +332,41 @@ SKEEM
           expect(result.members[index]).to eq(value)
         end
       end
+      
+      it 'should implement the unquote of vectors' do
+        source = '`#( ,(+ 1 2) 4)'
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmVector)
+        predictions = [
+          [SkmInteger, 3],
+          [SkmInteger, 4]
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
+        end
+
+        source = "`#()"
+        result = subject.run(source)
+        expect(result).to be_kind_of(SkmVector)
+        expect(result).to be_empty
+        
+        # Nested vectors
+        source = '`#(a b #(,(+ 2 3) c) d)'
+        result = subject.run(source)
+        # expected: #(a b #(5 c) d)
+        expect(result).to be_kind_of(SkmVector)
+        predictions = [
+          [SkmIdentifier, 'a'],
+          [SkmIdentifier, 'b'],
+          [SkmVector, vector([integer(5), identifier('c')])],
+          [SkmIdentifier, 'd']
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
+        end        
+      end      
             
       it 'should implement the quasiquotation of lists' do
         source = '(quasiquote (+ 1 2))'
@@ -368,10 +406,25 @@ SKEEM
         result = subject.run(source)
         expect(result).to be_kind_of(SkmList)
         expect(result).to be_null
+        
+        # nested lists
+        source = '`(a b (,(+ 2 3) c) d)'
+        result = subject.run(source)
+        # expected: (a b (5 c) d)
+        expect(result).to be_kind_of(SkmList)
+        predictions = [
+          [SkmIdentifier, 'a'],
+          [SkmIdentifier, 'b'],
+          [SkmList, list([integer(5), identifier('c')])],
+          [SkmIdentifier, 'd']
+        ]
+        predictions.each_with_index do |(type, value), index|
+          expect(result.members[index]).to be_kind_of(type)
+          expect(result.members[index]).to eq(value)
+        end        
       end
 =begin
 `(+ 2 ,(* 3 4))  (+ 2 12)
-`(a b (,(+ 2 3) c) d)  (a b (5 c) d)
 `(a b ,(reverse '(c d e)) f g)  (a b (e d c) f g)
 (let ([a 1] [b 2])
   `(,a . ,b))  (1 . 2) 
@@ -514,6 +567,18 @@ SKEEM
           expect(result).to eq(expectation)
         end
       end
+      
+      it 'should implement the symbol=? procedure' do
+        checks = [
+          ["(symbol=? 'a 'a)", true],
+          ["(symbol=? 'a (string->symbol \"a\"))", true],
+          ["(symbol=? 'a 'b)", false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end       
 
       it 'should implement the list procedure' do
         checks = [

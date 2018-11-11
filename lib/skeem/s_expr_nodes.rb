@@ -58,8 +58,16 @@ module Skeem
         when SkmVariableReference
           other_key = expression.variable.evaluate(aRuntime)
           if var_key.value != other_key.value
+            entry = aRuntime.fetch(other_key)
             result = expression.evaluate(aRuntime)
-           else
+            if entry.kind_of?(Primitive::PrimitiveProcedure)
+              @expression = entry
+            elsif entry.kind_of?(SkmDefinition)
+              if entry.expression.kind_of?(SkmLambda)
+                @expression = entry.expression
+              end
+            end                        
+          else
             # INFINITE LOOP DANGER: definition of 'x' is a reference to 'x'!
             # Way out: the lookup for the reference should start from outer
             # environment.
@@ -88,7 +96,7 @@ module Skeem
 
     # call method should only invoked when the expression is a SkmLambda
     def call(aRuntime, aProcedureCall)
-      unless expression.kind_of?(SkmLambda)
+      unless [SkmLambda, Primitive::PrimitiveProcedure].include?(expression.class) 
         err_msg = "Expected a SkmLambda instead of #{expression.class}"
         raise StandardError, err_msg
       end

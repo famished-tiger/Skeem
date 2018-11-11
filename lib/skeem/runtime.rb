@@ -12,6 +12,11 @@ module Skeem
     def include?(anIdentifier)
       environment.include?(normalize_key(anIdentifier))
     end
+    
+    def fetch(aKey)
+      key_value = normalize_key(aKey)
+      include?(key_value) ? environment.fetch(key_value) : nil
+    end
 
     def define(aKey, anEntry)
       environment.define(normalize_key(aKey), anEntry)
@@ -20,8 +25,15 @@ module Skeem
     def evaluate(aKey)
       key_value = normalize_key(aKey)
       if include?(key_value)
-        definition = environment.fetch(key_value)
-        definition.expression.evaluate(self)
+        entry = environment.fetch(key_value)
+        case entry
+          when Primitive::PrimitiveProcedure
+            entry
+          when SkmDefinition
+            entry.expression.evaluate(self)
+          else
+            raise StandardError, entry.inspect
+        end
       else
         err = StandardError
         key = aKey.kind_of?(SkmIdentifier) ? aKey.value : key_value

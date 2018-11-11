@@ -1,6 +1,7 @@
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/datum_dsl'
 require_relative '../../lib/skeem/environment'
+require_relative '../../lib/skeem/s_expr_nodes'
 require_relative '../../lib/skeem/skm_unary_expression' # Load the classes under test
 
 module Skeem
@@ -176,15 +177,14 @@ module Skeem
     end # context
 
     context 'Provided services:' do
-      let(:dummy_def) { double('fake-definition') }
+      let(:sample_def) { SkmDefinition.new(nil, identifier('three'), integer(3)) }
       let(:runtime) { Runtime.new(Environment.new) }
 
       before(:each) do
-        runtime.define('three', dummy_def)
+        runtime.define('three', sample_def)
       end
 
       it "should return the variable's value at evaluation" do
-        expect(dummy_def).to receive(:expression).and_return(integer(3))
         expect(subject.evaluate(runtime)).to eq(3)
       end
 

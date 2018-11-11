@@ -1,6 +1,7 @@
 require 'ostruct'
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/runtime'
+require_relative '../../lib/skeem/primitive/primitive_builder'
 require_relative '../../lib/skeem/s_expr_nodes' # Load the classes under test
 
 module Skeem
@@ -26,6 +27,8 @@ module Skeem
     end # context
 
     context 'Provided services:' do
+      include Primitive::PrimitiveBuilder
+      
       let(:runtime) { Runtime.new(Environment.new) }
 
       it 'should create an entry when evaluating' do
@@ -33,6 +36,39 @@ module Skeem
         subject.evaluate(runtime)
         expect(runtime).to include(sample_symbol)
       end
+      
+      it 'should optimize an entry that aliases a primitive proc' do
+        add_primitives(runtime)
+        identifier = SkmIdentifier.create('plus')
+        proc_name = SkmIdentifier.create('+')
+        var_ref = SkmVariableReference.new(nil, proc_name)
+        instance = SkmDefinition.new(nil, identifier, var_ref) # (define plus +)
+        expect(instance.expression).to eq(var_ref)
+        instance.evaluate(runtime)
+        # Optimization by getting rid of indirection
+        expect(instance.expression).to be_kind_of(Primitive::PrimitiveProcedure)
+      end
+
+      it 'should optimize an entry that aliases a lambda proc' do
+        # Let's define a (dummy) lambda
+        formals = SkmFormals.new([], :fixed)
+        dummy_body = { :defs => [], :sequence => [SkmInteger.create(3)]}
+        lbd = SkmLambda.new(nil, formals, dummy_body)
+        id = SkmIdentifier.create('some-lambda')
+        def1 = SkmDefinition.new(nil, id, lbd)
+        def1.evaluate(runtime)
+      
+        # Let's create an alias to the lambda
+        other_name = SkmIdentifier.create('aliased-lambda')
+        var_ref = SkmVariableReference.new(nil, id)
+        
+        # (define aliased-lambda some-lambda)
+        def2 = SkmDefinition.new(nil, other_name, var_ref) 
+        expect(def2.expression).to eq(var_ref)
+        def2.evaluate(runtime)
+        # Optimization by getting rid of indirection
+        expect(def2.expression).to eq(lbd)
+      end       
       
       it 'should quasiquote its variable and expression' do
         alter_ego = subject.quasiquote(runtime)

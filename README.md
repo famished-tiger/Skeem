@@ -129,6 +129,7 @@ Here are a few pointers for the Scheme programming language:
 - Lambda expressions
 - If conditionals
 - Definitions
+- Assignments
 
 ### Standard syntactic forms
 #### define  
@@ -155,6 +156,13 @@ __Syntax:__
 * (quote <datum\>)
 * '<datum\>
 
+#### set!  
+__Purpose:__ Assign to an existing variable an expression/value to it.  
+__Syntax:__   
+* (set! <identifier\> <expression\>)  
+
+
+
 ### Standard library
 This section lists the implemented standard procedures
 
@@ -170,10 +178,10 @@ This section lists the implemented standard procedures
 * `list?`, `null?`, `list`, `length`
 
 #### String procedures
-* `string?`, `string-append`, `string-length`, `string->symbol`,
+* `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`,
 
 #### Symbol procedures
-* `symbol?`
+* `symbol?`, `symbol=?`
 
 #### Vector procedures
 * `vector?`, `vector`, `vector-length`, `vector-set!`

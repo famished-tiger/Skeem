@@ -6,8 +6,26 @@ require_relative '../../../lib/skeem/interpreter'
 module Skeem
   module Primitive
     describe 'Testing primitive procedures' do
-        subject { Interpreter.new }
-        context 'Arithmetic operators:' do
+      subject { Interpreter.new }
+      
+      context 'Arithmetic operators:' do
+        it 'should implement the set! form' do
+          skeem1 = <<-SKEEM
+  (define x 2)
+  (+ x 1)
+SKEEM
+          result = subject.run(skeem1)
+          expect(result.last).to eq(3)  # x is bound to value 2
+          skeem2 = <<-SKEEM
+  (set! x 4)
+  (+ x 1)
+SKEEM
+          result = subject.run(skeem2)
+          expect(result.last).to eq(5)  # x is now bound to value 4
+        end        
+      end # context
+
+      context 'Arithmetic operators:' do
         it 'should implement the addition operator' do
           [
             ['(+)', 0], # '+' as nullary operator. Example from section 6.2.6
@@ -294,6 +312,18 @@ module Skeem
           end
         end
 
+        it 'should implement the string=? procedure' do
+          checks = [
+            ['(string=? "Mom" "Mom")', true],
+            ['(string=? "Mom" "Mum")', false],
+            ['(string=? "Mom" "Dad")', false]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
         it 'should implement the string-append procedure' do
           checks = [
             ['(string-append)', ''],
@@ -323,22 +353,24 @@ module Skeem
         it 'should implement the symbol? procedure' do
           checks = [
             ['(symbol? #f)', false],
-            ['(symbol? "bar")', false]
+            ['(symbol? "bar")', false],
+            ["(symbol? '())", false],
+            ["(symbol? 'foo)", true],
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
             expect(result).to eq(expectation)
           end
-        end
+        end       
       end # context
 
       context 'List procedures:' do
         it 'should implement the list? procedure' do
           checks = [
-            #['(list? #f)', false],
-            #['(list? 1)', false],
-            #['(list? "bar")', false],
-            #['(list? (list 1 2 3))', true],
+            ['(list? #f)', false],
+            ['(list? 1)', false],
+            ['(list? "bar")', false],
+            ['(list? (list 1 2 3))', true],
             ['(list? (list))', true]
           ]
           checks.each do |(skeem_expr, expectation)|

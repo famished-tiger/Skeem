@@ -1,11 +1,13 @@
 require_relative 'primitive_procedure'
 require_relative '../datum_dsl'
+# require_relative '../s_expr_nodes'
 
 module Skeem
   module Primitive
     module PrimitiveBuilder
       include DatumDSL
       def add_primitives(aRuntime)
+        add_binding(aRuntime)
         add_arithmetic(aRuntime)
         add_comparison(aRuntime)
         add_number_procedures(aRuntime)
@@ -40,6 +42,10 @@ module Skeem
         SkmArity.new(1, '*')
       end
 
+      def add_binding(aRuntime)
+        create_set!(aRuntime)
+      end
+
       def add_arithmetic(aRuntime)
         create_plus(aRuntime)
         create_minus(aRuntime)
@@ -72,6 +78,7 @@ module Skeem
 
       def add_string_procedures(aRuntime)
         create_object_predicate(aRuntime, 'string?')
+        create_string_equal(aRuntime)
         create_string_append(aRuntime)
         create_string_length(aRuntime)
         create_string2symbol(aRuntime)
@@ -100,6 +107,19 @@ module Skeem
 
       def add_special_procedures(aRuntime)
         create_debug(aRuntime)
+      end
+
+      def create_set!(aRuntime)
+          primitive = ->(runtime, var_ref, expr) do
+            if runtime.include?(var_ref.child)
+              redefinition = SkmDefinition.new(nil, var_ref.child, expr)
+              redefinition.evaluate(runtime)
+            else
+              raise StandardError, "Unbound variable: '#{var.value}'"
+            end
+        end
+
+        define_primitive_proc(aRuntime, 'set!', binary, primitive)
       end
 
       def create_plus(aRuntime)
@@ -336,6 +356,22 @@ module Skeem
           end
         end
         define_primitive_proc(aRuntime, 'or', zero_or_more, primitive)
+      end
+
+      def create_string_equal(aRuntime)
+        primitive = ->(runtime, first_operand, arglist) do
+          first_one = first_operand.evaluate(runtime)
+          if arglist.empty?
+            boolean(true)
+          else
+            operands = evaluate_array(arglist, runtime)
+            first_value = first_one.value
+            all_equal = operands.all? { |elem| first_value == elem.value }
+            boolean(all_equal)
+          end
+        end
+
+        define_primitive_proc(aRuntime, 'string=?', one_or_more, primitive)
       end
 
       def create_string_append(aRuntime)

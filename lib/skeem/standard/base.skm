@@ -45,5 +45,7 @@
   (lambda (z)
     (* z z)))
 
+(define symbol=? string=?)
+    
 (define list
   (lambda args args))
