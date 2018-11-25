@@ -32,7 +32,7 @@ module Skeem
       it 'should tokenize single char delimiters' do
         subject.reinitialize("( ) ' ` . , ,@")
         tokens = subject.tokens
-        tokens.each { |token| expect(token).to be_kind_of(SToken) }
+        tokens.each { |token| expect(token).to be_kind_of(Rley::Lexical::Token) }
         terminals = tokens.map(&:terminal)
         prediction = %w[LPAREN RPAREN APOSTROPHE
           GRAVE_ACCENT PERIOD

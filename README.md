@@ -166,6 +166,9 @@ __Syntax:__
 ### Standard library
 This section lists the implemented standard procedures
 
+#### Equivalence predicates
+* `eqv?`
+
 #### Boolean procedures
 * `boolean?`, `and`, `or`,  `not`
 
@@ -188,6 +191,9 @@ This section lists the implemented standard procedures
 
 #### Input/output procedures
 * `newline`
+
+#### Special procedures
+* `assert`
 
 Roadmap:
 - Extend language support

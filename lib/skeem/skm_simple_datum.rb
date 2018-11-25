@@ -19,8 +19,12 @@ module Skeem
       return lightweight
     end
 
-    def symbol()
+    def symbol
       token.terminal
+    end
+    
+    def position
+      token.position
     end
 
     # Equality operator.
@@ -39,6 +43,8 @@ module Skeem
 
       result
     end
+    
+    alias eqv? ==
 
     def done!()
       # Do nothing
@@ -87,11 +93,31 @@ module Skeem
     def number?
       true
     end
+    
+    def eqv?(other)
+      return true if self.equal?(other)
+
+      result = if other.kind_of?(SkmNumber)
+        if self.exact? != other.exact?
+          false
+        else
+          self.value == other.value
+        end
+      else
+        self.value == other
+      end
+
+      result
+    end  
   end # class
 
   class SkmReal < SkmNumber
     def real?
       true
+    end
+    
+    def exact?
+      false
     end
   end # class
 
@@ -99,6 +125,10 @@ module Skeem
     def integer?
       true
     end
+    
+    def exact?
+      true
+    end    
   end # class
 
   class SkmString < SkmSimpleDatum
@@ -110,6 +140,8 @@ module Skeem
     def string?
       true
     end
+    
+    alias eqv? equal?
     
     def length
       value.length

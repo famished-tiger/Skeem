@@ -88,6 +88,26 @@ SKEEM
       end # context
 
       context 'Comparison operators' do
+        it 'should implement the eqv? procedure' do
+          checks = [
+            ['(eqv? #f #f)', true],
+            ['(eqv? #t #t)', true],
+            ['(eqv? #f #t)', false],
+            ["(eqv? 'a 'a)", true],
+            ["(eqv? 'a 'b)", false],
+            ['(eqv? 2 2)', true],
+            ['(eqv? 2 2.0)', false],
+            ['(eqv? 3 2)', false],
+            ['(eqv? 100000000 100000000)', true],
+            ['(eqv? "a" "a")', false],
+            ['(eqv? "a" "b")', false]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end          
+        end
+        
         it 'should implement the equality operator' do
           checks = [
             ['(= 3)', true], # '=' as unary operator
@@ -222,18 +242,6 @@ SKEEM
       end # context
 
       context 'Boolean procedures:' do
-        it 'should implement the not procedure' do
-          checks = [
-            ['(not #t)', false],
-            ['(not 3)', false],
-            ['(not #f)', true]
-          ]
-          checks.each do |(skeem_expr, expectation)|
-            result = subject.run(skeem_expr)
-            expect(result).to eq(expectation)
-          end
-        end
-
         it 'should implement the and procedure' do
           checks = [
             ['(and (= 2 2) (> 2 1))', true],
@@ -280,7 +288,8 @@ SKEEM
         it 'should implement the boolean? procedure' do
           checks = [
             ['(boolean? #f)', true],
-            ['(boolean? 0)', false]
+            ['(boolean? 0)', false],
+            ["(boolean? '())", false]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
@@ -468,6 +477,28 @@ SKEEM
           expect($stdout.string).to match(/\n\n\n$/)
           $stdout = default_stdout
         end
+      end # context
+      
+      context 'Miscellaneous procedures' do
+        it 'should return true when an assertion succeeds' do
+          source = <<-SKEEM
+  (define x 2)
+  (define y 1)
+  (assert (> x y))
+SKEEM
+          expect(subject.run(source).last).to eq(true)
+        end       
+      
+        it 'should raise an error when an assertion fails' do
+          source = <<-SKEEM
+  (define x 1)
+  (define y 2)
+  (assert (> x y))
+SKEEM
+          err = StandardError
+          msg = 'Error: assertion failed on line 3, column 4'
+          expect { subject.run(source) }.to raise_error(err, msg)
+        end      
       end # context
     end # describe
   end # module

@@ -1,7 +1,7 @@
 # File: tokenizer.rb
 # Tokenizer for Skeem language (a small subset of Scheme)
 require 'strscan'
-require_relative 'stoken'
+require 'rley'
 
 module Skeem
   # A tokenizer for the Skeem dialect.
@@ -58,7 +58,7 @@ module Skeem
       @line_start = 0
     end
 
-    # @return [Array<SToken>] | Returns a sequence of tokens
+    # @return [Array<SkmToken>] | Returns a sequence of tokens
     def tokens
       tok_sequence = []
       until @scanner.eos?
@@ -148,8 +148,8 @@ other literal data (section 2.4).
       begin
         value = convert_to(aLexeme, aSymbolName, aFormat)
         col = scanner.pos - aLexeme.size - @line_start + 1
-        pos = Position.new(@lineno, col)
-        token = SToken.new(value, aSymbolName, pos)
+        pos = Rley::Lexical::Position.new(@lineno, col)
+        token = Rley::Lexical::Token.new(value, aSymbolName, pos)
       rescue StandardError => exc
         puts "Failing with '#{aSymbolName}' and '#{aLexeme}'"
         raise exc

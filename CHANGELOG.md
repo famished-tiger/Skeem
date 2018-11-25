@@ -1,3 +1,24 @@
+## [0.0.26] - 2018-11-25
+
+### Added
+- Procedure `eqv?` 
+- Procedure `assert`
+- Class `Runtime`, call stack added.
+- Class `ProcedureCall`, attribute `call_site` added. It contains the location of the call (line and column)
+
+### Changed 
+- File `primitive_builder.rb` implementation of: not procedure removed, `not` is now implemented in `base.skm`.
+- Method `Tokenizer#build_token` updated to remain compatible with new Rley (> 0.7.x)) 
+
+### Removed
+- File `stoken.rb`: Class `SkmToken` is no more necessary.
+
+## [0.0.25] - 2018-11-11
+Aliasing of procedures with 'set!' is supported.
+
+### Added 
+- Procedures `string=?`, `symbol=?`
+
 ## [0.0.24] - 2018-11-08
 Many internal refactoring, augmented spec files base, initial quasiquotation implementation.  
 

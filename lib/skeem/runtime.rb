@@ -4,9 +4,11 @@ require_relative 'environment'
 module Skeem
   class Runtime
     attr_reader(:environment)
+    attr_reader(:call_stack)
 
     def initialize(anEnvironment)
       @environment = anEnvironment
+      @call_stack = []
     end
 
     def include?(anIdentifier)
@@ -65,15 +67,34 @@ module Skeem
       return environment.depth
     end
 
+    def push(anEnvironment)
+      @environment = anEnvironment
+    end    
+    
     # Make the outer enviromnent thecurrent one inside the provided block
     def pop
       env = environment
       @environment = environment.outer
       env
     end
-
-    def push(anEnvironment)
-      @environment = anEnvironment
+    
+    def push_call(aProcCall)
+      if aProcCall.kind_of?(ProcedureCall)
+        call_stack.push(aProcCall)
+      else
+        raise StandardError, "Invalid call object #{aProcCall.inspect}"
+      end
+    end
+    
+    def pop_call()
+      if call_stack.empty?
+        raise StandardError, 'Skeem call stack empty!'
+      end
+      call_stack.pop
+    end
+    
+    def caller
+      call_stack.last
     end
 
     private

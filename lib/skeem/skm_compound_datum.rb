@@ -26,6 +26,8 @@ module Skeem
           members == other
       end
     end
+    
+    alias eqv? equal?
 
     def evaluate(aRuntime)
       members_eval = members.map { |elem| elem.evaluate(aRuntime) }

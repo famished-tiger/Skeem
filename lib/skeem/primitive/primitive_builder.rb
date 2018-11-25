@@ -55,6 +55,7 @@ module Skeem
       end
 
       def add_comparison(aRuntime)
+        create_eqv?(aRuntime)
         create_equal(aRuntime)
         create_lt(aRuntime)
         create_gt(aRuntime)
@@ -66,11 +67,11 @@ module Skeem
         create_object_predicate(aRuntime, 'number?')
         create_object_predicate(aRuntime, 'real?')
         create_object_predicate(aRuntime, 'integer?')
+        create_object_predicate(aRuntime, 'exact?')
         create_number2string(aRuntime)
       end
 
       def add_boolean_procedures(aRuntime)
-        create_not(aRuntime)
         create_and(aRuntime)
         create_or(aRuntime)
         create_object_predicate(aRuntime, 'boolean?')
@@ -106,6 +107,7 @@ module Skeem
       end
 
       def add_special_procedures(aRuntime)
+        create_assert(aRuntime)
         create_debug(aRuntime)
       end
 
@@ -194,7 +196,7 @@ module Skeem
       end
 
       def create_modulo(aRuntime)
-          primitive = ->(runtime, argument1, argument2) do
+        primitive = ->(runtime, argument1, argument2) do
           operand_1 = argument1.evaluate(runtime)
           operand_2 = argument2.evaluate(runtime)
           raw_result = operand_1.value.modulo(operand_2.value)
@@ -202,6 +204,17 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'floor-remainder', binary, primitive)
+      end
+      
+      def create_eqv?(aRuntime)
+        primitive = ->(runtime, argument1, argument2) do
+          operand_1 = argument1.evaluate(runtime)
+          operand_2 = argument2.evaluate(runtime)
+          raw_result = operand_1.eqv?(operand_2)
+          to_datum(raw_result)
+        end
+
+        define_primitive_proc(aRuntime, 'eqv?', binary, primitive)      
       end
 
       def create_equal(aRuntime)
@@ -301,19 +314,6 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'number->string', unary, primitive)
-      end
-
-      def create_not(aRuntime)
-        primitive = ->(runtime, arg) do
-          arg_evaluated = arg.evaluate(runtime)
-          if arg_evaluated.boolean? && arg_evaluated.value == false
-            boolean(true)
-          else
-            boolean(false)
-          end
-        end
-
-        define_primitive_proc(aRuntime, 'not', unary, primitive)
       end
 
       def create_and(aRuntime)
@@ -465,6 +465,23 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'newline', nullary, primitive)
+      end
+      
+      def create_assert(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          if arg_evaluated.boolean? && arg_evaluated.value == false
+            assert_call = aRuntime.caller
+            pos = assert_call.call_site          
+            # Error: assertion failed: (> 1 2)
+            msg = "assertion failed on line #{pos.line}, column #{pos.column}"
+            raise StandardError, 'Error: ' + msg
+          else
+            boolean(true)
+          end
+        end
+
+        define_primitive_proc(aRuntime, 'assert', unary, primitive)
       end
 
       def create_debug(aRuntime)

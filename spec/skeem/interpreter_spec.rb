@@ -568,18 +568,22 @@ SKEEM
         end
       end
       
-      it 'should implement the symbol=? procedure' do
+      it 'should implement the not procedure' do
         checks = [
-          ["(symbol=? 'a 'a)", true],
-          ["(symbol=? 'a (string->symbol \"a\"))", true],
-          ["(symbol=? 'a 'b)", false]
+          ['(not #t)', false],
+          ['(not 3)', false],
+          ['(not (list 3))', false],
+          ['(not #f)', true],
+          ["(not '())", false],
+          ['(not (list))', false],
+          ["(not 'nil)", false]
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
           expect(result).to eq(expectation)
         end
-      end       
-
+      end      
+      
       it 'should implement the list procedure' do
         checks = [
           ['(list)', []],
@@ -591,6 +595,18 @@ SKEEM
           expect(result.members).to eq(expectation)
         end
       end
+      
+      it 'should implement the symbol=? procedure' do
+        checks = [
+          ["(symbol=? 'a 'a)", true],
+          ["(symbol=? 'a (string->symbol \"a\"))", true],
+          ["(symbol=? 'a 'b)", false]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end      
     end # context
   end # describe
 end # module

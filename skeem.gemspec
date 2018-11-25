@@ -55,7 +55,7 @@ SUMMARY
   PkgExtending.pkg_files(spec)
   PkgExtending.pkg_documentation(spec)
   # Runtime dependencies
-  spec.add_dependency 'rley', '~> 0.6'
+  spec.add_dependency 'rley', '~> 0.7'
 
   # Development dependencies
   spec.add_development_dependency 'bundler', '~> 1.16'

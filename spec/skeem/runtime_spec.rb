@@ -1,5 +1,6 @@
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/datum_dsl'
+require_relative '../../lib/skeem/s_expr_nodes'
 require_relative '../../lib/skeem/primitive/primitive_builder'
 
 require_relative '../../lib/skeem/runtime' # Load the class under test
@@ -18,6 +19,10 @@ module Skeem
 
       it 'should know the environment' do
         expect(subject.environment).to eq(some_env)
+      end
+      
+      it 'should have an empty call stack' do
+        expect(subject.call_stack).to be_empty
       end
     end # context
 
@@ -56,7 +61,7 @@ module Skeem
       end
     end # context
       
-    context 'Environment nesting' do
+    context 'Environment nesting:' do
       it 'should add nested environment' do
         expect(subject.depth).to be_zero
         env_before = subject.environment
@@ -78,5 +83,31 @@ module Skeem
         expect(subject.depth).to be_zero
       end
     end # context
+    
+    context 'Call stack operations:' do
+      let(:sample_call) do
+        pos = double('fake-position')
+        ProcedureCall.new(pos, identifier('boolean?'), [integer(42)])      
+      end
+      
+      it 'should push a call to the stack call' do
+        expect { subject.push_call(sample_call) }.not_to raise_error
+        expect(subject.call_stack.size). to eq(1)
+        expect(subject.caller).to eq(sample_call)
+        
+        subject.push_call(sample_call.clone)
+        expect(subject.call_stack.size). to eq(2)
+      end
+
+      it 'should pop a call from the call stack' do
+        subject.push_call(sample_call)
+        expect { subject.pop_call }.not_to raise_error
+        expect(subject.call_stack).to be_empty
+        
+        err = StandardError
+        msg = 'Skeem call stack empty!'
+        expect { subject.pop_call }.to raise_error(err, msg)
+      end
+    end # context    
   end # describe
 end # module

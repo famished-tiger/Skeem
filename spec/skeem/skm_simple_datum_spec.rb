@@ -155,6 +155,19 @@ module Skeem
       it 'should react positively to real? predicate' do
         expect(subject).to be_real
       end
+      
+      it 'should react negatively to exact? predicate' do
+        expect(subject).not_to be_exact
+      end
+
+      it 'should implement the eqv? predicate' do
+        same = SkmReal.create(0.51)
+        different = SkmReal.create(1.21)
+        
+        expect(subject).to be_eqv(subject)
+        expect(subject).to be_eqv(same)
+        expect(subject).not_to be_eqv(different)
+      end      
     end # context
   end # describe
 
@@ -181,6 +194,20 @@ module Skeem
 
       it 'should react positively to integer? predicate' do
         expect(subject).to be_real
+      end
+      
+      it 'should react positively to exact? predicate' do
+        expect(subject).to be_exact
+      end
+
+      it 'should implement the eqv? predicate' do
+        three = SkmInteger.create(3)
+        real_3 = SkmReal.create(3.0)
+        four = SkmInteger.create(4)
+        
+        expect(subject).to be_eqv(three)
+        expect(subject).not_to be_eqv(real_3)
+        expect(subject).not_to be_eqv(four)
       end
     end # context
   end # describe

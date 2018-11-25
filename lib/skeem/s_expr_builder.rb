@@ -112,7 +112,12 @@ module Skeem
 
     # rule('proc_call_args' => 'LPAREN operator operand_plus RPAREN')
     def reduce_proc_call_args(_production, aRange, _tokens, theChildren)
-      ProcedureCall.new(aRange, theChildren[1], theChildren[2])
+      pcall = ProcedureCall.new(aRange, theChildren[1], theChildren[2])
+      if theChildren[1].kind_of?(SkmVariableReference)
+          pcall.call_site = theChildren[1].child.token.position
+      end
+
+      pcall
     end
 
     # rule('operand_plus' => 'operand_plus operand').as 'multiple_operands'

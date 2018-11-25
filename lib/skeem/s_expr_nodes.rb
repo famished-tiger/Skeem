@@ -10,28 +10,28 @@ module Skeem
     def value
       :UNDEFINED
     end
-    
+
     def ==(other)
       return true if other.kind_of?(SkmUndefined)
-      
+
       result = case other
         when Symbol
           self.value == other
         when String
           self.value.to_s == other
-        else 
+        else
           raise StandardError, other.inspect
       end
     end
   end # class
-  
+
   class SkmMultiExpression < SkmExpression
     # Part of the 'visitee' role in Visitor design pattern.
     # @param _visitor [SkmElementVisitor] the visitor
     def accept(aVisitor)
       aVisitor.visit_multi_expression(self)
     end
-    
+
     # @return [Array] the names of attributes referencing child SkmElement.
     def associations
       raise NotImplementedError
@@ -66,7 +66,7 @@ module Skeem
               if entry.expression.kind_of?(SkmLambda)
                 @expression = entry.expression
               end
-            end                        
+            end
           else
             # INFINITE LOOP DANGER: definition of 'x' is a reference to 'x'!
             # Way out: the lookup for the reference should start from outer
@@ -82,11 +82,11 @@ module Skeem
 
       result
     end
-    
+
     def quasiquote(aRuntime)
       quasi_var = variable.quasiquote(aRuntime)
       quasi_expression = variable.quasiquote(aRuntime)
-      
+
       if quasi_var.equal?(variable) && quasi_expression.equal?(expression)
         self
       else
@@ -96,7 +96,7 @@ module Skeem
 
     # call method should only invoked when the expression is a SkmLambda
     def call(aRuntime, aProcedureCall)
-      unless [SkmLambda, Primitive::PrimitiveProcedure].include?(expression.class) 
+      unless [SkmLambda, Primitive::PrimitiveProcedure].include?(expression.class)
         err_msg = "Expected a SkmLambda instead of #{expression.class}"
         raise StandardError, err_msg
       end
@@ -111,7 +111,7 @@ module Skeem
       result << inspect_suffix
       result
     end
-    
+
     def associations
       [:variable, :expression]
     end
@@ -120,6 +120,7 @@ module Skeem
   class ProcedureCall < SkmMultiExpression
     attr_reader :operator
     attr_reader :operands
+    attr_accessor :call_site
 
     def initialize(aPosition, anOperator, theOperands)
       super(aPosition)
@@ -147,16 +148,18 @@ module Skeem
         # $stderr.puts "## CALL(#{var_key.value}) ###################"
         # $stderr.puts operands.inspect
       end
+      aRuntime.push_call(self)
       result = procedure.call(aRuntime, self)
+      aRuntime.pop_call
       # $stderr.puts "## RETURN #{result.inspect}"
       result
     end
-    
+
     def quasiquote(aRuntime)
       quasi_operator = operator.quasiquote(aRuntime)
       quasi_operands = operands.map { |oper | oper.quasiquote(aRuntime) }
-      
-       self.class.new(position, quasi_operator, quasi_operands)   
+
+       self.class.new(position, quasi_operator, quasi_operands)
     end
 
     def inspect
@@ -164,7 +167,7 @@ module Skeem
       result << '@operands ' + operands.inspect + inspect_suffix
       result
     end
-    
+
     def associations
       [:operator, :operands]
     end
@@ -194,14 +197,14 @@ module Skeem
         condition_result = consequent.evaluate(aRuntime)
       end
     end
-    
+
     def quasiquote(aRuntime)
       quasi_test = test.quasiquote(aRuntime)
       quasi_consequent = consequent.quasiquote(aRuntime)
       quasi_alternate = alternate.quasiquote(aRuntime)
-      
-       self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)   
-    end    
+
+       self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)
+    end
 
     def inspect
       result = inspect_prefix + '@test ' + test.inspect + ', '
@@ -209,10 +212,10 @@ module Skeem
       result << '@alternate ' + alternate.inspect + inspect_suffix
       result
     end
-    
+
     def associations
       [:test, :consequent, :alternate]
-    end    
+    end
   end # class
 
   SkmArity = Struct.new(:low, :high) do
@@ -301,15 +304,15 @@ module Skeem
     def evaluate(aRuntime)
       formals.evaluate(aRuntime)
     end
-=begin    
+=begin
   TODO
     def quasiquote(aRuntime)
       quasi_test = test.quasiquote(aRuntime)
       quasi_consequent = consequent.quasiquote(aRuntime)
       quasi_alternate = alternate.quasiquote(aRuntime)
-      
-       self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)   
-    end    
+
+       self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)
+    end
 =end
     def call(aRuntime, aProcedureCall)
       aRuntime.nest
@@ -331,13 +334,15 @@ module Skeem
       formals.required_arity
     end
 
+    alias eqv? equal?
+
     def inspect
       result = inspect_prefix + '@formals ' + formals.inspect + ', '
       result << '@definitions ' + definitions.inspect + ', '
       result << '@sequence ' + sequence.inspect + inspect_suffix
       result
     end
-    
+
     def associations
       [:formals, :definitions, :sequence]
     end

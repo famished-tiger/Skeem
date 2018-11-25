@@ -1,10 +1,14 @@
 ; Standard R7RS procedures from section 6.2.6
+
+; (zero? z)
+; Returns true iff z is zero
 (define zero?
   (lambda (z)
     (if (= z 0)
       #t
       #f)))
 
+; (positive? x)      
 ; Return true if x greater or equal to zero; false otherwise
 (define positive?
   (lambda (x)
@@ -12,29 +16,43 @@
       #t
       #f)))
 
+; (negative? x)
+; Returns true iff x < 0      
 (define negative?
   (lambda (x)
     (if (< x 0)
       #t
       #f)))
 
+; (inexact? z)
+; Returns true iff z is not an exact number      
+(define inexact?
+  (lambda (z) 
+    (not (exact? z))))
+
 ; For backwards compatibility
 (define modulo
   (lambda (x y)
     (floor-remainder x y)))
 
+; (odd? n)
+; Returns true iff n is odd
 (define odd?
   (lambda (n)
     (if (= (modulo n 2) 1)
       #t
       #f)))
 
+; (even? n)
+; Returns true iff n is even
 (define even?
   (lambda (n)
     (if (= (modulo n 2) 0)
       #t
       #f)))
 
+; (abs x)
+; Returns the absolute value of a number
 (define abs
   (lambda (x)
     (if (positive? x)
@@ -45,7 +63,15 @@
   (lambda (z)
     (* z z)))
 
-(define symbol=? string=?)
-    
+; (not obj)
+; Logical inverse of obj
+(define (not obj)
+  (if obj #f #t))
+
+; (list arg ...)
+; Allocates and returns a new list from its arguments   
 (define list
   (lambda args args))
+
+
+(define symbol=? string=?)
