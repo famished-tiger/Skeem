@@ -93,8 +93,8 @@ module Skeem
       call_stack.pop
     end
     
-    def caller
-      call_stack.last
+    def caller(index = -1)
+      call_stack[index]
     end
 
     private

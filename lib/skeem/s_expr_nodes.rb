@@ -121,6 +121,7 @@ module Skeem
     attr_reader :operator
     attr_reader :operands
     attr_accessor :call_site
+    attr_accessor :operands_consumed
 
     def initialize(aPosition, anOperator, theOperands)
       super(aPosition)
@@ -131,13 +132,28 @@ module Skeem
         @operator = anOperator
       end
       @operands = SkmList.new(theOperands)
+      @operands_consumed = false
     end
 
     def evaluate(aRuntime)
+      aRuntime.push_call(self)
       if operator.kind_of?(SkmLambda)
         procedure = operator
       else
         var_key = operator.evaluate(aRuntime)
+        if operator.kind_of?(ProcedureCall) && operands_consumed
+          return var_key
+        end
+        begin
+          aRuntime.include?(var_key.value)
+        rescue NoMethodError
+          $stderr.puts "VVVVVVVVVVVVVVV"
+          $stderr.puts 'var_key: ' + var_key.inspect
+          $stderr.puts 'operator: ' + operator.inspect
+          $stderr.puts 'operands: ' + operands.inspect
+          $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
+          $stderr.puts "^^^^^^^^^^^^^^^"
+        end
         unless aRuntime.include?(var_key.value)
           err = StandardError
           key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
@@ -145,13 +161,16 @@ module Skeem
           raise err, err_msg
         end
         procedure = aRuntime.environment.fetch(var_key.value)
-        # $stderr.puts "## CALL(#{var_key.value}) ###################"
-        # $stderr.puts operands.inspect
       end
-      aRuntime.push_call(self)
+      # $stderr.puts "## In ProcCall #{var_key.value} #############"
+      # $stderr.puts 'operator: ' + operator.inspect
+      # $stderr.puts 'operands: ' + operands.inspect
+      # $stderr.puts "## CALL(#{var_key.value}) ###################"
+      # $stderr.puts 'callee: ' + procedure.inspect
       result = procedure.call(aRuntime, self)
+      operands_consumed = true
       aRuntime.pop_call
-      # $stderr.puts "## RETURN #{result.inspect}"
+      # $stderr.puts "## RETURN #{result.inspect} from #{var_key.value}"
       result
     end
 
@@ -317,7 +336,6 @@ module Skeem
     def call(aRuntime, aProcedureCall)
       aRuntime.nest
       bind_locals(aRuntime, aProcedureCall)
-      # TODO remove next line
       # $stderr.puts aRuntime.environment.inspect
       result = evaluate_defs(aRuntime)
       result = evaluate_sequence(aRuntime)
@@ -382,7 +400,14 @@ module Skeem
     def evaluate_sequence(aRuntime)
       result = nil
       if sequence
-        sequence.each { |cmd| result = cmd.evaluate(aRuntime) }
+        sequence.each do |cmd|
+          if cmd.kind_of?(SkmLambda)
+            aRuntime.caller(-2).operands_consumed = true
+            result = cmd.call(aRuntime, aRuntime.caller(-2))
+          else
+            result = cmd.evaluate(aRuntime)
+          end
+        end
       end
 
       result
@@ -411,10 +436,10 @@ module Skeem
       end
     end
 
-    def msg_arity_mismatch(aProcedureCall)
+    def msg_arity_mismatch(aProcCall)
       # *** ERROR: wrong number of arguments for #<closure morph> (required 2, got 1)
-      msg1 = "Wrong number of arguments for procedure #{operator} "
-      count_actuals = aProcedureCall.operands.members.size
+      msg1 = "Wrong number of arguments for procedure #{aProcCall.operator} "
+      count_actuals = aProcCall.operands.members.size
       msg2 = "(required #{required_arity}, got #{count_actuals})"
       msg1 + msg2
     end

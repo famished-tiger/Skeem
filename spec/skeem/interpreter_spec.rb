@@ -202,7 +202,7 @@ SKEEM
         result = subject.run(source)
         expect(result).to be_kind_of(SkmList)
         expect(result).to be_null
-      end      
+      end
 
       it 'should implement the lambda function with one arg' do
         source = <<-SKEEM
@@ -332,7 +332,7 @@ SKEEM
           expect(result.members[index]).to eq(value)
         end
       end
-      
+
       it 'should implement the unquote of vectors' do
         source = '`#( ,(+ 1 2) 4)'
         result = subject.run(source)
@@ -350,7 +350,7 @@ SKEEM
         result = subject.run(source)
         expect(result).to be_kind_of(SkmVector)
         expect(result).to be_empty
-        
+
         # Nested vectors
         source = '`#(a b #(,(+ 2 3) c) d)'
         result = subject.run(source)
@@ -365,9 +365,9 @@ SKEEM
         predictions.each_with_index do |(type, value), index|
           expect(result.members[index]).to be_kind_of(type)
           expect(result.members[index]).to eq(value)
-        end        
-      end      
-            
+        end
+      end
+
       it 'should implement the quasiquotation of lists' do
         source = '(quasiquote (+ 1 2))'
         result = subject.run(source)
@@ -387,7 +387,7 @@ SKEEM
         expect(result).to be_kind_of(SkmList)
         expect(result).to be_null
       end
-      
+
       it 'should implement the unquote of lists' do
         source = '`(list ,(+ 1 2) 4)'
         result = subject.run(source)
@@ -406,7 +406,7 @@ SKEEM
         result = subject.run(source)
         expect(result).to be_kind_of(SkmList)
         expect(result).to be_null
-        
+
         # nested lists
         source = '`(a b (,(+ 2 3) c) d)'
         result = subject.run(source)
@@ -421,22 +421,22 @@ SKEEM
         predictions.each_with_index do |(type, value), index|
           expect(result.members[index]).to be_kind_of(type)
           expect(result.members[index]).to eq(value)
-        end        
+        end
       end
 =begin
 `(+ 2 ,(* 3 4))  (+ 2 12)
 `(a b ,(reverse '(c d e)) f g)  (a b (e d c) f g)
 (let ([a 1] [b 2])
-  `(,a . ,b))  (1 . 2) 
+  `(,a . ,b))  (1 . 2)
 
 `(+ ,@(cdr '(* 2 3)))  (+ 2 3)
 `(a b ,@(reverse '(c d e)) f g)  (a b e d c f g)
 (let ([a 1] [b 2])
   `(,a ,@b))  (1 . 2)
-`#(,@(list 1 2 3))  #(1 2 3) 
+`#(,@(list 1 2 3))  #(1 2 3)
 
 '`,(cons 'a 'b)  `,(cons 'a 'b)
-`',(cons 'a 'b)  '(a . b) 
+`',(cons 'a 'b)  '(a . b)
 =end
     end # context
 
@@ -567,7 +567,7 @@ SKEEM
           expect(result).to eq(expectation)
         end
       end
-      
+
       it 'should implement the not procedure' do
         checks = [
           ['(not #t)', false],
@@ -582,8 +582,8 @@ SKEEM
           result = subject.run(skeem_expr)
           expect(result).to eq(expectation)
         end
-      end      
-      
+      end
+
       it 'should implement the list procedure' do
         checks = [
           ['(list)', []],
@@ -595,7 +595,7 @@ SKEEM
           expect(result.members).to eq(expectation)
         end
       end
-      
+
       it 'should implement the symbol=? procedure' do
         checks = [
           ["(symbol=? 'a 'a)", true],
@@ -606,7 +606,21 @@ SKEEM
           result = subject.run(skeem_expr)
           expect(result).to eq(expectation)
         end
-      end      
+      end
+    end # context
+
+    context 'More advanced tests' do
+      it 'should implement second-order functions' do
+        source = <<-SKEEM
+  (define compose
+    (lambda (f g)
+      (lambda (x)
+        (f (g x)))))
+  ((compose list square) 5)
+SKEEM
+        result = subject.run(source)
+        expect(result.last.members).to eq([25])
+      end
     end # context
   end # describe
 end # module

@@ -17,6 +17,7 @@ module Skeem
       # Arguments are positional in a primitive procedure.
       def call(aRuntime, aProcedureCall)
         check_actual_count(aProcedureCall)
+        aProcedureCall.operands_consumed = true
         do_call(aRuntime, aProcedureCall.operands.to_a)
       end
 
