@@ -1,3 +1,19 @@
+## [0.0.28] - 2018-12-10
+- Nasty bug fix: interpreter was'nt able to retrieve data argument deep in call stack.
+
+### Added
+- Method `Environment#inspect`
+
+### Fixed
+- Method `SkmDefinition#call` now accepts variable references that refer to a lambda or a primitive procedure.
+- Method `SkmLambda#evaluate_sequence` failed when argument value came from a caller deep in call stack?
+- Added a specific test in `interpreter_spec.rb`
+
+## [0.0.27] - 2018-11-25
+### Fixed
+- The interpreter failed with second-order lambdas (lambda expression that contains another lambda)
+- Added a specific test in `interpreter_spec.rb`
+
 ## [0.0.26] - 2018-11-25
 
 ### Added

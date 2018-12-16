@@ -621,6 +621,24 @@ SKEEM
         result = subject.run(source)
         expect(result.last.members).to eq([25])
       end
+
+      it 'should implement lambda that calls second-order functions' do
+        source = <<-SKEEM
+  (define twice
+    (lambda (x)
+      (* 2 x)))
+  (define compose
+    (lambda (f g)
+      (lambda (x)
+        (f (g x)))))
+  (define repeat
+    (lambda (f)
+      (compose f f)))
+  ((repeat twice) 5)
+SKEEM
+        result = subject.run(source)
+        expect(result.members.last).to eq(20)
+      end
     end # context
   end # describe
 end # module

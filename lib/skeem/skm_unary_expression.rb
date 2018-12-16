@@ -88,13 +88,14 @@ module Skeem
 
   class SkmVariableReference  < SkmUnaryExpression
     alias variable child
-    
+
     def eqv?(other)
       child == other.child
     end
 
     def evaluate(aRuntime)
       var_key = variable.evaluate(aRuntime)
+      # $stderr.puts "Variable #{variable.inspect}"
       aRuntime.evaluate(var_key)
     end
 

@@ -164,7 +164,14 @@ module Skeem
             first_one = arglist.first.evaluate(runtime)
             raw_result = first_one.value
             operands = evaluate_tail(arglist, runtime)
+            begin
             operands.each { |elem| raw_result *= elem.value }
+            rescue NoMethodError => exc
+              # $stderr.puts aRuntime.environment.inspect
+              # $stderr.puts first_one.inspect
+              # $stderr.puts operands.inspect
+              raise exc
+            end
             to_datum(raw_result)
           end
         end

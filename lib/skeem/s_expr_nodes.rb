@@ -68,7 +68,7 @@ module Skeem
               end
             end
           else
-            # INFINITE LOOP DANGER: definition of 'x' is a reference to 'x'!
+            # INFINITE LOOP DANGER: definition of 'x' has a reference to 'x'!
             # Way out: the lookup for the reference should start from outer
             # environment.
             env = aRuntime.pop
@@ -96,11 +96,14 @@ module Skeem
 
     # call method should only invoked when the expression is a SkmLambda
     def call(aRuntime, aProcedureCall)
-      unless [SkmLambda, Primitive::PrimitiveProcedure].include?(expression.class)
-        err_msg = "Expected a SkmLambda instead of #{expression.class}"
+      expr = expression
+      expr = expr.evaluate(aRuntime) if expr.kind_of?(SkmVariableReference)
+      unless [SkmLambda, Primitive::PrimitiveProcedure].include?(expr.class)
+        err_msg = "Expected a SkmLambda instead of #{expr.class}"
         raise StandardError, err_msg
       end
-      expression.call(aRuntime, aProcedureCall)
+      # $stderr.puts "SkmDefinition#call #{aProcedureCall.inspect}"
+      expr.call(aRuntime, aProcedureCall)
     end
 
     def inspect
@@ -146,13 +149,14 @@ module Skeem
         end
         begin
           aRuntime.include?(var_key.value)
-        rescue NoMethodError
-          $stderr.puts "VVVVVVVVVVVVVVV"
-          $stderr.puts 'var_key: ' + var_key.inspect
-          $stderr.puts 'operator: ' + operator.inspect
-          $stderr.puts 'operands: ' + operands.inspect
-          $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
-          $stderr.puts "^^^^^^^^^^^^^^^"
+        rescue NoMethodError => exc
+          # $stderr.puts "VVVVVVVVVVVVVVV"
+          # $stderr.puts 'var_key: ' + var_key.inspect
+          # $stderr.puts 'operator: ' + operator.inspect
+          # $stderr.puts 'operands: ' + operands.inspect
+          # $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
+          # $stderr.puts "^^^^^^^^^^^^^^^"
+          raise exc
         end
         unless aRuntime.include?(var_key.value)
           err = StandardError
@@ -162,11 +166,13 @@ module Skeem
         end
         procedure = aRuntime.environment.fetch(var_key.value)
       end
-      # $stderr.puts "## In ProcCall #{var_key.value} #############"
-      # $stderr.puts 'operator: ' + operator.inspect
-      # $stderr.puts 'operands: ' + operands.inspect
-      # $stderr.puts "## CALL(#{var_key.value}) ###################"
-      # $stderr.puts 'callee: ' + procedure.inspect
+      unless var_key.nil?
+        # $stderr.puts "## In ProcCall #{var_key.value} #############"
+        # $stderr.puts 'operator: ' + operator.inspect
+        # $stderr.puts 'operands: ' + operands.inspect
+        # $stderr.puts "## CALL(#{var_key.value}) ###################"
+        # $stderr.puts 'callee: ' + procedure.inspect
+      end
       result = procedure.call(aRuntime, self)
       operands_consumed = true
       aRuntime.pop_call
@@ -321,7 +327,8 @@ module Skeem
     end
 
     def evaluate(aRuntime)
-      formals.evaluate(aRuntime)
+      # formals.evaluate(aRuntime)
+      self
     end
 =begin
   TODO
@@ -336,7 +343,9 @@ module Skeem
     def call(aRuntime, aProcedureCall)
       aRuntime.nest
       bind_locals(aRuntime, aProcedureCall)
+      # $stderr.puts 'LOCALS vvvvvvvvvvv'
       # $stderr.puts aRuntime.environment.inspect
+      # $stderr.puts 'LOCALS ^^^^^^^^^^^'
       result = evaluate_defs(aRuntime)
       result = evaluate_sequence(aRuntime)
       aRuntime.unnest
@@ -391,6 +400,7 @@ module Skeem
         a_def = SkmDefinition.new(position, variadic_arg_name, args_coll)
         a_def.evaluate(aRuntime)
       end
+      aProcedureCall.operands_consumed = true
     end
 
     def evaluate_defs(aRuntime)
@@ -402,8 +412,16 @@ module Skeem
       if sequence
         sequence.each do |cmd|
           if cmd.kind_of?(SkmLambda)
-            aRuntime.caller(-2).operands_consumed = true
-            result = cmd.call(aRuntime, aRuntime.caller(-2))
+            caller_index = -2
+            loop do
+              raise StandardError, "Missing argument" unless aRuntime.caller(caller_index)
+              unless aRuntime.caller(caller_index).operands_consumed
+                aRuntime.caller(caller_index).operands_consumed = true
+                result = cmd.call(aRuntime, aRuntime.caller(caller_index))
+                break
+              end
+              caller_index -= 1
+            end
           else
             result = cmd.evaluate(aRuntime)
           end
@@ -413,9 +431,11 @@ module Skeem
       result
     end
 
+    # Purpose: bind each formal from lambda to an actual value from the call
     def bind_required_locals(aRuntime, aProcedureCall)
       max_index = required_arity - 1
       actuals =  aProcedureCall.operands.members
+      formal_names = formals.formals.map(&:value)
 
       formals.formals.each_with_index do |arg_name, index|
         arg = actuals[index]
@@ -430,8 +450,13 @@ module Skeem
         # IMPORTANT: execute procedure call in argument list now
         arg = arg.evaluate(aRuntime) if arg.kind_of?(ProcedureCall)
         a_def = SkmDefinition.new(position, arg_name, arg)
-        a_def.evaluate(aRuntime)
-        # $stderr.puts "LOCAL #{a_def.inspect}"
+        # $stderr.puts "Procedure call #{aProcedureCall.operator.inspect}"
+        # $stderr.puts "LOCAL #{arg_name.value} #{arg.inspect}"
+        if arg.kind_of?(SkmVariableReference) && !formal_names.include?(arg.value)
+          aRuntime.define(arg_name, a_def)
+        else
+          a_def.evaluate(aRuntime)
+        end
         break if index >= max_index
       end
     end

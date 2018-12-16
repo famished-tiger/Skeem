@@ -3,7 +3,10 @@ require_relative 'environment'
 
 module Skeem
   class Runtime
+    # @return [Environment]
     attr_reader(:environment)
+
+    # @return [Array<ProcedureCall>] The call stack
     attr_reader(:call_stack)
 
     def initialize(anEnvironment)
@@ -14,7 +17,7 @@ module Skeem
     def include?(anIdentifier)
       environment.include?(normalize_key(anIdentifier))
     end
-    
+
     def fetch(aKey)
       key_value = normalize_key(aKey)
       include?(key_value) ? environment.fetch(key_value) : nil
@@ -28,14 +31,24 @@ module Skeem
       key_value = normalize_key(aKey)
       if include?(key_value)
         entry = environment.fetch(key_value)
-        case entry
-          when Primitive::PrimitiveProcedure
-            entry
-          when SkmDefinition
-            entry.expression.evaluate(self)
-          else
-            raise StandardError, entry.inspect
+        result = nil
+        begin
+          case entry
+            when Primitive::PrimitiveProcedure
+              result = entry
+            when SkmDefinition
+              result = entry.expression.evaluate(self)
+            else
+              raise StandardError, entry.inspect
+          end
+        rescue NoMethodError => exc
+          # $stderr.puts 'In rescue block'
+          # $stderr.puts key_value.inspect
+          # $stderr.puts entry.inspect
+          # $stderr.puts entry.expression.inspect
+          raise exc
         end
+        result
       else
         err = StandardError
         key = aKey.kind_of?(SkmIdentifier) ? aKey.value : key_value
@@ -43,7 +56,7 @@ module Skeem
         raise err, err_msg
       end
     end
-    
+
     # @param aList[SkmList] first member is an identifier.
     def evaluate_form(aList)
       # TODO: manage the cases where first_member is a keyword
@@ -69,30 +82,35 @@ module Skeem
 
     def push(anEnvironment)
       @environment = anEnvironment
-    end    
-    
+    end
+
     # Make the outer enviromnent thecurrent one inside the provided block
     def pop
       env = environment
       @environment = environment.outer
       env
     end
-    
+
     def push_call(aProcCall)
       if aProcCall.kind_of?(ProcedureCall)
         call_stack.push(aProcCall)
       else
         raise StandardError, "Invalid call object #{aProcCall.inspect}"
       end
+      # $stderr.puts 'CALL STACK vvvv'
+      call_stack.each do |proc_call|
+      # $stderr.puts proc_call.inspect
+      end
+      # $stderr.puts 'CALL STACK ^^^^'
     end
-    
+
     def pop_call()
       if call_stack.empty?
         raise StandardError, 'Skeem call stack empty!'
       end
       call_stack.pop
     end
-    
+
     def caller(index = -1)
       call_stack[index]
     end
