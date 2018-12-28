@@ -72,6 +72,30 @@
 ; Allocates and returns a new list from its arguments   
 (define list
   (lambda args args))
+ 
+; (define caar 
+  ; (lambda (x)
+    ; (car (car x))))
 
+; (define cadr 
+  ; (lambda (x) 
+    ; (car (cdr x))))
 
+;(define cdar 
+;  (lambda(x)
+;    (cdr (car x))))
+
+;(define cddr 
+;  (lambda (x) 
+;    (cdr (cdr x))))
+
+;; (list-ref list n)    
+;; Return the nth (sero-based) element of list
+;; n must be a nonnegative integer
+;(define list-ref
+;  (lambda (ls n)
+;    (if (= n 0)
+;        (car ls)
+;        (list-ref (cdr ls) (- n 1))))) 
+ 
 (define symbol=? string=?)

@@ -16,9 +16,10 @@ module Skeem
 
       # Arguments are positional in a primitive procedure.
       def call(aRuntime, aProcedureCall)
-        check_actual_count(aProcedureCall)
+        actuals = aProcedureCall.operands.to_a
+        check_actual_count(actuals)
         aProcedureCall.operands_consumed = true
-        do_call(aRuntime, aProcedureCall.operands.to_a)
+        do_call(aRuntime, actuals)
       end
 
       private
@@ -50,8 +51,8 @@ module Skeem
         anArity
       end
 
-      def check_actual_count(aProcedureCall)
-        count_actuals = aProcedureCall.operands.size
+      def check_actual_count(actuals)
+        count_actuals = actuals.size
         if arity.nullary?
           unless count_actuals.zero?
             wrong_number_arguments(arity.high, count_actuals)
@@ -77,7 +78,7 @@ module Skeem
             arguments = []
             arguments << operands.take(arity.low).flatten
             count_delta = operands.size - arity.low
-            arguments << SkmList.new(operands.slice(-count_delta, count_delta))
+            arguments << SkmPair.create_from_a(operands.slice(-count_delta, count_delta))
             #p operands.size
             #p count_delta
             #p arguments.inspect

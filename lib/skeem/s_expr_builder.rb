@@ -1,4 +1,5 @@
 require 'stringio'
+require_relative 'skm_pair'
 require_relative 's_expr_nodes'
 
 module Skeem
@@ -38,8 +39,9 @@ module Skeem
     # rule('program' => 'cmd_or_def_plus').as 'main'
     def reduce_main(_production, _range, _tokens, theChildren)
       last_child = theChildren.last
-      result = if last_child.members.size == 1
-                  last_child.members[0]
+      # $stderr.puts last_child.inspect
+      result = if last_child.length == 1
+                  last_child.car
                 else
                   last_child
                 end
@@ -47,13 +49,13 @@ module Skeem
 
     # rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
     def reduce_multiple_cmd_def(_production, _range, _tokens, theChildren)
-      theChildren[0].members << theChildren[1]
+      theChildren[0].append(theChildren[1])
       theChildren[0]
     end
 
     # rule('cmd_or_def_plus' => 'cmd_or_def').as 'last_cmd_def'
     def reduce_last_cmd_def(_production, _range, _tokens, theChildren)
-      SkmList.new([theChildren.last])
+      SkmPair.create_from_a([theChildren.last])
     end
 
     # rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN')
@@ -86,9 +88,24 @@ module Skeem
     end
 
     # rule('list' => 'LPAREN datum_star RPAREN').as 'list'
-    def reduce_list(_production, aRange, _tokens, theChildren)
-      SkmList.new(theChildren[1])
+    def reduce_list(_production, _range, _tokens, theChildren)
+      SkmPair.create_from_a(theChildren[1])
     end
+    
+    # rule('list' => 'LPAREN datum_plus PERIOD datum RPAREN').as 'dotted_list'
+    def reduce_dotted_list(_production, _range, _tokens, theChildren)
+      # if theChildren[1].kind_of?(Array)
+        # if theChildren[1].size == 1
+          # car_arg = theChildren[1].first
+        # else
+          # car_arg = SkmPair.create_from_a(theChildren[1])
+        # end
+      # else
+        # car_arg = theChildren[1]
+      # end
+      
+      SkmPair.new(theChildren[1], theChildren[3])
+    end    
 
     # rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
     def reduce_vector(_production, aRange, _tokens, theChildren)
@@ -197,7 +214,7 @@ module Skeem
 
     # rule('sequence' => 'command_star expression').as 'sequence'
     def reduce_sequence(_production, _range, _tokens, theChildren)
-      SkmList.new(theChildren[0] << theChildren[1])
+      SkmPair.create_from_a(theChildren[0] << theChildren[1])
     end
 
     # rule('command_star' => 'command_star command').as 'multiple_commands'
@@ -225,22 +242,21 @@ module Skeem
       # $stderr.puts theChildren[1].inspect
       SkmQuasiquotation.new(theChildren[1])
     end
-    
+
     # rule('list_qq_template' => 'LPAREN qq_template_or_splice_star RPAREN').as 'list_qq'
     def reduce_list_qq(_production, _range, _tokens, theChildren)
-      SkmList.new(theChildren[1])
-    end    
+      SkmPair.create_from_a(theChildren[1])
+    end
 
     # rule('vector_qq_template' => 'VECTOR_BEGIN qq_template_or_splice_star RPAREN').as 'vector_qq'
     def reduce_vector_qq(_production, _range, _tokens, theChildren)
       SkmVector.new(theChildren[1])
     end
-    
+
     # rule('unquotation' => 'COMMA qq_template').as 'unquotation_short'
     def reduce_unquotation_short(_production, aRange, _tokens, theChildren)
       SkmUnquotation.new(theChildren[1])
     end
-    
 
     # rule('qq_template_or_splice_star' => 'qq_template_or_splice_star qq_template_or_splice').as 'multiple_template_splice'
     def reduce_multiple_template_splice(_production, _range, _tokens, theChildren)

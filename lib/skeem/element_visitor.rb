@@ -49,7 +49,20 @@ module Skeem
       broadcast(:after_compound_datum, aCompoundDatum)
     end
 
+    # Visit event. The visitor is visiting the
+    # given empty list object.
+    # @param anEmptyList [SkmEmptyList] the empty list object to visit.
+    def visit_empty_list(anEmptyList)
+      broadcast(:before_empty_list, anEmptyList)
+      broadcast(:after_empty_list, anEmptyList)
+    end
 
+
+    def visit_pair(aPair)
+      broadcast(:before_pair, aPair)
+      traverse_car_cdr(aPair)
+      broadcast(:after_pair, aPair)
+    end
 
 =begin
    # Visit event. The visitor is about to visit the given non terminal node.
@@ -76,6 +89,19 @@ module Skeem
       children.each { |a_child| a_child.accept(self) }
 
       broadcast(:after_children, aParent, children)
+    end
+
+    def traverse_car_cdr(aPair)
+      if aPair.car
+        broadcast(:before_car, aPair, aPair.car)
+        aPair.car.accept(self)
+        broadcast(:after_car, aPair, aPair.car)
+      end
+      if aPair.cdr
+        broadcast(:before_cdr, aPair, aPair.cdr)
+        aPair.cdr.accept(self)
+        broadcast(:after_cdr, aPair, aPair.cdr)
+      end
     end
 
     # Send a notification to all subscribers.

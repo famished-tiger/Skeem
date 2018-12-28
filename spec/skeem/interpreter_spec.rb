@@ -187,20 +187,21 @@ SKEEM
       it 'should implement the quotation of lists' do
         source = '(quote (+ 1 2))'
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmPair)
         predictions = [
           [SkmIdentifier, '+'],
           [SkmInteger, 1],
           [SkmInteger, 2]
         ]
+        members = result.to_a
         predictions.each_with_index do |(type, value), index|
-          expect(result.members[index]).to be_kind_of(type)
-          expect(result.members[index]).to eq(value)
+          expect(members[index]).to be_kind_of(type)
+          expect(members[index]).to eq(value)
         end
 
         source = "'()"
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmEmptyList)
         expect(result).to be_null
       end
 
@@ -263,7 +264,7 @@ SKEEM
         # Example from R7RS section 4.1.4
         source = '((lambda x x) 3 4 5 6)'
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmPair)
         expect(result.length).to eq(4)
       end
 
@@ -271,9 +272,9 @@ SKEEM
         # Example from R7RS section 4.1.4
         source = '((lambda (x y . z) z) 3 4 5 6)'
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmPair)
         expect(result.length).to eq(2)
-        expect(result.head).to eq(5)
+        expect(result.first).to eq(5)
         expect(result.last).to eq(6)
       end
 
@@ -371,56 +372,59 @@ SKEEM
       it 'should implement the quasiquotation of lists' do
         source = '(quasiquote (+ 1 2))'
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmPair)
         predictions = [
           [SkmIdentifier, '+'],
           [SkmInteger, 1],
           [SkmInteger, 2]
         ]
-        predictions.each_with_index do |(type, value), index|
-          expect(result.members[index]).to be_kind_of(type)
-          expect(result.members[index]).to eq(value)
+        predictions.each do |(type, value)|
+          expect(result.car).to be_kind_of(type)
+          expect(result.car).to eq(value)
+          result = result.cdr
         end
 
         source = "`()"
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmEmptyList)
         expect(result).to be_null
       end
 
       it 'should implement the unquote of lists' do
         source = '`(list ,(+ 1 2) 4)'
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmPair)
         predictions = [
           [SkmIdentifier, 'list'],
           [SkmInteger, 3],
           [SkmInteger, 4]
         ]
-        predictions.each_with_index do |(type, value), index|
-          expect(result.members[index]).to be_kind_of(type)
-          expect(result.members[index]).to eq(value)
+        predictions.each do |(type, value)|
+          expect(result.car).to be_kind_of(type)
+          expect(result.car).to eq(value)
+          result = result.cdr
         end
 
         source = "`()"
         result = subject.run(source)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmEmptyList)
         expect(result).to be_null
 
         # nested lists
         source = '`(a b (,(+ 2 3) c) d)'
         result = subject.run(source)
         # expected: (a b (5 c) d)
-        expect(result).to be_kind_of(SkmList)
+        expect(result).to be_kind_of(SkmPair)
         predictions = [
           [SkmIdentifier, 'a'],
           [SkmIdentifier, 'b'],
-          [SkmList, list([integer(5), identifier('c')])],
+          [SkmPair, list([integer(5), identifier('c')])],
           [SkmIdentifier, 'd']
         ]
-        predictions.each_with_index do |(type, value), index|
-          expect(result.members[index]).to be_kind_of(type)
-          expect(result.members[index]).to eq(value)
+        predictions.each do |(type, value)|
+          expect(result.car).to be_kind_of(type)
+          expect(result.car).to eq(value)
+          result = result.cdr
         end
       end
 =begin
@@ -592,7 +596,7 @@ SKEEM
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
-          expect(result.members).to eq(expectation)
+          expect(result.to_a).to eq(expectation)
         end
       end
 
@@ -619,7 +623,7 @@ SKEEM
   ((compose list square) 5)
 SKEEM
         result = subject.run(source)
-        expect(result.last.members).to eq([25])
+        expect(result.last.car).to eq(25)
       end
 
       it 'should implement lambda that calls second-order functions' do
@@ -637,7 +641,7 @@ SKEEM
   ((repeat twice) 5)
 SKEEM
         result = subject.run(source)
-        expect(result.members.last).to eq(20)
+        expect(result.last).to eq(20)
       end
     end # context
   end # describe

@@ -1,5 +1,6 @@
 require_relative 'skm_simple_datum'
 require_relative 'skm_compound_datum'
+require_relative 'skm_pair'
 
 module Skeem
   # Mixin module that provides factory methods that ease the conversion of
@@ -75,16 +76,16 @@ module Skeem
     def list(aLiteral)
       result = case aLiteral
         when Array
-          SkmList.new(to_datum(aLiteral))
-        when SkmList
-          SkmList.new(to_datum(aLiteral.members))
+          SkmPair.create_from_a(to_datum(aLiteral))
+        when SkmPair
+          SkmPair.create_from_a(to_datum(aLiteral.to_a))
         else
-          SkmList.new([to_datum(aLiteral)])
+          SkmPair.new(to_datum(aLiteral), SkmEmptyList.instance)
         end
 
       result
     end
-    
+
     def vector(aLiteral)
       result = case aLiteral
         when Array
@@ -96,8 +97,9 @@ module Skeem
         end
 
       result
-    end    
+    end
 
+    # Conversion from Ruby object value to Skeem datum
     def to_datum(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmSimpleDatum)
       return list(aLiteral.members) if aLiteral.kind_of?(SkmList)
@@ -114,6 +116,9 @@ module Skeem
           SkmBoolean.create(aLiteral)
         when String
           parse_literal(aLiteral)
+        when SkmPair  # Special case: not a PORO literal
+          # One assumes that a Skeem list contains only Skeem datum objects
+          SkmPair.create_from_a(aLiteral.to_a)
         else
           raise StandardError, aLiteral.inspect
         end

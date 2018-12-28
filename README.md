@@ -178,7 +178,7 @@ This section lists the implemented standard procedures
 * Integer-level: `even?`, `odd?`
 
 #### List procedures
-* `list?`, `null?`, `list`, `length`
+* `list?`, `null?`, `pair?`, `car`, `cdr`, `cons`,  `length`, `list`, `list->vector`
 
 #### String procedures
 * `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`,
@@ -187,7 +187,7 @@ This section lists the implemented standard procedures
 * `symbol?`, `symbol=?`
 
 #### Vector procedures
-* `vector?`, `vector`, `vector-length`, `vector-set!`
+* `vector?`, `vector`, `vector-length`, `vector-set!`, `vector->list`
 
 #### Input/output procedures
 * `newline`
@@ -204,7 +204,7 @@ Roadmap:
 - Extend the language in order to support [Minikanren](https://github.com/TheReasonedSchemer2ndEd/CodeFromTheReasonedSchemer2ndEd)
 - Make it pass all examples from the [Reasoned Schemer](https://mitpress.mit.edu/books/reasoned-schemer-second-edition) book.
 
-## Other Scheme implementation in Ruby
+## Other Scheme implementations in Ruby
 __Skeem__ isn't the sole implementation of the Scheme language in Ruby.  
 Here are a few other ones:  
 - [Heist gem](https://rubygems.org/gems/heist) -- Probably one of best Scheme implementation in Ruby. Really worth a try. Alas, the [project](https://github.com/jcoglan/heist) seems to be dormant for several years.

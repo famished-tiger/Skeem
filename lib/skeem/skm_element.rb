@@ -36,6 +36,10 @@ module Skeem
     def null?
       false
     end
+    
+    def pair?
+      false
+    end
 
     def vector?
       false

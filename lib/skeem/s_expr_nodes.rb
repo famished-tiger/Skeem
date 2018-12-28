@@ -1,8 +1,7 @@
 # Classes that implement nodes of Abstract Syntax Trees (AST) representing
 # Skeem parse results.
 
-require_relative 'skm_simple_datum'
-require_relative 'skm_compound_datum'
+require_relative 'datum_dsl'
 require_relative 'skm_unary_expression'
 
 module Skeem
@@ -46,6 +45,9 @@ module Skeem
       super(aPosition)
       @variable = aVariable
       @expression = theExpression
+      unless expression.kind_of?(SkmElement)
+        raise StandardError, "Bad definition"
+      end
     end
 
     def evaluate(aRuntime)
@@ -134,7 +136,11 @@ module Skeem
       else
         @operator = anOperator
       end
-      @operands = SkmList.new(theOperands)
+      if theOperands.nil?
+        @operands = SkmEmptyList.instance
+      else
+        @operands = SkmPair.create_from_a(theOperands)
+      end
       @operands_consumed = false
     end
 
@@ -313,6 +319,8 @@ module Skeem
   end # class
 
   class SkmLambda < SkmMultiExpression
+    include DatumDSL
+
     # @!attribute [r] formals
     # @return [Array<SkmIdentifier>] the argument names
     attr_reader :formals
@@ -377,7 +385,7 @@ module Skeem
     private
 
     def bind_locals(aRuntime, aProcedureCall)
-      actuals =  aProcedureCall.operands.members
+      actuals =  aProcedureCall.operands.to_a
       count_actuals = actuals.size
 
       if (count_actuals < required_arity) ||
@@ -392,12 +400,16 @@ module Skeem
           if actual.kind_of?(ProcedureCall)
             actual.evaluate(aRuntime)
           else
-            actual
+            to_datum(actual)
           end
         end
         variadic_arg_name = formals.formals.last
-        args_coll = SkmList.new(variadic_part)
+        args_coll = SkmPair.create_from_a(variadic_part)
         a_def = SkmDefinition.new(position, variadic_arg_name, args_coll)
+        # $stderr.puts "Tef #{a_def.inspect}"
+        # $stderr.puts "Tef #{actuals.inspect}"
+        # $stderr.puts "Tef #{variadic_part.inspect}"
+        # $stderr.puts "Tef #{aProcedureCall.inspect}"
         a_def.evaluate(aRuntime)
       end
       aProcedureCall.operands_consumed = true
@@ -423,7 +435,14 @@ module Skeem
               caller_index -= 1
             end
           else
-            result = cmd.evaluate(aRuntime)
+            begin
+              result = cmd.evaluate(aRuntime)
+            rescue NoMethodError => exc
+              $stderr.puts self.inspect
+              $stderr.puts sequence.inspect
+              $stderr.puts cmd.inspect
+              raise exc
+            end
           end
         end
       end
@@ -434,14 +453,22 @@ module Skeem
     # Purpose: bind each formal from lambda to an actual value from the call
     def bind_required_locals(aRuntime, aProcedureCall)
       max_index = required_arity - 1
-      actuals =  aProcedureCall.operands.members
+      case aProcedureCall.operands
+        when SkmPair
+          actuals =  aProcedureCall.operands.to_a
+        when SkmEmptyList
+          actuals = []
+        else
+          raise StandardError, "Unsupported type of operand list #{aProcedureCall.operands.inspect}"
+          actuals =  aProcedureCall.operands.members
+      end
       formal_names = formals.formals.map(&:value)
 
       formals.formals.each_with_index do |arg_name, index|
         arg = actuals[index]
         if arg.nil?
           if actuals.empty? && formals.variadic?
-            arg = SkmList.new([])
+            arg = SkmPair.create_from_a([])
           else
             raise StandardError, "Unbound variable: '#{arg_name.value}'"
           end
@@ -449,6 +476,9 @@ module Skeem
 
         # IMPORTANT: execute procedure call in argument list now
         arg = arg.evaluate(aRuntime) if arg.kind_of?(ProcedureCall)
+        unless arg.kind_of?(SkmElement)
+          arg = to_datum(arg)
+        end
         a_def = SkmDefinition.new(position, arg_name, arg)
         # $stderr.puts "Procedure call #{aProcedureCall.operator.inspect}"
         # $stderr.puts "LOCAL #{arg_name.value} #{arg.inspect}"

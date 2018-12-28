@@ -24,7 +24,7 @@ module Skeem
         ['false', false]
       ]
     end
-    
+
     let(:integer_tests) do
       [
         [0, 0],
@@ -33,10 +33,10 @@ module Skeem
         ['0', 0],
         ['-123', -123],
         ['+456', 456]
-      ]      
+      ]
     end
 
-    let(:real_tests) do    
+    let(:real_tests) do
       [
         [0, 0],
         [-123.4, -123.4],
@@ -48,18 +48,18 @@ module Skeem
         ['-1.234e+3', -1234]
       ]
     end
-    
-    let(:string_tests) do    
+
+    let(:string_tests) do
       [
         ['hello', 'hello']
-      ]    
+      ]
     end
-    
-    let(:identifier_tests) do    
+
+    let(:identifier_tests) do
       [
         ['define', 'define'],
         [SkmString.create('positive?'), 'positive?']
-      ]    
+      ]
     end
 
     let(:simple_datum_tests) do
@@ -102,38 +102,38 @@ module Skeem
         end
       end
     end # context
-    
-    
+
+
     context 'Compound datums:' do
-      it 'should convert empty array into one-member list' do 
+      it 'should convert empty array into one-member list' do
         result = subject.list([])
-        expect(result).to be_kind_of(SkmList)
-        expect(result).to be_null      
+        expect(result).to be_kind_of(SkmEmptyList)
+        expect(result).to be_null
       end
-      
+
       it 'should convert array of simple datums into list' do
         literals = simple_datum_tests.map { |(datum, _predicted)| datum }
         predictions = simple_datum_tests.map { |(_datum, predicted)| predicted }
         list_result = subject.list(literals)
-        expect(list_result).to be_kind_of(SkmList)
-        list_result.members.each_with_index do |member, index|
+        expect(list_result).to be_kind_of(SkmPair)
+        list_result.to_a.each_with_index do |member, index|
           expect(member).to eq(predictions[index])
         end
       end
-      
-      it 'should convert a single datum into one-member list' do 
+
+      it 'should convert a single datum into one-member list' do
         result = subject.list('123')
-        expect(result).to be_kind_of(SkmList)
-        expect(result.members.first).to eq(123)
-      end      
-      
-      it 'should convert empty array into one-member list' do 
+        expect(result).to be_kind_of(SkmPair)
+        expect(result.car).to eq(123)
+      end
+
+      it 'should convert empty array into one-member list' do
         result = subject.vector([])
         expect(result).to be_kind_of(SkmVector)
-        expect(result.members).to be_empty     
+        expect(result.members).to be_empty
       end
-    
-      
+
+
       it 'should convert array of simple datums into vector' do
         literals = simple_datum_tests.map { |(datum, _predicted)| datum }
         predictions = simple_datum_tests.map { |(_datum, predicted)| predicted }
@@ -144,11 +144,11 @@ module Skeem
         end
       end
 
-      it 'should convert a single datum into one-member vector' do 
+      it 'should convert a single datum into one-member vector' do
         result = subject.vector('123')
         expect(result).to be_kind_of(SkmVector)
         expect(result.members.first).to eq(123)
-      end      
+      end
     end # context
 
     context 'Arbitrary datums:' do
@@ -157,7 +157,7 @@ module Skeem
           expect(subject.to_datum(literal)).to eq(predicted)
         end
       end
-      
+
       it 'should recognize & convert integer literals' do
         integer_tests.each do |(literal, predicted)|
           expect(subject.to_datum(literal)).to eq(predicted)
@@ -178,13 +178,25 @@ module Skeem
 
       it 'should convert nested compound datums' do
         literals = [
-          'false', '123', '-1.41', 
+          'false', '123', '-1.41',
           'foo', SkmVector.new(['uno', '2', 3.0]), 'bar'
         ]
         result = subject.list(literals)
-        expect(result).to be_kind_of(SkmList)
-        expect(result).to eq([false, 123, -1.41, 'foo', ['uno', 2, 3], 'bar'])
+        expect(result).to be_kind_of(SkmPair)
+        expect(result.to_a).to eq([false, 123, -1.41, 'foo', ['uno', 2, 3], 'bar'])
       end
+    end
+
+    it 'should duplicate a given list' do
+      f = subject.identifier('f')
+      g = subject.identifier('g')
+      one_list = subject.list([f, g])
+      expect(one_list).to be_list
+      expect(one_list.to_a).to eq([f, g])
+      duplicate = subject.to_datum(one_list)
+      expect(duplicate).to be_list
+      # $stderr.puts duplicate.inspect
+      expect(duplicate.to_a).to eq([f, g])
     end
 
   end # describe

@@ -26,7 +26,7 @@ module Skeem
           members == other
       end
     end
-    
+
     alias eqv? equal?
 
     def evaluate(aRuntime)
@@ -58,6 +58,7 @@ module Skeem
     end
   end # class
 
+  # @deprecated Use {#SkmPair} class instead.
   class SkmList < SkmCompoundDatum
     def tail()
       SkmList.new(members.slice(1..-1))
@@ -70,7 +71,7 @@ module Skeem
     def null?
       empty?
     end
-    
+
     def evaluate(aRuntime)
       if empty?
         self.class.new(nil)

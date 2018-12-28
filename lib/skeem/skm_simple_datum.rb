@@ -81,8 +81,7 @@ module Skeem
       value.to_s
     end
   end # class
-
-
+  
   class SkmBoolean < SkmSimpleDatum
     def boolean?
       true

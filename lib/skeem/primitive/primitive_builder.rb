@@ -1,5 +1,6 @@
 require_relative 'primitive_procedure'
 require_relative '../datum_dsl'
+require_relative '../skm_pair'
 # require_relative '../s_expr_nodes'
 
 module Skeem
@@ -92,7 +93,12 @@ module Skeem
       def add_list_procedures(aRuntime)
         create_object_predicate(aRuntime, 'list?')
         create_object_predicate(aRuntime, 'null?')
+        create_object_predicate(aRuntime, 'pair?')
+        create_cons(aRuntime)
+        create_car(aRuntime)
+        create_cdr(aRuntime)
         create_length(aRuntime)
+        create_list2vector(aRuntime)
       end
 
       def add_vector_procedures(aRuntime)
@@ -100,6 +106,7 @@ module Skeem
         create_vector(aRuntime)
         create_vector_length(aRuntime)
         create_vector_ref(aRuntime)
+        create_vector2list(aRuntime)
       end
 
       def add_io_procedures(aRuntime)(aRuntime)
@@ -132,7 +139,7 @@ module Skeem
           else
             first_one = arglist.first.evaluate(runtime)
             raw_result = first_one.value
-            operands = evaluate_tail(arglist, runtime)
+            operands = remaining_args(arglist, runtime)
             operands.each { |elem| raw_result += elem.value }
             to_datum(raw_result)
           end
@@ -147,7 +154,7 @@ module Skeem
           if arglist.empty?
             raw_result = -raw_result
           else
-            operands = evaluate_array(arglist, runtime)
+            operands = arglist.evaluate(runtime).to_a
             operands.each { |elem| raw_result -= elem.value }
           end
           to_datum(raw_result)
@@ -163,15 +170,8 @@ module Skeem
           else
             first_one = arglist.first.evaluate(runtime)
             raw_result = first_one.value
-            operands = evaluate_tail(arglist, runtime)
-            begin
+            operands = remaining_args(arglist, runtime)
             operands.each { |elem| raw_result *= elem.value }
-            rescue NoMethodError => exc
-              # $stderr.puts aRuntime.environment.inspect
-              # $stderr.puts first_one.inspect
-              # $stderr.puts operands.inspect
-              raise exc
-            end
             to_datum(raw_result)
           end
         end
@@ -186,7 +186,7 @@ module Skeem
           if arglist.empty?
             raw_result = 1 / raw_result.to_f
           else
-            operands = evaluate_array(arglist, runtime)
+            operands = arglist.evaluate(runtime).to_a
             operands.each do |elem|
               if raw_result > elem.value && raw_result.modulo(elem.value).zero?
                 raw_result /= elem.value
@@ -212,7 +212,7 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'floor-remainder', binary, primitive)
       end
-      
+
       def create_eqv?(aRuntime)
         primitive = ->(runtime, argument1, argument2) do
           operand_1 = argument1.evaluate(runtime)
@@ -221,7 +221,7 @@ module Skeem
           to_datum(raw_result)
         end
 
-        define_primitive_proc(aRuntime, 'eqv?', binary, primitive)      
+        define_primitive_proc(aRuntime, 'eqv?', binary, primitive)
       end
 
       def create_equal(aRuntime)
@@ -230,7 +230,7 @@ module Skeem
           if arglist.empty?
             boolean(true)
           else
-            operands = evaluate_array(arglist, runtime)
+            operands = arglist.evaluate(runtime).to_a
             first_value = first_one.value
             all_equal = operands.all? { |elem| first_value == elem.value }
             boolean(all_equal)
@@ -246,7 +246,7 @@ module Skeem
             boolean(false)
           else
             operands = [first_operand.evaluate(runtime)]
-            operands.concat(evaluate_array(arglist, runtime))
+            operands.concat(arglist.evaluate(runtime).to_a)
             result = true
             operands.each_cons(2) do |(elem1, elem2)|
               result &&= elem1.value < elem2.value
@@ -264,7 +264,7 @@ module Skeem
             boolean(false)
           else
             operands = [first_operand.evaluate(runtime)]
-            operands.concat(evaluate_array(arglist, runtime))
+            operands.concat(arglist.evaluate(runtime).to_a)
             result = true
             operands.each_cons(2) do |(elem1, elem2)|
               result &&= elem1.value > elem2.value
@@ -282,7 +282,7 @@ module Skeem
             boolean(true)
           else
             operands = [first_operand.evaluate(runtime)]
-            operands.concat(evaluate_array(arglist, runtime))
+            operands.concat(arglist.evaluate(runtime).to_a)
             result = true
             operands.each_cons(2) do |(elem1, elem2)|
               result &&= elem1.value <= elem2.value
@@ -300,11 +300,12 @@ module Skeem
             boolean(true)
           else
             operands = [first_operand.evaluate(runtime)]
-            operands.concat(evaluate_array(arglist, runtime))
+            operands.concat(arglist.evaluate(runtime).to_a)
             result = true
             operands.each_cons(2) do |(elem1, elem2)|
               result &&= elem1.value >= elem2.value
             end
+
             boolean(result)
           end
         end
@@ -331,6 +332,7 @@ module Skeem
           else
             raw_result = true
             last_result = nil
+            # $stderr.puts arglist.inspect
             arglist.each do |raw_arg|
               argument = raw_arg.evaluate(aRuntime)
               last_result = argument
@@ -338,6 +340,9 @@ module Skeem
               break unless raw_result
             end
             raw_result = last_result if raw_result
+            # $stderr.puts raw_result.inspect
+            # $stderr.puts raw_result.cdr.inspect if raw_result.kind_of?(SkmPair)
+            # $stderr.puts to_datum(raw_result).inspect
             to_datum(raw_result)
           end
         end
@@ -371,7 +376,7 @@ module Skeem
           if arglist.empty?
             boolean(true)
           else
-            operands = evaluate_array(arglist, runtime)
+            operands = evaluate_arguments(arglist, runtime)
             first_value = first_one.value
             all_equal = operands.all? { |elem| first_value == elem.value }
             boolean(all_equal)
@@ -386,7 +391,7 @@ module Skeem
           if arglist.empty?
             value = ''
           else
-            parts = evaluate_array(arglist, aRuntime)
+            parts = evaluate_arguments(arglist, aRuntime)
             value = parts.reduce('') { |interim, substr| interim << substr.value }
           end
 
@@ -416,14 +421,52 @@ module Skeem
         define_primitive_proc(aRuntime, 'string->symbol', unary, primitive)
       end
 
+      def create_cons(aRuntime)
+        primitive = ->(runtime, obj1, obj2) do
+          SkmPair.new(obj1.evaluate(aRuntime), obj2.evaluate(aRuntime))
+        end
+
+        define_primitive_proc(aRuntime, 'cons', binary, primitive)
+      end
+
+      def create_car(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, SkmPair, 'pair', 'car')
+          arg_evaluated.car
+        end
+
+        define_primitive_proc(aRuntime, 'car', unary, primitive)
+      end
+
+      def create_cdr(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, SkmPair, 'pair', 'cdr')
+          arg_evaluated.cdr
+        end
+
+        define_primitive_proc(aRuntime, 'cdr', unary, primitive)
+      end
+
       def create_length(aRuntime)
         primitive = ->(runtime, arg) do
           arg_evaluated = arg.evaluate(runtime)
-          check_argtype(arg_evaluated, SkmList, 'list', 'length')
+          check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'length')
           integer(arg_evaluated.length)
         end
 
         define_primitive_proc(aRuntime, 'length', unary, primitive)
+      end
+
+      def create_list2vector(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'list->vector')
+          vector(arg_evaluated.to_a)
+        end
+
+        define_primitive_proc(aRuntime, 'list->vector', unary, primitive)
       end
 
       def create_vector(aRuntime)
@@ -431,7 +474,7 @@ module Skeem
           if arglist.empty?
             elements = []
           else
-            elements = evaluate_array(arglist, aRuntime)
+            elements = evaluate_arguments(arglist, aRuntime)
           end
 
           vector(elements)
@@ -465,6 +508,16 @@ module Skeem
         define_primitive_proc(aRuntime, 'vector-ref', binary, primitive)
       end
 
+      def create_vector2list(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, SkmVector, 'vector', 'vector->list')
+          SkmPair.create_from_a(arg_evaluated.members)
+        end
+
+        define_primitive_proc(aRuntime, 'vector->list', unary, primitive)
+      end
+
       def create_newline(aRuntime)
         primitive = ->(runtime) do
           # @TODO: make output stream configurable
@@ -473,13 +526,13 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'newline', nullary, primitive)
       end
-      
+
       def create_assert(aRuntime)
         primitive = ->(runtime, arg) do
           arg_evaluated = arg.evaluate(runtime)
           if arg_evaluated.boolean? && arg_evaluated.value == false
             assert_call = aRuntime.caller
-            pos = assert_call.call_site          
+            pos = assert_call.call_site
             # Error: assertion failed: (> 1 2)
             msg = "assertion failed on line #{pos.line}, column #{pos.column}"
             raise StandardError, 'Error: ' + msg
@@ -525,20 +578,45 @@ module Skeem
         aRuntime.define(aKey, anEntry)
       end
 
-      def evaluate_array(anArray, aRuntime)
-        anArray.map { |elem| elem.evaluate(aRuntime) }
-      end
-
-      def evaluate_tail(anArray, aRuntime)
-        evaluate_array(anArray.drop(1), aRuntime)
+      def evaluate_arguments(arglist, aRuntime)
+        case arglist
+        when Array
+          arglist.map { |elem| elem.evaluate(aRuntime) }
+        when SkmPair
+          arglist.evaluate(aRuntime).to_a
+        end
       end
 
       def check_argtype(argument, requiredRubyClass, requiredSkmType, aProcName)
-          unless argument.kind_of?(requiredRubyClass)
-            msg1 = "Procedure '#{aProcName}': #{requiredSkmType} argument required,"
-            msg2 = "but got #{argument.value}"
-            raise StandardError, msg1 + ' ' + msg2
+        if requiredRubyClass.kind_of?(Array)
+          unless requiredRubyClass.include?(argument.class)
+            type_error(argument, requiredSkmType, aProcName)
           end
+        else
+          unless argument.kind_of?(requiredRubyClass)
+            type_error(argument, requiredSkmType, aProcName)
+          end
+        end
+      end
+
+      def type_error(argument, requiredSkmType, aProcName)
+        msg1 = "Procedure '#{aProcName}': #{requiredSkmType} argument required,"
+        if argument.respond_to?(:value)
+          msg2 = "but got #{argument.value}"
+        else
+          msg2 = "but got #{argument.class}"
+        end
+        raise StandardError, msg1 + ' ' + msg2
+      end
+
+      def remaining_args(arglist, aRuntime)
+        case arglist
+        when Array
+          raw_arg = arglist[1..-1]
+        when SkmPair
+          raw_arg = arglist.cdr.to_a
+        end
+        raw_arg.map { |arg| arg.evaluate(aRuntime) }
       end
     end # module
   end # module

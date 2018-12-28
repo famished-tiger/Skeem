@@ -1,3 +1,16 @@
+## [0.1.00] - 2018-12-28
+- Version bumped because lists are re-implemented in a way to closer to historical Scheme/Lisp.
+- A lot of internal refactoring after list re-implementation...
+
+### Added
+- File `primitive_builder.rb` implementation of: `pair?`, `car`, `cdr`, `cons`, `list->vectors` list procedures.
+- File `primitive_builder.rb` implementation of: `vector->list` vector procedures.
+
+### Changed 
+- Class `SkmList` is now deprecated and being replaced by `SkmPair`nodes.  
+- Class `SkmElementVisitor` supports new visit events: `visit_empty_list` and `visit_pair`
+
+
 ## [0.0.28] - 2018-12-10
 - Nasty bug fix: interpreter was'nt able to retrieve data argument deep in call stack.
 

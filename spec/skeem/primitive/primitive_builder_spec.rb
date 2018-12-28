@@ -7,7 +7,7 @@ module Skeem
   module Primitive
     describe 'Testing primitive procedures' do
       subject { Interpreter.new }
-      
+
       context 'Arithmetic operators:' do
         it 'should implement the set! form' do
           skeem1 = <<-SKEEM
@@ -22,7 +22,7 @@ SKEEM
 SKEEM
           result = subject.run(skeem2)
           expect(result.last).to eq(5)  # x is now bound to value 4
-        end        
+        end
       end # context
 
       context 'Arithmetic operators:' do
@@ -105,9 +105,9 @@ SKEEM
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
             expect(result).to eq(expectation)
-          end          
+          end
         end
-        
+
         it 'should implement the equality operator' do
           checks = [
             ['(= 3)', true], # '=' as unary operator
@@ -257,9 +257,10 @@ SKEEM
           # the values of the last expression are returned.
           source = "(and 1 2 'c '(f g))"
           result = subject.run(source)
-          expect(result).to be_kind_of(SkmList)
-          expect(result.head).to eq('f')
-          expect(result.last).to eq('g')
+          expect(result).to be_kind_of(SkmPair)
+          expect(result.car).to eq('f')
+          expect(result.cdr).to be_kind_of(SkmPair)
+          expect(result.cdr.car).to eq('g')
         end
 
         it 'should implement the or procedure' do
@@ -370,10 +371,23 @@ SKEEM
             result = subject.run(skeem_expr)
             expect(result).to eq(expectation)
           end
-        end       
+        end
       end # context
 
       context 'List procedures:' do
+        it 'should implement the pair? procedure' do
+          checks = [
+            ["(pair? '(a . b))", true],
+            ["(pair? '(a b c))", true],
+            ["(pair? '())", false],
+            ["(pair? '#(a b))", false]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
         it 'should implement the list? procedure' do
           checks = [
             ['(list? #f)', false],
@@ -404,6 +418,79 @@ SKEEM
           end
         end
 
+        it 'should implement the cons procedure' do
+          example = "(cons 'a '())" # => (a)
+          result = subject.run(example)
+          expect(result).to be_list
+          expect(result.car).to eq('a')
+
+          example = "(cons '(a) '(b c d))" # => ((a) b c d)
+          result = subject.run(example)
+          expect(result).to be_list
+          members = result.to_a
+          expect(members[0]).to be_list
+          expect(members[0].car).to eq('a')
+          expect(members[1]).to eq('b')
+          expect(members[2]).to eq('c')
+          expect(members[3]).to eq('d')
+
+          example = "(cons \"a\" '(b c))" # => ("a" b c)
+          result = subject.run(example)
+          expect(result).to be_list
+          expect(result.car).to be_kind_of(SkmString)
+          expect(result.car).to eq('a')
+          expect(result.cdr.car).to be_kind_of(SkmIdentifier)
+          expect(result.cdr.car).to eq('b')
+          expect(result.cdr.cdr.car).to be_kind_of(SkmIdentifier)
+          expect(result.cdr.cdr.car).to eq('c')
+
+          example = "(cons 'a 3)" # => (a . 3)
+          result = subject.run(example)
+          expect(result.car).to eq('a')
+          expect(result.cdr).to eq(3)
+
+          example = "(cons '(a b) 'c)" # => ((a b) . c)
+          result = subject.run(example)
+          expect(result.car).to be_kind_of(SkmPair)
+          expect(result.car.to_a).to eq(['a', 'b'])
+          expect(result.cdr).to be_kind_of(SkmIdentifier)
+          expect(result.cdr).to eq('c')
+        end
+
+        it 'should implement the car procedure' do
+          example = "(car '(a b c))" # => a
+          result = subject.run(example)
+          expect(result).to eq('a')
+
+          example = "(car '((a) b c d))" # => (a)
+          result = subject.run(example)
+          expect(result).to be_list
+          expect(result.length).to eq(1)
+          expect(result.car).to eq('a')
+
+          # example = "(car '(1 . 2))" # => 1 # FAILURE
+          # result = subject.run(example)
+          # expect(result.car).to eq(1)
+
+          example = "(car '())" # => error
+          expect { subject.run(example) }.to raise_error(StandardError)
+        end
+
+        it 'should implement the cdr procedure' do
+          example = "(cdr '((a) b c d))" # => (b c d)
+          result = subject.run(example)
+          expect(result).to be_list
+          expect(result.length).to eq(3)
+          expect(result.to_a).to eq(['b', 'c', 'd'])
+
+          # example = "(cdr '(1 . 2))" # => 2 # PARSER FAILURE
+          # result = subject.run(example)
+          # expect(result.cdr).to eq(2)
+
+          example = "(cdr '())" # => error
+          expect { subject.run(example) }.to raise_error(StandardError)
+        end
+
         it 'should implement the length procedure' do
           checks = [
             ['(length (list))', 0],
@@ -414,6 +501,17 @@ SKEEM
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
             expect(result).to eq(expectation)
+          end
+        end
+
+        it 'should implement the list->vector procedure' do
+          checks = [
+            ["(list->vector '())", []],
+            ["(list->vector '(a b c))", ['a', 'b', 'c']]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.to_a).to eq(expectation)
           end
         end
       end # context
@@ -467,6 +565,17 @@ SKEEM
           expect(result).to be_kind_of(SkmInteger)
           expect(result).to eq(8)
         end
+
+        it 'should implement the vector-> procedure' do
+          checks = [
+            ["(vector->list #())", []],
+            ["(vector->list '#(a b c))", ['a', 'b', 'c']]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.to_a).to eq(expectation)
+          end
+        end
       end # context
 
       context 'IO procedures:' do
@@ -478,7 +587,7 @@ SKEEM
           $stdout = default_stdout
         end
       end # context
-      
+
       context 'Miscellaneous procedures' do
         it 'should return true when an assertion succeeds' do
           source = <<-SKEEM
@@ -487,8 +596,8 @@ SKEEM
   (assert (> x y))
 SKEEM
           expect(subject.run(source).last).to eq(true)
-        end       
-      
+        end
+
         it 'should raise an error when an assertion fails' do
           source = <<-SKEEM
   (define x 1)
@@ -498,7 +607,7 @@ SKEEM
           err = StandardError
           msg = 'Error: assertion failed on line 3, column 4'
           expect { subject.run(source) }.to raise_error(err, msg)
-        end      
+        end
       end # context
     end # describe
   end # module

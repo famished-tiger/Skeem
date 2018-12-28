@@ -28,7 +28,7 @@ module Skeem
 
     context 'Provided services:' do
       include Primitive::PrimitiveBuilder
-      
+
       let(:runtime) { Runtime.new(Environment.new) }
 
       it 'should create an entry when evaluating' do
@@ -36,7 +36,7 @@ module Skeem
         subject.evaluate(runtime)
         expect(runtime).to include(sample_symbol)
       end
-      
+
       it 'should optimize an entry that aliases a primitive proc' do
         add_primitives(runtime)
         identifier = SkmIdentifier.create('plus')
@@ -57,22 +57,22 @@ module Skeem
         id = SkmIdentifier.create('some-lambda')
         def1 = SkmDefinition.new(nil, id, lbd)
         def1.evaluate(runtime)
-      
+
         # Let's create an alias to the lambda
         other_name = SkmIdentifier.create('aliased-lambda')
         var_ref = SkmVariableReference.new(nil, id)
-        
+
         # (define aliased-lambda some-lambda)
-        def2 = SkmDefinition.new(nil, other_name, var_ref) 
+        def2 = SkmDefinition.new(nil, other_name, var_ref)
         expect(def2.expression).to eq(var_ref)
         def2.evaluate(runtime)
         # Optimization by getting rid of indirection
         expect(def2.expression).to eq(lbd)
-      end       
-      
+      end
+
       it 'should quasiquote its variable and expression' do
         alter_ego = subject.quasiquote(runtime)
-        expect(alter_ego).to eq(subject)        
+        expect(alter_ego).to eq(subject)
       end
 
       it 'should return its text representation' do
@@ -100,14 +100,14 @@ module Skeem
       end
 
       it 'should know its operands' do
-        expect(subject.operands.inspect).to eq('<Skeem::SkmList: 1, 2, 3>')
+        expect(subject.operands.inspect).to eq('<Skeem::SkmPair: 1, 2, 3>')
       end
     end # context
 
     context 'Provided services:' do
       it 'should return its text representation' do
         txt1 = '<Skeem::ProcedureCall: <Skeem::SkmIdentifier: +>, '
-        txt2 = '@operands <Skeem::SkmList: 1, 2, 3>>'
+        txt2 = '@operands <Skeem::SkmPair: 1, 2, 3>>'
         expect(subject.inspect).to eq(txt1 + txt2)
       end
     end # context

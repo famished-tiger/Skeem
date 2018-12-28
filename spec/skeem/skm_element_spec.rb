@@ -25,6 +25,7 @@ module Skeem
         expect(subject).not_to be_symbol
         expect(subject).not_to be_list
         expect(subject).not_to be_null
+        expect(subject).not_to be_pair
         expect(subject).not_to be_vector
       end
     end # context

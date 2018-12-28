@@ -57,11 +57,11 @@ module Skeem
       end
     end
 
-    # @param aList[SkmList] first member is an identifier.
+    # @param aList[SkmPair] first member is an identifier.
     def evaluate_form(aList)
       # TODO: manage the cases where first_member is a keyword
-      first_member = aList.first
-      invokation = ProcedureCall.new(nil, first_member, aList.tail.members)
+      first_member = aList.car
+      invokation = ProcedureCall.new(nil, first_member, aList.cdr.to_a)
       invokation.evaluate(self)
     end
 
@@ -98,9 +98,9 @@ module Skeem
         raise StandardError, "Invalid call object #{aProcCall.inspect}"
       end
       # $stderr.puts 'CALL STACK vvvv'
-      call_stack.each do |proc_call|
+      # call_stack.each do |proc_call|
       # $stderr.puts proc_call.inspect
-      end
+      # end
       # $stderr.puts 'CALL STACK ^^^^'
     end
 
