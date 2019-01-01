@@ -1,3 +1,13 @@
+## [0.1.01] - 2019-01-01
+- Fixes, added 'set-car!', 'set-cdr!' standard Scheme procedures.
+
+### Added
+- File `primitive_builder.rb` implementation of: `set-car!`, `set-cdr!` list procedures.
+
+### Changed
+- Methods `SkmBuilder#reduce_quotation_short`, `SkmBuilder#reduce_quotation` added optimization for quoted literal data.
+
+
 ## [0.1.00] - 2018-12-28
 - Version bumped because lists are re-implemented in a way to closer to historical Scheme/Lisp.
 - A lot of internal refactoring after list re-implementation...

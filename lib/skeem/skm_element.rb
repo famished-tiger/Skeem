@@ -44,6 +44,11 @@ module Skeem
     def vector?
       false
     end
+    
+    # @return [TrueClass, FalseClass] true if quoted element is identical to itself
+    def verbatim?
+      false
+    end
 
     def evaluate(_runtime)
       raise NotImplementedError, "Missing implementation of #{self.class.name}"
@@ -60,9 +65,17 @@ module Skeem
       raise NotImplementedError
     end
 
-    def done!()
+    def done!
       # Do nothing
     end
+    
+    def quoted!
+      # Do nothing
+    end
+    
+    def unquoted!
+      # Do nothing
+    end    
 
    def inspect
       result = inspect_prefix

@@ -121,6 +121,8 @@ module Skeem
       result = case aKey
                  when String
                    aKey
+                 when SkmVariableReference
+                    aKey.child.value
                  else
                    aKey.evaluate(self).value
                end

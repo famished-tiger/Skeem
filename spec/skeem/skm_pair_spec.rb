@@ -45,6 +45,22 @@ module Skeem
         # Use a list of length 2
         expect(list_length_2.length).to eq(2)
       end
+      
+      it 'should clone itself after member evaluation' do
+        # subject contains self-evaluating members
+        expect(subject.clone_evaluate(runtime)).to eq(subject)
+        
+        # Make pair improper...
+        subject.cdr = nil
+        expect(subject.clone_evaluate(runtime)).to eq(subject)
+        
+        subject.cdr = integer(4)
+        expect(subject.clone_evaluate(runtime)).to eq(subject)
+        
+        successor = SkmPair.new(string('Hi'), boolean(false))
+        subject.cdr = successor
+        expect(subject.clone_evaluate(runtime)).to eq(subject)
+      end
 
       it 'should convert itself into an array' do
         expect(subject.to_a).to eq([sample_car])
@@ -99,6 +115,23 @@ module Skeem
         text = ''
         my_list.each { |ch| text << ch.upcase }
         expect(text).to eq('WOW')
+      end
+      
+      it 'should implement the verbatim predicate' do
+        expect(subject).to be_verbatim
+        subject.cdr = nil
+        expect(subject).to be_verbatim
+        instance = SkmPair.new(string('Hi'), SkmEmptyList.instance)
+        subject.cdr = instance
+        expect(subject).to be_verbatim
+        bad_end = double('fake_end')
+        instance.cdr = bad_end
+        expect(bad_end).to receive(:verbatim?).and_return(false)
+        expect(subject).not_to be_verbatim
+        bad_datum = double('fake-datum')
+        expect(bad_datum).to receive(:verbatim?).and_return(false)
+        instance.car = bad_datum
+        expect(subject).not_to be_verbatim
       end
 
       it 'should evaluate its members' do

@@ -27,6 +27,7 @@ module Skeem
         expect(subject).not_to be_null
         expect(subject).not_to be_pair
         expect(subject).not_to be_vector
+        expect(subject).not_to be_verbatim
       end
     end # context
 
@@ -34,6 +35,18 @@ module Skeem
       let(:runtime) { double('fake-runtime') }
       let(:visitor) { double('fake-visitor') }
       let(:not_implemented) { NotImplementedError }
+
+      it "should ignore the 'done!' message" do
+        expect { subject.done! }.not_to raise_error
+      end
+
+      it "should ignore the 'quoted!' message" do
+        expect { subject.quoted! }.not_to raise_error
+      end
+
+      it "should ignore the 'unquoted!' message" do
+        expect { subject.unquoted! }.not_to raise_error
+      end
 
       it "should complain when receiving 'evaluate' message" do
         expect { subject.evaluate(runtime) }.to raise_error(not_implemented)

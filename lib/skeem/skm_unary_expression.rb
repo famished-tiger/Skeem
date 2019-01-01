@@ -68,6 +68,7 @@ module Skeem
 
     def initialize(aTemplate)
       super(nil, aTemplate)
+      child.unquoted!
     end
 
     def evaluate(aRuntime)

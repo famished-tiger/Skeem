@@ -99,6 +99,8 @@ module Skeem
         create_cdr(aRuntime)
         create_length(aRuntime)
         create_list2vector(aRuntime)
+        create_setcar(aRuntime)
+        create_setcdr(aRuntime)
       end
 
       def add_vector_procedures(aRuntime)
@@ -467,6 +469,54 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'list->vector', unary, primitive)
+      end
+
+      def create_setcar(aRuntime)
+        primitive = ->(runtime, pair_arg, obj_arg) do
+          case pair_arg
+            when SkmPair
+              pair = pair_arg
+            when SkmVariableReference
+              found = runtime.fetch(pair_arg).expression
+              case found
+                when SkmPair
+                  pair = found
+                when ProcedureCall
+                  pair = found.evaluate(aRuntime)
+              end
+            else
+              pair = pair_arg.evaluate(runtime)
+          end
+          check_argtype(pair, SkmPair, 'pair', 'set-car!')
+          obj = obj_arg.evaluate(runtime)
+          pair.car = obj
+        end
+
+        define_primitive_proc(aRuntime, 'set-car!', binary, primitive)
+      end
+
+      def create_setcdr(aRuntime)
+        primitive = ->(runtime, pair_arg, obj_arg) do
+          case pair_arg
+            when SkmPair
+              pair = pair_arg
+            when SkmVariableReference
+              found = runtime.fetch(pair_arg).expression
+              case found
+                when SkmPair
+                  pair = found
+                when ProcedureCall
+                  pair = found.evaluate(aRuntime)
+              end
+            else
+              pair = pair_arg.evaluate(runtime)
+          end
+          check_argtype(pair, SkmPair, 'pair', 'set-cdr!')
+          obj = obj_arg.evaluate(runtime)
+          pair.cdr = obj
+        end
+
+        define_primitive_proc(aRuntime, 'set-cdr!', binary, primitive)
       end
 
       def create_vector(aRuntime)

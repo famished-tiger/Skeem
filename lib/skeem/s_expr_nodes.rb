@@ -147,39 +147,43 @@ module Skeem
     def evaluate(aRuntime)
       aRuntime.push_call(self)
       if operator.kind_of?(SkmLambda)
-        procedure = operator
+        callee = operator
       else
         var_key = operator.evaluate(aRuntime)
-        if operator.kind_of?(ProcedureCall) && operands_consumed
-          return var_key
+        if operator.kind_of?(ProcedureCall)
+          return var_key if operands_consumed
         end
-        begin
-          aRuntime.include?(var_key.value)
-        rescue NoMethodError => exc
-          # $stderr.puts "VVVVVVVVVVVVVVV"
-          # $stderr.puts 'var_key: ' + var_key.inspect
+        if var_key.kind_of?(Primitive::PrimitiveProcedure)
+          callee = var_key
+        else
+          begin
+            aRuntime.include?(var_key.value)
+          rescue NoMethodError => exc
+            # $stderr.puts "VVVVVVVVVVVVVVV"
+            # $stderr.puts 'var_key: ' + var_key.inspect
+            # $stderr.puts 'operator: ' + operator.inspect
+            # $stderr.puts 'operands: ' + operands.inspect
+            # $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
+            # $stderr.puts "^^^^^^^^^^^^^^^"
+            raise exc
+          end
+          unless aRuntime.include?(var_key.value)
+            err = StandardError
+            key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
+            err_msg = "Unknown procedure '#{key}'"
+            raise err, err_msg
+          end
+          callee = aRuntime.environment.fetch(var_key.value)
+        end
+        unless var_key.nil?
+          # $stderr.puts "## In ProcCall #{var_key.value} #############"
           # $stderr.puts 'operator: ' + operator.inspect
           # $stderr.puts 'operands: ' + operands.inspect
-          # $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
-          # $stderr.puts "^^^^^^^^^^^^^^^"
-          raise exc
+          # $stderr.puts "## CALL(#{var_key.value}) ###################"
+          # $stderr.puts 'callee: ' + callee.inspect
         end
-        unless aRuntime.include?(var_key.value)
-          err = StandardError
-          key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
-          err_msg = "Unknown procedure '#{key}'"
-          raise err, err_msg
-        end
-        procedure = aRuntime.environment.fetch(var_key.value)
       end
-      unless var_key.nil?
-        # $stderr.puts "## In ProcCall #{var_key.value} #############"
-        # $stderr.puts 'operator: ' + operator.inspect
-        # $stderr.puts 'operands: ' + operands.inspect
-        # $stderr.puts "## CALL(#{var_key.value}) ###################"
-        # $stderr.puts 'callee: ' + procedure.inspect
-      end
-      result = procedure.call(aRuntime, self)
+      result = callee.call(aRuntime, self)
       operands_consumed = true
       aRuntime.pop_call
       # $stderr.puts "## RETURN #{result.inspect} from #{var_key.value}"
@@ -397,10 +401,13 @@ module Skeem
       if formals.variadic?
         variadic_part_raw = actuals.drop(required_arity)
         variadic_part = variadic_part_raw.map do |actual|
-          if actual.kind_of?(ProcedureCall)
-            actual.evaluate(aRuntime)
-          else
-            to_datum(actual)
+          case actual
+            when ProcedureCall
+              actual.evaluate(aRuntime)
+            when SkmQuotation
+              actual.evaluate(aRuntime)
+            else
+              to_datum(actual)
           end
         end
         variadic_arg_name = formals.formals.last

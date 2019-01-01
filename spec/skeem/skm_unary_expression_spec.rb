@@ -143,6 +143,7 @@ module Skeem
 
         # Case 2: quasiquoted child is different
         child = double('fake-child')
+        expect(child).to receive(:unquoted!)
         expect(child).to receive(:evaluate).with(runtime).and_return(integer(3))
         instance = SkmUnquotation.new(child)
         expect(instance.child).to eq(child)

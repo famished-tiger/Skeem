@@ -23,13 +23,17 @@ module Skeem
       0
     end
     
-    def to_a
-      []
-    end
-    
     def empty?
       true
     end
+    
+    def verbatim?
+      true
+    end
+    
+    def to_a
+      []
+    end    
 
     def evaluate(_runtime)
       self

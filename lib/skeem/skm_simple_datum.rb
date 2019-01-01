@@ -22,7 +22,7 @@ module Skeem
     def symbol
       token.terminal
     end
-    
+
     def position
       token.position
     end
@@ -43,8 +43,12 @@ module Skeem
 
       result
     end
-    
+
     alias eqv? ==
+
+    def verbatim?
+      true
+    end
 
     def done!()
       # Do nothing
@@ -81,7 +85,7 @@ module Skeem
       value.to_s
     end
   end # class
-  
+
   class SkmBoolean < SkmSimpleDatum
     def boolean?
       true
@@ -92,7 +96,7 @@ module Skeem
     def number?
       true
     end
-    
+
     def eqv?(other)
       return true if self.equal?(other)
 
@@ -107,14 +111,14 @@ module Skeem
       end
 
       result
-    end  
+    end
   end # class
 
   class SkmReal < SkmNumber
     def real?
       true
     end
-    
+
     def exact?
       false
     end
@@ -124,10 +128,10 @@ module Skeem
     def integer?
       true
     end
-    
+
     def exact?
       true
-    end    
+    end
   end # class
 
   class SkmString < SkmSimpleDatum
@@ -139,15 +143,24 @@ module Skeem
     def string?
       true
     end
-    
+
     alias eqv? equal?
-    
+
     def length
       value.length
     end
   end # class
 
   class SkmIdentifier < SkmSimpleDatum
+    # Tells whether the identifier is used as a variable name.
+    # @return [TrueClass, FalseClass]
+    attr_accessor :is_var_name
+
+    def initialize(aToken, aRank, isVarName = false)
+      super(aToken, aRank)
+      @is_var_name = isVarName
+    end
+
     # Override
     def init_value(aValue)
       super(aValue.dup)
@@ -155,6 +168,18 @@ module Skeem
 
     def symbol?
       true
+    end
+
+    def verbatim?
+      not is_var_name
+    end
+
+    def quoted!
+      self.is_var_name = false
+    end
+
+    def unquoted!
+      self.is_var_name = true
     end
   end # class
 

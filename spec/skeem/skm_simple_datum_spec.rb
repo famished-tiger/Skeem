@@ -248,9 +248,30 @@ describe SkmString do
     subject { SkmIdentifier.new(dummy_token, pos) }
 
     context 'Provided services:' do
+      it 'could be initialized with a token and a position' do
+        expect { SkmIdentifier.new(dummy_token, pos) }.not_to raise_error
+      end
+
+      it 'could be initialized with a token, a position and a flag' do
+        expect { SkmIdentifier.new(dummy_token, pos, true) }.not_to raise_error
+      end       
+
+      it 'should know whether it is used as a variable name' do
+        expect(subject.is_var_name).to eq(false)
+        
+        instance = SkmIdentifier.new(dummy_token, pos, true)
+        expect(instance.is_var_name).to eq(true)
+      end
+    
       it 'should react positively to symbol? predicate' do
         expect(subject).to be_symbol
       end
+      
+      it 'should react to verbatim? predicate' do
+        expect(subject).to be_verbatim
+        instance = SkmIdentifier.new(dummy_token, pos, true)
+        expect(instance).not_to be_verbatim
+      end      
 
       it 'should return its text representation' do
         expect(subject.inspect).to eq('<Skeem::SkmIdentifier: this-is-it!>')

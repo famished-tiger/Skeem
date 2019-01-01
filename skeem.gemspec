@@ -41,7 +41,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['famished.tiger@yahoo.com']
 
   spec.description = <<-DESCR
-  Skeem is an interpreter of a subset of the Scheme programming language.
+  Skeem is a Scheme language interpreter implemented in Ruby.
 DESCR
   spec.summary = <<-SUMMARY
   Skeem is an interpreter of a subset of the Scheme programming language.

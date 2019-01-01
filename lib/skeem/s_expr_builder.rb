@@ -78,17 +78,31 @@ module Skeem
     end
 
     # rule('quotation' => 'APOSTROPHE datum').as 'quotation_short'
-    def reduce_quotation_short(_production, aRange, _tokens, theChildren)
-      SkmQuotation.new(theChildren[1])
+    def reduce_quotation_short(_production, _range, _tokens, theChildren)
+      theChildren[1].quoted!
+      if theChildren[1].verbatim?
+        theChildren[1]
+      else
+        SkmQuotation.new(theChildren[1])
+      end
     end
 
     # rule('quotation' => 'LPAREN QUOTE datum RPAREN').as 'quotation'
-    def reduce_quotation(_production, aRange, _tokens, theChildren)
-      SkmQuotation.new(theChildren[2])
+    def reduce_quotation(_production, _range, _tokens, theChildren)
+      theChildren[2].quoted!
+      if theChildren[2].verbatim?
+        theChildren[2]
+      else
+        SkmQuotation.new(theChildren[2])
+      end      
     end
 
     # rule('list' => 'LPAREN datum_star RPAREN').as 'list'
     def reduce_list(_production, _range, _tokens, theChildren)
+      unless theChildren[1].empty?
+        first_elem = theChildren[1].first
+        first_elem.is_var_name = true if first_elem.kind_of?(SkmIdentifier)
+      end
       SkmPair.create_from_a(theChildren[1])
     end
     
@@ -239,7 +253,6 @@ module Skeem
 
     # rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'
     def reduce_quasiquotation_short(_production, aRange, _tokens, theChildren)
-      # $stderr.puts theChildren[1].inspect
       SkmQuasiquotation.new(theChildren[1])
     end
 
