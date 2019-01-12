@@ -20,6 +20,11 @@ module Skeem
 
     context 'Provided services:' do
       let(:runtime) { double('fake-runtime') }
+      
+      it 'should be equivalent to itself' do
+        expect(subject).to be_eqv(SkmEmptyList.instance)
+        expect(subject).not_to be_eqv("()")
+      end
 
       it "should return itself when receiving 'evaluate' message" do
         expect(subject.evaluate(runtime)).to eq(subject)

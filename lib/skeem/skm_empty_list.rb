@@ -31,6 +31,10 @@ module Skeem
       true
     end
     
+    def skm_equal?(other)
+      equal?(other)
+    end
+    
     def to_a
       []
     end    
@@ -59,6 +63,7 @@ module Skeem
 
     def initialize()
       super(0)
+      self.freeze
     end
   end # class
 end # module

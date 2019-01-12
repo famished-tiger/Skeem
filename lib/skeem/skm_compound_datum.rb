@@ -28,7 +28,8 @@ module Skeem
     end
 
     alias eqv? equal?
-    
+    alias skm_equal? ==
+
     def verbatim?
       found = members.find_index { |elem| !elem.verbatim? }
       found ? false : true
@@ -46,14 +47,14 @@ module Skeem
       quasi_members = members.map { |elem| elem.quasiquote(aRuntime) }
       self.class.new(quasi_members)
     end
-    
+
     def quoted!
       members.each(&:quoted!)
     end
-    
+
     def unquoted!
       members.each(&:unquoted!)
-    end    
+    end
 
     # Part of the 'visitee' role in Visitor design pattern.
     # @param aVisitor [SkmElementVisitor] the visitor

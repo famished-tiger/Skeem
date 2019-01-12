@@ -56,6 +56,24 @@ module Skeem
         expect(instance).to eq(3)
         expect(instance).not_to eq('foo')
       end
+      
+      it 'should be equivalent to itself' do
+        expect(subject).to be_eqv(subject)
+      end
+      
+      it 'should be equivalent by value' do
+        same = SkmSimpleDatum.create(3)
+        expect(instance).to be_eqv(same)
+      end  
+
+      it 'should be Skeem equal to itself' do
+        expect(subject).to be_skm_equal(subject)
+      end      
+      
+      it 'should be Skeem equal by value' do
+        same = SkmSimpleDatum.create(3)
+        expect(instance).to be_skm_equal(same)
+      end       
 
       it 'should be self-evaluating' do
         expect(subject.evaluate(runtime)).to be_equal(subject)

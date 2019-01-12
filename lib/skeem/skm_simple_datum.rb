@@ -45,6 +45,7 @@ module Skeem
     end
 
     alias eqv? ==
+    alias skm_equal? eqv?
 
     def verbatim?
       true

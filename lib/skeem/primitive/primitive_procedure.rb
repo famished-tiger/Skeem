@@ -21,6 +21,10 @@ module Skeem
         aProcedureCall.operands_consumed = true
         do_call(aRuntime, actuals)
       end
+      
+      def skm_equal?(other)
+        equal?(other)
+      end
 
       private
 
@@ -61,6 +65,13 @@ module Skeem
           if count_actuals < arity.low
             wrong_number_arguments(arity.low, count_actuals)
           end
+        elsif arity.low < arity.high # Arity range
+          if count_actuals < arity.low
+            wrong_number_arguments(arity.low, count_actuals)
+          end
+          if count_actuals > arity.high
+            wrong_number_arguments(arity.high, count_actuals)
+          end
         else # fixed non-zero arity...
           if count_actuals != arity.high
             wrong_number_arguments(arity.high, count_actuals)
@@ -71,7 +82,7 @@ module Skeem
       def do_call(aRuntime, operands)
         if arity.nullary?
           result = code.call(aRuntime)
-        elsif arity.variadic?
+        elsif arity.variadic? || (arity.low < arity.high)
           if arity.low.zero?
             result = code.call(aRuntime, operands)
           else
@@ -83,8 +94,8 @@ module Skeem
             #p count_delta
             #p arguments.inspect
             result = code.send(:call, aRuntime, *arguments.flatten)
-          end
-        else
+          end       
+        else # Fixed arity...
           result = code.send(:call, aRuntime, *operands)
         end
 

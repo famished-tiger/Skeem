@@ -86,6 +86,30 @@ module Skeem
       self.to_a.last
     end
 
+    def eqv?(_other)
+      false
+    end
+
+    def skm_equal?(other)
+      return true if equal?(other)
+
+      equal = true
+      if car.nil?
+        equal = other.car.nil?
+      else
+        equal &&= car.skm_equal?(other.car)
+      end
+      return false unless equal
+
+      if cdr.nil?
+        equal &&= other.cdr.nil?
+      else
+        equal &&= cdr.skm_equal?(other.cdr)
+      end
+
+      equal
+    end
+
     def each(&aBlock)
       aBlock.call(car)
       cdr.each(&aBlock) if cdr && !cdr.null?

@@ -53,6 +53,8 @@ module Skeem
       result = case aLiteral
         when String
           SkmString.create(aLiteral)
+        when SkmIdentifier
+          SkmString.create(aLiteral.value)
         else
           SkmString.create(aLiteral.to_s)
       end

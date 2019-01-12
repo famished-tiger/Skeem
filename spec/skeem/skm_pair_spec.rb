@@ -45,18 +45,37 @@ module Skeem
         # Use a list of length 2
         expect(list_length_2.length).to eq(2)
       end
-      
+
+      it 'should respond false to `eqv?` message' do
+        expect(subject.eqv?(subject)).to eq(false)
+      end
+
+      it 'should be Skeem equal to itself' do
+        expect(subject.skm_equal?(subject)).to eq(true)
+      end
+
+
+      it 'should be equal to other pair when their car and cdr match' do
+        instance = SkmPair.new(sample_car, sample_cdr)
+        expect(subject.skm_equal?(instance)).to eq(true)
+        instance.car = integer(4)
+        expect(subject.skm_equal?(instance)).to eq(false)
+        instance.car = sample_car
+        instance.cdr = subject
+        expect(subject.skm_equal?(instance)).to eq(false)
+      end
+
       it 'should clone itself after member evaluation' do
         # subject contains self-evaluating members
         expect(subject.clone_evaluate(runtime)).to eq(subject)
-        
+
         # Make pair improper...
         subject.cdr = nil
         expect(subject.clone_evaluate(runtime)).to eq(subject)
-        
+
         subject.cdr = integer(4)
         expect(subject.clone_evaluate(runtime)).to eq(subject)
-        
+
         successor = SkmPair.new(string('Hi'), boolean(false))
         subject.cdr = successor
         expect(subject.clone_evaluate(runtime)).to eq(subject)
@@ -68,12 +87,12 @@ module Skeem
         # Use a list of length 2
         expect(list_length_2.to_a).to eq([integer(10), sample_car])
       end
-      
+
       it 'should return the last element of a list' do
          expect(subject.last).to eq(sample_car)
          expect(list_length_2.last).to eq(sample_car)
       end
-      
+
       it 'should append a new element to a list' do
         subject.append(integer(4))
         expect(subject.length).to eq(2)
@@ -86,8 +105,8 @@ module Skeem
         list = SkmPair.create_from_a(array0)
         expect(list).to be_list # It's a proper list...
         expect(list.length).to eq(0)
-        expect(list.to_a).to eq(array0)      
-      
+        expect(list.to_a).to eq(array0)
+
         # List of length 1
         array1 = [boolean(false)]
         list = SkmPair.create_from_a(array1)
@@ -109,14 +128,14 @@ module Skeem
         expect(list.length).to eq(3)
         expect(list.to_a).to eq([4, 5, 6])
       end
-      
+
       it 'should support the each method' do
         my_list = SkmPair.new('w', SkmPair.new('o', SkmPair.new('w', SkmEmptyList.instance)))
         text = ''
         my_list.each { |ch| text << ch.upcase }
         expect(text).to eq('WOW')
       end
-      
+
       it 'should implement the verbatim predicate' do
         expect(subject).to be_verbatim
         subject.cdr = nil

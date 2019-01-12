@@ -37,7 +37,7 @@ Here are a few pointers for the Scheme programming language:
 - Wikipedia article on [Scheme](https://en.m.wikipedia.org/wiki/Scheme_\(programming_language\))
 - Latest official Scheme standard: [R7RS](https://bitbucket.org/cowan/r7rs-wg1-infra/src/default/R7RSHomePage.md)
 #### Online tutorials and books:
-- [The Scheme Programming Language, 4th Edition](https://www.scheme.com/tspl4/) by Kent Dybvig. An complete, introductory textbook on Scheme based on the older R5RS standard.
+- [The Scheme Programming Language, 4th Edition](https://www.scheme.com/tspl4/) by Kent Dybvig. A complete, introductory textbook on Scheme based on the older R5RS standard.
 - [Teach Yourself Scheme in Fixnum Days](http://ds26gte.github.io/tyscheme/index.html) by Dorai Sitaram
 
 ## Usage
@@ -167,7 +167,7 @@ __Syntax:__
 This section lists the implemented standard procedures
 
 #### Equivalence predicates
-* `eqv?`
+* `eqv?`, `equal?`
 
 #### Boolean procedures
 * `boolean?`, `and`, `or`,  `not`
@@ -178,16 +178,16 @@ This section lists the implemented standard procedures
 * Integer-level: `even?`, `odd?`
 
 #### List procedures
-* `list?`, `null?`, `pair?`, `car`, `cdr`, `cons`,  `length`, `list`, `list->vector`
+* `list?`, `null?`, `pair?`, `car`, `cdr`, `cons`,  `length`, `list`, `list->vector`, `set-car!`, `set-cdr!`
 
 #### String procedures
-* `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`,
+* `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`
 
 #### Symbol procedures
-* `symbol?`, `symbol=?`
+* `symbol?`, `symbol=?`, `symbol->string`
 
 #### Vector procedures
-* `vector?`, `vector`, `vector-length`, `vector-set!`, `vector->list`
+* `vector?`, `make-vector`, `vector`, `vector-length`, `vector-set!`, `vector->list`
 
 #### Input/output procedures
 * `newline`

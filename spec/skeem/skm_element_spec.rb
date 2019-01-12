@@ -35,6 +35,11 @@ module Skeem
       let(:runtime) { double('fake-runtime') }
       let(:visitor) { double('fake-visitor') }
       let(:not_implemented) { NotImplementedError }
+      
+      it 'should be equivalent to itself' do
+        expect(subject).to be_eqv(subject)
+        expect(subject).not_to be_eqv(subject.clone)
+      end     
 
       it "should ignore the 'done!' message" do
         expect { subject.done! }.not_to raise_error
@@ -47,6 +52,11 @@ module Skeem
       it "should ignore the 'unquoted!' message" do
         expect { subject.unquoted! }.not_to raise_error
       end
+      
+      it "should complain when receiving 'skm_equal?' message" do
+        msg = 'Missing implementation of method Skeem::SkmElement#skm_equal?'
+        expect { subject.skm_equal?('omg') }.to raise_error(NotImplementedError, msg)
+      end       
 
       it "should complain when receiving 'evaluate' message" do
         expect { subject.evaluate(runtime) }.to raise_error(not_implemented)

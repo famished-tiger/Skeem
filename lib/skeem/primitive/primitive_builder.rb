@@ -39,6 +39,10 @@ module Skeem
         SkmArity.new(0, '*')
       end
 
+      def one_or_two
+        SkmArity.new(1, 2)
+      end      
+      
       def one_or_more
         SkmArity.new(1, '*')
       end
@@ -57,6 +61,7 @@ module Skeem
 
       def add_comparison(aRuntime)
         create_eqv?(aRuntime)
+        create_equal?(aRuntime)
         create_equal(aRuntime)
         create_lt(aRuntime)
         create_gt(aRuntime)
@@ -88,6 +93,7 @@ module Skeem
 
       def add_symbol_procedures(aRuntime)
         create_object_predicate(aRuntime, 'symbol?')
+        create_symbol2string(aRuntime)
       end
 
       def add_list_procedures(aRuntime)
@@ -107,6 +113,7 @@ module Skeem
         create_object_predicate(aRuntime, 'vector?')
         create_vector(aRuntime)
         create_vector_length(aRuntime)
+        create_make_vector(aRuntime)
         create_vector_ref(aRuntime)
         create_vector2list(aRuntime)
       end
@@ -220,10 +227,21 @@ module Skeem
           operand_1 = argument1.evaluate(runtime)
           operand_2 = argument2.evaluate(runtime)
           raw_result = operand_1.eqv?(operand_2)
-          to_datum(raw_result)
+          boolean(raw_result)
         end
 
         define_primitive_proc(aRuntime, 'eqv?', binary, primitive)
+      end
+
+      def create_equal?(aRuntime)
+        primitive = ->(runtime, argument1, argument2) do
+          operand_1 = argument1.evaluate(runtime)
+          operand_2 = argument2.evaluate(runtime)
+          raw_result = operand_1.skm_equal?(operand_2)
+          boolean(raw_result)
+        end
+
+        define_primitive_proc(aRuntime, 'equal?', binary, primitive)
       end
 
       def create_equal(aRuntime)
@@ -423,12 +441,14 @@ module Skeem
         define_primitive_proc(aRuntime, 'string->symbol', unary, primitive)
       end
 
-      def create_cons(aRuntime)
-        primitive = ->(runtime, obj1, obj2) do
-          SkmPair.new(obj1.evaluate(aRuntime), obj2.evaluate(aRuntime))
+      def create_symbol2string(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, SkmIdentifier, 'symbol', 'symbol->string')
+          string(arg_evaluated)
         end
 
-        define_primitive_proc(aRuntime, 'cons', binary, primitive)
+        define_primitive_proc(aRuntime, 'symbol->string', unary, primitive)
       end
 
       def create_car(aRuntime)
@@ -449,6 +469,14 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'cdr', unary, primitive)
+      end
+
+      def create_cons(aRuntime)
+        primitive = ->(runtime, obj1, obj2) do
+          SkmPair.new(obj1.evaluate(aRuntime), obj2.evaluate(aRuntime))
+        end
+
+        define_primitive_proc(aRuntime, 'cons', binary, primitive)
       end
 
       def create_length(aRuntime)
@@ -542,6 +570,23 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'vector-length', unary, primitive)
       end
+      
+      def create_make_vector(aRuntime)
+        primitive = ->(runtime, count_arg, arglist) do
+          count = count_arg.evaluate(runtime)
+          check_argtype(count, SkmInteger, 'integer', 'make_vector')
+          if arglist.empty?
+            filler = SkmUndefined.instance
+          else
+            filler = arglist.car.evaluate(runtime)
+          end
+          elements = Array.new(count.value, filler)
+
+          vector(elements)      
+        end
+
+        define_primitive_proc(aRuntime, 'make-vector', one_or_two, primitive)
+      end      
 
       def create_vector_ref(aRuntime)
           # argument 1: a vector, argument 2: an index(integer)

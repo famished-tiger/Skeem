@@ -98,13 +98,53 @@ SKEEM
             ['(eqv? 2 2)', true],
             ['(eqv? 2 2.0)', false],
             ['(eqv? 3 2)', false],
+            ["(eqv? '() '())", true],
             ['(eqv? 100000000 100000000)', true],
             ['(eqv? "a" "a")', false],
-            ['(eqv? "a" "b")', false]
+            ['(eqv? "a" "b")', false],
+            ['(eqv? (cons 1 2) (cons 1 2))', false],
+            ['(eqv? (lambda () 1) (lambda () 2))', false],
+            ['(define p (lambda (x) x)) (eqv? p p)', true],
+            ["(eqv? #f 'nil)", false]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
-            expect(result).to eq(expectation)
+            if result.length > 1
+              expect(result.last).to eq(expectation)
+            else
+              expect(result).to eq(expectation)
+            end
+          end
+        end
+
+        it 'should implement the equal? procedure' do
+          checks = [
+            ['(equal? #f #f)', true],
+            ['(equal? #t #t)', true],
+            ['(equal? #f #t)', false],
+            ["(equal? 'a 'a)", true],
+            ["(equal? 'a 'b)", false],
+            ["(equal? '(a) '(a))", true],
+            ["(equal? '(a) '(b))", false],
+            ["(equal? '(a (b) c) '(a (b) c))", true],
+            ["(equal? (cdr '(a)) '())", true],
+            ['(equal? "abc" "abc")', true],
+            ['(equal? "abc" "acb")', false],
+            ['(equal? 2 2)', true],
+            ["(equal? '#(a) '#(b))", false],
+            ["(equal? '#(a) '#(a))", true],
+            ["(equal? (make-vector 5 'a) (make-vector 5 'a))", true],
+            ['(equal? car car)', true],
+            ['(equal? car cdr)', false],
+            ['(equal? (lambda (x) x) (lambda (y) y))', false],
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            if result.length > 1
+              expect(result.last).to eq(expectation)
+            else
+              expect(result).to eq(expectation)
+            end
           end
         end
 
@@ -362,10 +402,25 @@ SKEEM
       context 'Symbol procedures:' do
         it 'should implement the symbol? procedure' do
           checks = [
-            ['(symbol? #f)', false],
-            ['(symbol? "bar")', false],
-            ["(symbol? '())", false],
             ["(symbol? 'foo)", true],
+            ["(symbol? (car '(a b)))", true],
+            ['(symbol? "bar")', false],
+            ["(symbol? 'nil)", true],
+            ["(symbol? '())", false],
+            ['(symbol? #f)', false]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
+        it 'should implement the symbol->string procedure' do
+          checks = [
+            ["(equal? (symbol->string 'Hi) \"Hi\")", true],
+            ["(equal? (symbol->string 'flying-fish) \"flying-fish\")", true],
+            ["(equal? (symbol->string 'Martin) \"Martin\")", true],
+            ['(equal? (symbol->string (string->symbol "Malvina")) "Malvina")', true]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
@@ -378,9 +433,9 @@ SKEEM
         it 'should implement the pair? procedure' do
           checks = [
             ["(pair? '(a . b))", true],
-            #["(pair? '(a b c))", true],
-            #["(pair? '())", false],
-            #["(pair? '#(a b))", false]
+            ["(pair? '(a b c))", true],
+            ["(pair? '())", false],
+            ["(pair? '#(a b))", false]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
@@ -468,9 +523,9 @@ SKEEM
           expect(result.length).to eq(1)
           expect(result.car).to eq('a')
 
-          # example = "(car '(1 . 2))" # => 1 # FAILURE
-          # result = subject.run(example)
-          # expect(result.car).to eq(1)
+          example = "(car '(1 . 2))"
+          result = subject.run(example)
+          expect(result).to eq(1)
 
           example = "(car '())" # => error
           expect { subject.run(example) }.to raise_error(StandardError)
@@ -483,9 +538,9 @@ SKEEM
           expect(result.length).to eq(3)
           expect(result.to_a).to eq(['b', 'c', 'd'])
 
-          # example = "(cdr '(1 . 2))" # => 2 # PARSER FAILURE
-          # result = subject.run(example)
-          # expect(result.cdr).to eq(2)
+          example = "(cdr '(1 . 2))"
+          result = subject.run(example)
+          expect(result).to eq(2)
 
           example = "(cdr '())" # => error
           expect { subject.run(example) }.to raise_error(StandardError)
@@ -514,7 +569,7 @@ SKEEM
             expect(result.to_a).to eq(expectation)
           end
         end
-        
+
         it 'should implement the set-car! procedure' do
           source =<<-SKEEM
   (define x '(a b c))
@@ -533,7 +588,7 @@ SKEEM
 SKEEM
           result = subject.run(source)
           expect(result.last.cdr).to eq(1)
-        end         
+        end
       end # context
 
       context 'Vector procedures:' do
@@ -579,6 +634,18 @@ SKEEM
           end
         end
 
+        it 'should implement the make-vector procedure' do
+          checks = [
+            ['(vector-length (make-vector 0))', 0],
+            ["(vector-length (make-vector 0 'a))", 0],
+            ["(equal? (make-vector 5 'a) '#(a a a a a))", true],
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
         it 'should implement the vector-ref procedure' do
           source = "(vector-ref '#(1 1 2 3 5 8 13 21) 5)"
           result = subject.run(source)
@@ -586,7 +653,7 @@ SKEEM
           expect(result).to eq(8)
         end
 
-        it 'should implement the vector-> procedure' do
+        it 'should implement the vector->list procedure' do
           checks = [
             ["(vector->list #())", []],
             ["(vector->list '#(a b c))", ['a', 'b', 'c']]

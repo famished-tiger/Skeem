@@ -1,11 +1,14 @@
 # Classes that implement nodes of Abstract Syntax Trees (AST) representing
 # Skeem parse results.
+require 'singleton'
 
 require_relative 'datum_dsl'
 require_relative 'skm_unary_expression'
 
 module Skeem
   class SkmUndefined
+    include Singleton
+    
     def value
       :UNDEFINED
     end
@@ -21,6 +24,12 @@ module Skeem
         else
           raise StandardError, other.inspect
       end
+    end
+    
+    private
+    
+    def initialize
+      self.freeze
     end
   end # class
 
@@ -227,7 +236,7 @@ module Skeem
       condition_result = nil
       if test_result.boolean? && test_result.value == false
         # Only #f is considered as false, everything else is true
-        condition_result = alternate ? alternate.evaluate(aRuntime) : SkmUndefined.new
+        condition_result = alternate ? alternate.evaluate(aRuntime) : SkmUndefined.instance
       else
         condition_result = consequent.evaluate(aRuntime)
       end
@@ -374,6 +383,7 @@ module Skeem
     end
 
     alias eqv? equal?
+    alias skm_equal? equal?
 
     def inspect
       result = inspect_prefix + '@formals ' + formals.inspect + ', '

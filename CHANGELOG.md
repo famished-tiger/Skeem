@@ -1,3 +1,15 @@
+## [0.1.02] - 2019-01-12
+### Added
+- File `primitive_builder.rb` implementation of: `equal?`, `make-vector`, `symbol->string` procedures.
+
+### Changed
+- File `README.md` udpated to reflect currently implemented features.
+- Class `SkmUndefined` uses now the Singleton pattern.
+
+### Fixed
+- Method `SkmElement#eqv?` was missing. Method is now implemented.
+- Class `PrimitiveProcedure` was unable to cope with procedures with a bounded range of arity.
+
 ## [0.1.01] - 2019-01-01
 - Fixes, added 'set-car!', 'set-cdr!' standard Scheme procedures.
 

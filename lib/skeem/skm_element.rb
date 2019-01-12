@@ -45,6 +45,15 @@ module Skeem
       false
     end
     
+    def eqv?(other)
+      equal?(other)
+    end
+    
+    def skm_equal?(_other)
+      msg = "Missing implementation of method #{self.class.name}##{__method__}"
+      raise NotImplementedError, msg
+    end
+    
     # @return [TrueClass, FalseClass] true if quoted element is identical to itself
     def verbatim?
       false
