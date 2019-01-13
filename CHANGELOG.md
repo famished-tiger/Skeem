@@ -1,4 +1,4 @@
-## [0.1.02] - 2019-01-12
+## [0.1.02] - 2019-01-13
 ### Added
 - File `primitive_builder.rb` implementation of: `equal?`, `make-vector`, `symbol->string` procedures.
 
@@ -7,6 +7,7 @@
 - Class `SkmUndefined` uses now the Singleton pattern.
 
 ### Fixed
+- File `skeem.gemspec` Make dependency on Bundler gem depends on the Ruby version.
 - Method `SkmElement#eqv?` was missing. Method is now implemented.
 - Class `PrimitiveProcedure` was unable to cope with procedures with a bounded range of arity.
 
