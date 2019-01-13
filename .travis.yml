@@ -2,21 +2,28 @@ sudo: false
 language: ruby
 
 rvm:
+  - 2.6.0
+  - 2.5.3
+  - 2.4.5
+  - 2.3.8
+  - 2.2.10
   - 2.1.10
-  - 2.2.8
-  - 2.3.5
-  - 2.4.2
+  - 2.0.0-p648
   - ruby-head
-  - jruby-9.1.9.0    
-  - jruby-head 
+  - jruby-9.1.9.0
+  - jruby-head
 matrix:
   allow_failures:
+    # Issue with Bundler version
+    - rvm: 2.2.10
+
+    - rvm: 2.6.0
     - rvm: ruby-head
     - rvm: jruby-head
 
 before_install: gem install bundler -v 1.16.1
 
 # whitelist
-branches:  
+branches:
   only:
     - master

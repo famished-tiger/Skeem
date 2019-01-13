@@ -3,6 +3,7 @@
 - File `primitive_builder.rb` implementation of: `equal?`, `make-vector`, `symbol->string` procedures.
 
 ### Changed
+- File `.travis.yml` Added newer Ruby versions and more environments in "Allowed failures" because of Bundler issue.
 - File `README.md` udpated to reflect currently implemented features.
 - Class `SkmUndefined` uses now the Singleton pattern.
 
