@@ -600,6 +600,48 @@ SKEEM
         end
       end
 
+      it 'should implement the caar procedure' do
+        checks = [
+          ["(caar '((a)))", 'a'],
+          ["(caar '((1 2) 3 4))", 1]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end
+
+      it 'should implement the cadr procedure' do
+        checks = [
+          ["(cadr '(a b c))", 'b'],
+          ["(cadr '((1 2) 3 4))", 3]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end
+
+      it 'should implement the cdar procedure' do
+        checks = [
+          ["(cdar '((7 6 5 4 3 2 1) 8 9))", [6, 5, 4, 3, 2, 1]]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.to_a).to eq(expectation)
+        end
+      end
+      
+      it 'should implement the cddr procedure' do
+        checks = [
+          ["(cddr '(2 1))", []]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result.to_a).to eq(expectation)
+        end
+      end      
+
       it 'should implement the symbol=? procedure' do
         checks = [
           ["(symbol=? 'a 'a)", true],

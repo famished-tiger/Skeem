@@ -73,21 +73,21 @@
 (define list
   (lambda args args))
  
-; (define caar 
-  ; (lambda (x)
-    ; (car (car x))))
+(define caar 
+  (lambda (x)
+    (car (car x))))
 
-; (define cadr 
-  ; (lambda (x) 
-    ; (car (cdr x))))
+(define cadr 
+  (lambda (x) 
+    (car (cdr x))))
 
-;(define cdar 
-;  (lambda(x)
-;    (cdr (car x))))
+(define cdar 
+ (lambda(x)
+   (cdr (car x))))
 
-;(define cddr 
-;  (lambda (x) 
-;    (cdr (cdr x))))
+(define cddr 
+ (lambda (x) 
+   (cdr (cdr x))))
 
 ;; (list-ref list n)    
 ;; Return the nth (sero-based) element of list

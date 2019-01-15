@@ -178,7 +178,7 @@ This section lists the implemented standard procedures
 * Integer-level: `even?`, `odd?`
 
 #### List procedures
-* `list?`, `null?`, `pair?`, `car`, `cdr`, `cons`,  `length`, `list`, `list->vector`, `set-car!`, `set-cdr!`
+* `list?`, `null?`, `pair?`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list->vector`, `set-car!`, `set-cdr!`
 
 #### String procedures
 * `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`

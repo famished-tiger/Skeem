@@ -1,3 +1,11 @@
+## [0.1.03] - 2019-01-15
+### Added
+- File `base.skm` implementation of list procedures: `caar`, `cadr`, `cdar`, `cddr`
+
+### Changed
+- File `interpreter_spec.rb` added spec examples to test the new procedures.
+- File `README.md` added allusion to new procedures?
+
 ## [0.1.02] - 2019-01-13
 ### Added
 - File `primitive_builder.rb` implementation of: `equal?`, `make-vector`, `symbol->string` procedures.
