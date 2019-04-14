@@ -20,8 +20,8 @@ module Skeem
 
     # Keywords...
     add_terminals('DEFINE', 'IF', 'LAMBDA')
-    add_terminals('QUOTE', 'QUASIQUOTE', 'UNQUOTE')
-    add_terminals('UNQUOTE-SPLICING')
+    add_terminals('QUOTE', 'QUASIQUOTE', 'SET!')
+    add_terminals('UNQUOTE', 'UNQUOTE-SPLICING')
 
     rule('program' => 'cmd_or_def_plus').as 'main'
     rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
@@ -36,6 +36,7 @@ module Skeem
     rule 'expression' =>  'procedure_call'
     rule 'expression' =>  'lambda_expression'
     rule 'expression' =>  'conditional'
+    rule 'expression' =>  'assignment'    
     rule 'expression' =>  'derived_expression'
     rule 'literal' => 'quotation'
     rule 'literal' => 'self-evaluating'
@@ -90,6 +91,7 @@ module Skeem
     rule 'alternate' => []
     rule 'number' => 'INTEGER'
     rule 'number' => 'REAL'
+    rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
     rule 'derived_expression' => 'quasiquotation'
     rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'

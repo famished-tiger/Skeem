@@ -6,10 +6,6 @@ require_relative '../../../lib/skeem/primitive/primitive_procedure'
 module Skeem
   module Primitive
     describe PrimitiveProcedure do
-      def call_proc(aName, args)
-        ProcedureCall.new(nil, aName, args)
-      end
-
       let(:nullary) { SkmArity.new(0, 0) }
       let(:unary) { SkmArity.new(1, 1) }
       let(:binary) { SkmArity.new(2, 2) }
@@ -93,30 +89,27 @@ module Skeem
           pproc = PrimitiveProcedure.new('newline', nullary, newline_code)
           rtime = double('fake-runtime')
 
-          invokation = call_proc('newline', nil)
-          expect(pproc.call(rtime, invokation)).to eq("\n")
+          expect(pproc.call(rtime, [])).to eq("\n")
 
-          too_much = call_proc('newline', ['superfluous'])
           err = StandardError
           ms1 = 'Wrong number of arguments for #<Procedure newline>'
           ms2 = ' (required at least 0, got 1)'
-          expect { pproc.call(rtime, too_much) }.to raise_error(err, ms1 + ms2)
+          expect { pproc.call(rtime, ['superfluous']) }.to raise_error(err, ms1 + ms2)
         end
 
         it 'should support Skeem unary procedure' do
           pproc = PrimitiveProcedure.new('cube', unary, cube)
           rtime = double('fake-runtime')
 
-          invokation = call_proc('cube', [SkmInteger.create(3)])
-          expect(pproc.call(rtime, invokation)).to eq(27)
+          args = [SkmInteger.create(3)]
+          expect(pproc.call(rtime, args)).to eq(27)
 
-          too_few = call_proc('cube', nil)
           err = StandardError
           ms1 = 'Wrong number of arguments for #<Procedure cube>'
           ms2 = ' (required at least 1, got 0)'
-          expect { pproc.call(rtime, too_few) }.to raise_error(err, ms1 + ms2)
+          expect { pproc.call(rtime, []) }.to raise_error(err, ms1 + ms2)
 
-          too_much = call_proc('newline', ['foo', 'bar'])
+          too_much = ['foo', 'bar']
           err = StandardError
           ms1 = 'Wrong number of arguments for #<Procedure cube>'
           ms2 = ' (required at least 1, got 2)'
@@ -127,16 +120,16 @@ module Skeem
           pproc = PrimitiveProcedure.new('sum', binary, sum)
           rtime = double('fake-runtime')
 
-          invokation = call_proc('sum', [SkmInteger.create(3), SkmInteger.create(5)])
-          expect(pproc.call(rtime, invokation)).to eq(8)
+          args = [SkmInteger.create(3), SkmInteger.create(5)]
+          expect(pproc.call(rtime, args)).to eq(8)
 
-          too_few = call_proc('sum', [SkmInteger.create(3)])
+          too_few = [SkmInteger.create(3)]
           err = StandardError
           ms1 = 'Wrong number of arguments for #<Procedure sum>'
           ms2 = ' (required at least 2, got 1)'
           expect { pproc.call(rtime, too_few) }.to raise_error(err, ms1 + ms2)
 
-          too_much = call_proc('cube', ['foo', 'bar', 'quux'])
+          too_much = ['foo', 'bar', 'quux']
           err = StandardError
           ms1 = 'Wrong number of arguments for #<Procedure sum>'
           ms2 = ' (required at least 2, got 3)'
@@ -147,13 +140,13 @@ module Skeem
           pproc = PrimitiveProcedure.new('length', zero_or_more, length)
           rtime = double('fake-runtime')
 
-          invokation = call_proc('length', [SkmInteger.create(3), SkmInteger.create(5)])
-          expect(pproc.call(rtime, invokation)).to eq(2)
+          args = [SkmInteger.create(3), SkmInteger.create(5)]
+          expect(pproc.call(rtime, args)).to eq(2)
 
-          no_arg = call_proc('sum', nil)
+          no_arg = []
           expect(pproc.call(rtime, no_arg)).to eq(0)
 
-          many = call_proc('cube', ['foo', 'bar', 'quux'])
+          many = ['foo', 'bar', 'quux']
           expect( pproc.call(rtime, many)).to eq(3)
         end
       end # context

@@ -6,7 +6,10 @@ require_relative '../../../lib/skeem/interpreter'
 module Skeem
   module Primitive
     describe 'Testing primitive procedures' do
-      subject { Interpreter.new }
+      subject do
+        # We load the interpreter with the primitive procedures only
+        Interpreter.new { |interp| interp.add_primitives(interp.runtime) }
+      end
 
       context 'Arithmetic operators:' do
         it 'should implement the set! form' do
@@ -16,6 +19,7 @@ module Skeem
 SKEEM
           result = subject.run(skeem1)
           expect(result.last).to eq(3)  # x is bound to value 2
+
           skeem2 = <<-SKEEM
   (set! x 4)
   (+ x 1)
@@ -448,8 +452,8 @@ SKEEM
             ['(list? #f)', false],
             ['(list? 1)', false],
             ['(list? "bar")', false],
-            ['(list? (list 1 2 3))', true],
-            ['(list? (list))', true]
+            ["(list? '(1 2 3))", true],
+            ["(list? '())", true]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
@@ -464,8 +468,8 @@ SKEEM
             ['(null? 0)', false],
             ['(null? "bar")', false],
             ['(null? "")', false],
-            ['(null? (list 1 2 3))', false],
-            ['(list? (list))', true]
+            ["(null? '(1 2 3))", false],
+            ["(list? '())", true]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
@@ -548,10 +552,10 @@ SKEEM
 
         it 'should implement the length procedure' do
           checks = [
-            ['(length (list))', 0],
-            ['(length (list 1))', 1],
-            ['(length (list 1 2))', 2],
-            ['(length (list 1 2 3))', 3]
+            ["(length '())", 0],
+            ["(length '(1))", 1],
+            ["(length '(1 2))", 2],
+            ["(length '(1 2 3))", 3]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
@@ -597,7 +601,7 @@ SKEEM
             ['(vector? #f)', false],
             ['(vector? 1)', false],
             ['(vector? "bar")', false],
-            ['(vector? (list 1 2 3))', false],
+            ["(vector? '(1 2 3))", false],
             ['(vector? #(1 #f "cool"))', true]
           ]
           checks.each do |(skeem_expr, expectation)|
@@ -680,7 +684,7 @@ SKEEM
           source = <<-SKEEM
   (define x 2)
   (define y 1)
-  (assert (> x y))
+  (test-assert (> x y))
 SKEEM
           expect(subject.run(source).last).to eq(true)
         end
@@ -689,7 +693,7 @@ SKEEM
           source = <<-SKEEM
   (define x 1)
   (define y 2)
-  (assert (> x y))
+  (test-assert (> x y))
 SKEEM
           err = StandardError
           msg = 'Error: assertion failed on line 3, column 4'

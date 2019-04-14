@@ -1,5 +1,6 @@
 require 'stringio'
 require_relative 'skm_pair'
+require_relative 'skm_binding'
 require_relative 's_expr_nodes'
 
 module Skeem
@@ -60,8 +61,8 @@ module Skeem
 
     # rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN')
     #  .as 'definition'
-    def reduce_definition(_production, aRange, _tokens, theChildren)
-      SkmDefinition.new(aRange, theChildren[2], theChildren[3])
+    def reduce_definition(_production, _range, _tokens, theChildren)
+      SkmBinding.new(theChildren[2], theChildren[3])
     end
 
     # rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'
@@ -69,7 +70,7 @@ module Skeem
     def reduce_alt_definition(_production, aRange, _tokens, theChildren)
       lmbd = SkmLambda.new(aRange, theChildren[4], theChildren[6])
       # $stderr.puts lmbd.inspect
-      SkmDefinition.new(aRange, theChildren[3], lmbd)
+      SkmBinding.new(theChildren[3], lmbd)
     end
 
     # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
@@ -244,6 +245,11 @@ module Skeem
     # rule('conditional' => 'LPAREN IF test consequent alternate RPAREN').as 'conditional'
     def reduce_conditional(_production, aRange, _tokens, theChildren)
       SkmCondition.new(aRange, theChildren[2], theChildren[3], theChildren[4])
+    end
+    
+    # rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
+    def reduce_assignment(_production, _range, _tokens, theChildren)
+      SkmUpdateBinding.new(theChildren[2], theChildren[3])
     end
 
     # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'

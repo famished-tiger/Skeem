@@ -14,16 +14,42 @@ module Skeem
         @arity = arity_validated(anArity)
       end
 
-      # Arguments are positional in a primitive procedure.
-      def call(aRuntime, aProcedureCall)
-        actuals = aProcedureCall.operands.to_a
-        check_actual_count(actuals)
-        aProcedureCall.operands_consumed = true
-        do_call(aRuntime, actuals)
+      def callable?
+        true
       end
-      
+
+      # This method should be invoked when the procedure isn't
+      # explicitly called (with arguments). In this case, the name
+      # of procedure just returns the procedure object itself.
+      # @param _runtime [Runtime]
+      # @return [PrimitiveProcedure]
+      def evaluate(_runtime)
+        self
+      end
+
+      # Arguments are positional in a primitive procedure.
+      # @param theActuals [Array<SkmElement>]
+      def call(aRuntime, theActuals)
+        actuals = theActuals
+        # $stderr.puts "--- Start of procedure #{identifier}"
+        # actuals.each { |actual| $stderr.puts '  Actual: ' + actual.inspect }
+        check_actual_count(actuals)
+        # TODO: check that next line became useless
+        # aProcedureCall.operands_consumed = true
+        result = do_call(aRuntime, actuals)
+        # $stderr.puts "  Result: #{result.inspect}"
+        # $stderr.puts "--- End of procedure #{identifier}"
+        result
+      end
+
       def skm_equal?(other)
         equal?(other)
+      end
+
+      # Notification that this procedure is bound to a variable
+      # @param [Skemm::SkmFrame]
+      def bound!(_frame)
+        # Do nothing
       end
 
       private
@@ -94,7 +120,7 @@ module Skeem
             #p count_delta
             #p arguments.inspect
             result = code.send(:call, aRuntime, *arguments.flatten)
-          end       
+          end
         else # Fixed arity...
           result = code.send(:call, aRuntime, *operands)
         end

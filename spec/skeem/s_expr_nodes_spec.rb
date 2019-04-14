@@ -5,84 +5,6 @@ require_relative '../../lib/skeem/primitive/primitive_builder'
 require_relative '../../lib/skeem/s_expr_nodes' # Load the classes under test
 
 module Skeem
-  describe SkmDefinition do
-    let(:pos) { double('fake-position') }
-    let(:sample_symbol) { SkmIdentifier.create('ten') }
-    let(:sample_expr) { SkmInteger.create(10) }
-
-    subject { SkmDefinition.new(pos, sample_symbol, sample_expr) }
-
-    context 'Initialization:' do
-      it 'should be initialized with a symbol and an expression' do
-        expect{ SkmDefinition.new(pos, sample_symbol, sample_expr) }.not_to raise_error
-      end
-
-      it 'should know its variable' do
-        expect(subject.variable).to eq(sample_symbol)
-      end
-
-      it 'should know its expression' do
-        expect(subject.expression).to eq(sample_expr)
-      end
-    end # context
-
-    context 'Provided services:' do
-      include Primitive::PrimitiveBuilder
-
-      let(:runtime) { Runtime.new(Environment.new) }
-
-      it 'should create an entry when evaluating' do
-        expect(runtime).not_to include(sample_symbol)
-        subject.evaluate(runtime)
-        expect(runtime).to include(sample_symbol)
-      end
-
-      it 'should optimize an entry that aliases a primitive proc' do
-        add_primitives(runtime)
-        identifier = SkmIdentifier.create('plus')
-        proc_name = SkmIdentifier.create('+')
-        var_ref = SkmVariableReference.new(nil, proc_name)
-        instance = SkmDefinition.new(nil, identifier, var_ref) # (define plus +)
-        expect(instance.expression).to eq(var_ref)
-        instance.evaluate(runtime)
-        # Optimization by getting rid of indirection
-        expect(instance.expression).to be_kind_of(Primitive::PrimitiveProcedure)
-      end
-
-      it 'should optimize an entry that aliases a lambda proc' do
-        # Let's define a (dummy) lambda
-        formals = SkmFormals.new([], :fixed)
-        dummy_body = { :defs => [], :sequence => [SkmInteger.create(3)]}
-        lbd = SkmLambda.new(nil, formals, dummy_body)
-        id = SkmIdentifier.create('some-lambda')
-        def1 = SkmDefinition.new(nil, id, lbd)
-        def1.evaluate(runtime)
-
-        # Let's create an alias to the lambda
-        other_name = SkmIdentifier.create('aliased-lambda')
-        var_ref = SkmVariableReference.new(nil, id)
-
-        # (define aliased-lambda some-lambda)
-        def2 = SkmDefinition.new(nil, other_name, var_ref)
-        expect(def2.expression).to eq(var_ref)
-        def2.evaluate(runtime)
-        # Optimization by getting rid of indirection
-        expect(def2.expression).to eq(lbd)
-      end
-
-      it 'should quasiquote its variable and expression' do
-        alter_ego = subject.quasiquote(runtime)
-        expect(alter_ego).to eq(subject)
-      end
-
-      it 'should return its text representation' do
-        txt1 = '<Skeem::SkmDefinition: <Skeem::SkmIdentifier: ten>,'
-        txt2 = ' <Skeem::SkmInteger: 10>>'
-        expect(subject.inspect).to eq(txt1 + txt2)
-      end
-    end # context
-  end # describe
-
   describe ProcedureCall do
      let(:pos) { double('fake-position') }
     let(:operator) { SkmIdentifier.create('+') }
@@ -180,9 +102,11 @@ module Skeem
       it 'should return its text representation' do
         txt1 = '<Skeem::SkmLambda: @formals #<Double "fake-formals">, '
         txt2 = '@definitions #<Double "fake-definitions">, '
-        txt3 = '@sequence #<Double "fake-sequence">>'
-        expect(subject.inspect).to eq(txt1 + txt2 + txt3)
-      end
+        txt3 = '@sequence #<Double "fake-sequence">>>'
+        # Remove "unpredictable" part of actual text
+        expectation = subject.inspect.gsub(/@object_id=[0-9a-z]+, /, '')
+        expect(expectation).to eq(txt1 + txt2 + txt3)
+      end  
     end # context
   end # describe
 end # module

@@ -1,30 +1,37 @@
 require_relative 's_expr_nodes'
-require_relative 'environment'
 
 module Skeem
   class Runtime
-    # @return [Environment]
-    attr_reader(:environment)
+    # @return [Array<SkmFrame>] The current active frame
+    attr_reader(:env_stack)
 
     # @return [Array<ProcedureCall>] The call stack
     attr_reader(:call_stack)
 
-    def initialize(anEnvironment)
-      @environment = anEnvironment
-      @call_stack = []
+    def initialize(anEnvironment, parent = nil)
+      @env_stack = []
+      push(anEnvironment)
+      @call_stack = parent.nil? ? [] : parent.call_stack
+    end
+
+    def environment
+      env_stack.last
     end
 
     def include?(anIdentifier)
-      environment.include?(normalize_key(anIdentifier))
+      environment.include?(anIdentifier)
     end
 
     def fetch(aKey)
-      key_value = normalize_key(aKey)
-      include?(key_value) ? environment.fetch(key_value) : nil
+      include?(aKey) ? environment.fetch(aKey) : nil
     end
 
-    def define(aKey, anEntry)
-      environment.define(normalize_key(aKey), anEntry)
+    def add_binding(aKey, anEntry)
+      environment.add_binding(aKey, anEntry)
+    end
+
+    def update_binding(aKey, anEntry)
+      environment.update_binding(aKey, anEntry)
     end
 
     def evaluate(aKey)
@@ -33,14 +40,8 @@ module Skeem
         entry = environment.fetch(key_value)
         result = nil
         begin
-          case entry
-            when Primitive::PrimitiveProcedure
-              result = entry
-            when SkmDefinition
-              result = entry.expression.evaluate(self)
-            else
-              raise StandardError, entry.inspect
-          end
+          result = entry.evaluate(self)
+
         rescue NoMethodError => exc
           # $stderr.puts 'In rescue block'
           # $stderr.puts key_value.inspect
@@ -66,29 +67,30 @@ module Skeem
     end
 
     def nest()
-      nested = Environment.new(environment)
-      @environment = nested
+      nested = SkmFrame.new(environment)
+      push(nested)
     end
 
-    def unnest()
-      raise StandardError, 'Cannot unnest environment' unless environment.outer
+    def unnest
+      raise StandardError, 'Cannot unnest environment' unless environment.parent
       environment.bindings.clear
-      @environment = environment.outer
+      pop
     end
 
-    def depth()
-      return environment.depth
+    def depth
+      return env_stack.size
     end
 
     def push(anEnvironment)
-      @environment = anEnvironment
+      env_stack.push(anEnvironment)
     end
 
-    # Make the outer enviromnent thecurrent one inside the provided block
+    # Make the parent frame the current one inside the provided block
     def pop
-      env = environment
-      @environment = environment.outer
-      env
+      if env_stack.empty?
+        raise StandardError, 'Skeem environment stack empty!'
+      end
+      env_stack.pop
     end
 
     def push_call(aProcCall)
@@ -104,7 +106,7 @@ module Skeem
       # $stderr.puts 'CALL STACK ^^^^'
     end
 
-    def pop_call()
+    def pop_call
       if call_stack.empty?
         raise StandardError, 'Skeem call stack empty!'
       end

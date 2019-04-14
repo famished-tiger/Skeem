@@ -29,7 +29,7 @@ module Skeem
       '#(' => 'VECTOR_BEGIN'
     }.freeze
 
-    # Here are all the SRL keywords (in uppercase)
+    # Here are all the Scheme keywords (in uppercase)
     @@keywords = %w[
       BEGIN
       DEFINE
@@ -37,6 +37,7 @@ module Skeem
       LAMBDA
       QUASIQUOTE
       QUOTE
+      SET!
       UNQUOTE
       UNQUOTE-SPLICING
     ].map { |x| [x, x] } .to_h

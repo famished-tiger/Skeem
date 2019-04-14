@@ -99,3 +99,17 @@
 ;        (list-ref (cdr ls) (- n 1))))) 
  
 (define symbol=? string=?)
+
+;; Test the equivalence (with eqv? predicate) between an expected value and
+;; an expression
+;; (test-eqv expected test-expr)
+(define test-eqv 
+  (lambda (x y) 
+    (test-assert (equal? x y))))
+
+;; Test the equality (with equal? predicate) between an expected value and
+;; an expression
+;; (test-equal expected test-expr)
+(define test-equal 
+  (lambda (x y) 
+    (test-assert (equal? x y))))

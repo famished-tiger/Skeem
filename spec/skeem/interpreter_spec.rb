@@ -8,8 +8,12 @@ module Skeem
     include DatumDSL
 
     context 'Initialization:' do
-      it 'should be initialized without argument' do
-        expect { Interpreter.new() }.not_to raise_error
+      it 'could be initialized without an argument' do
+        expect { Interpreter.new }.not_to raise_error
+      end
+
+      it 'could be initialized with a block argument' do
+        expect { Interpreter.new { |interp| }  }.not_to raise_error
       end
 
       it 'should have a parser' do
@@ -26,8 +30,9 @@ module Skeem
 
       it 'should implement base bindings' do
         expect(subject.fetch('number?')).to be_kind_of(Primitive::PrimitiveProcedure)
-        expect(subject.fetch('abs')).to be_kind_of(SkmDefinition)
-        expect(subject.fetch('abs').expression).to be_kind_of(SkmLambda)
+        expect(subject.fetch('abs')).to be_kind_of(SkmLambda)
+        expect(subject.fetch('abs').formals.arity).to eq(1)
+        expect(subject.fetch('abs').formals.formals[0]).to eq('x')
       end
     end # context
 
@@ -107,7 +112,7 @@ module Skeem
     context 'Built-in primitives' do
       it 'should implement variable definition' do
         result = subject.run('(define x 28)')
-        expect(result).to be_kind_of(SkmDefinition)
+        expect(subject.fetch('x')).to eq(28)
       end
 
       it 'should implement variable reference' do
@@ -125,7 +130,7 @@ SKEEM
       it 'should implement the simple conditional form' do
          checks = [
           ['(if (> 3 2) "yes")', 'yes'],
-          ['(if (> 2 3) "yes")', :UNDEFINED]
+          ['(if (> 2 3) "yes")', SkmUndefined.instance]
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)
@@ -213,7 +218,7 @@ SKEEM
       (if (< x 0) (- x) x)))
 SKEEM
         subject.run(source)
-        procedure = subject.fetch('abs').expression
+        procedure = subject.fetch('abs')
         expect(procedure.arity).to eq(1)
         result = subject.run('(abs -3)')
         expect(result).to eq(3)
@@ -231,7 +236,7 @@ SKEEM
       (if (< x y) x y)))
 SKEEM
         subject.run(source)
-        procedure = subject.fetch('min').expression
+        procedure = subject.fetch('min')
         expect(procedure.arity).to eq(2)
         result = subject.run('(min 1 2)')
         expect(result).to eq(1)
@@ -631,7 +636,7 @@ SKEEM
           expect(result.to_a).to eq(expectation)
         end
       end
-      
+
       it 'should implement the cddr procedure' do
         checks = [
           ["(cddr '(2 1))", []]
@@ -640,7 +645,7 @@ SKEEM
           result = subject.run(skeem_expr)
           expect(result.to_a).to eq(expectation)
         end
-      end      
+      end
 
       it 'should implement the symbol=? procedure' do
         checks = [
@@ -656,18 +661,6 @@ SKEEM
     end # context
 
     context 'More advanced tests' do
-      it 'should implement second-order functions' do
-        source = <<-SKEEM
-  (define compose
-    (lambda (f g)
-      (lambda (x)
-        (f (g x)))))
-  ((compose list square) 5)
-SKEEM
-        result = subject.run(source)
-        expect(result.last.car).to eq(25)
-      end
-
       it 'should implement lambda that calls second-order functions' do
         source = <<-SKEEM
   (define twice
@@ -685,6 +678,27 @@ SKEEM
         result = subject.run(source)
         expect(result.last).to eq(20)
       end
+
+#=begin
+      it 'under construction' do
+        # Fails
+        source = <<-SKEEM
+  (define twice
+    (lambda (x)
+      (* 2 x)))
+  (define compose
+    (lambda (f g)
+      (lambda (x)
+        (f (g x)))))
+  (define repeat
+    (lambda (f)
+      (compose f f)))
+  ((repeat (repeat twice)) 5)
+SKEEM
+        result = subject.run(source)
+        expect(result.last).to eq(80)
+      end
+#=end
     end # context
   end # describe
 end # module

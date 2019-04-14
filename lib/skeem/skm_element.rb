@@ -4,6 +4,10 @@ module Skeem
     def initialize(aPosition)
       self.position = aPosition
     end
+    
+    def callable?
+      false
+    end
 
     def number?
       false
@@ -36,7 +40,7 @@ module Skeem
     def null?
       false
     end
-    
+
     def pair?
       false
     end
@@ -44,16 +48,16 @@ module Skeem
     def vector?
       false
     end
-    
+
     def eqv?(other)
       equal?(other)
     end
-    
+
     def skm_equal?(_other)
       msg = "Missing implementation of method #{self.class.name}##{__method__}"
       raise NotImplementedError, msg
     end
-    
+
     # @return [TrueClass, FalseClass] true if quoted element is identical to itself
     def verbatim?
       false
@@ -62,10 +66,10 @@ module Skeem
     def evaluate(_runtime)
       raise NotImplementedError, "Missing implementation of #{self.class.name}"
     end
-    
+
     def quasiquote(_runtime)
       raise NotImplementedError, "Missing implementation of #{self.class.name}"
-    end    
+    end
 
     # Abstract method.
     # Part of the 'visitee' role in Visitor design pattern.
@@ -77,14 +81,20 @@ module Skeem
     def done!
       # Do nothing
     end
-    
+
     def quoted!
       # Do nothing
     end
-    
+
     def unquoted!
       # Do nothing
-    end    
+    end
+
+    # Notification that this procedure is bound to a variable
+    # @param [Skemm::SkmFrame]
+    def bound!(_frame)
+      # Do nothing
+    end
 
    def inspect
       result = inspect_prefix
@@ -105,7 +115,7 @@ module Skeem
     end
 
     def inspect_specific
-      raise NotImplementedError
+      raise NotImplementedError, "Missing #{self.class.to_s + '#' + 'inspect_specific'}"
     end
   end # struct
 end # module

@@ -133,8 +133,8 @@ module Skeem
         begin
           result = clone_evaluate(aRuntime)
         rescue NoMethodError => exc
-          $stderr.puts self.inspect
-          $stderr.puts self.to_a.inspect
+          $stderr.puts 'SkmPair#evaluate:   ' + self.inspect
+          $stderr.puts 'SkmPair as Array:   ' + self.to_a.inspect
           raise exc
         end
       end

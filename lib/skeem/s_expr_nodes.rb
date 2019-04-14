@@ -8,26 +8,17 @@ require_relative 'skm_unary_expression'
 module Skeem
   class SkmUndefined
     include Singleton
-    
+
     def value
-      :UNDEFINED
+      self
     end
 
     def ==(other)
-      return true if other.kind_of?(SkmUndefined)
-
-      result = case other
-        when Symbol
-          self.value == other
-        when String
-          self.value.to_s == other
-        else
-          raise StandardError, other.inspect
-      end
+      equal?(other)
     end
-    
+
     private
-    
+
     def initialize
       self.freeze
     end
@@ -46,95 +37,13 @@ module Skeem
     end
   end
 
-  class SkmDefinition < SkmMultiExpression
-    attr_reader :variable
-    attr_reader :expression
-
-    def initialize(aPosition, aVariable, theExpression)
-      super(aPosition)
-      @variable = aVariable
-      @expression = theExpression
-      unless expression.kind_of?(SkmElement)
-        raise StandardError, "Bad definition"
-      end
-    end
-
-    def evaluate(aRuntime)
-      var_key = variable.evaluate(aRuntime)
-      aRuntime.define(var_key, self)
-      case expression
-        when SkmLambda
-          result = expression.evaluate(aRuntime)
-
-        when SkmVariableReference
-          other_key = expression.variable.evaluate(aRuntime)
-          if var_key.value != other_key.value
-            entry = aRuntime.fetch(other_key)
-            result = expression.evaluate(aRuntime)
-            if entry.kind_of?(Primitive::PrimitiveProcedure)
-              @expression = entry
-            elsif entry.kind_of?(SkmDefinition)
-              if entry.expression.kind_of?(SkmLambda)
-                @expression = entry.expression
-              end
-            end
-          else
-            # INFINITE LOOP DANGER: definition of 'x' has a reference to 'x'!
-            # Way out: the lookup for the reference should start from outer
-            # environment.
-            env = aRuntime.pop
-            @expression = expression.evaluate(aRuntime)
-            aRuntime.push(env)
-            result = expression
-          end
-        else
-          result = self
-      end
-
-      result
-    end
-
-    def quasiquote(aRuntime)
-      quasi_var = variable.quasiquote(aRuntime)
-      quasi_expression = variable.quasiquote(aRuntime)
-
-      if quasi_var.equal?(variable) && quasi_expression.equal?(expression)
-        self
-      else
-        self.class.new(position, quasi_var, quasi_expression)
-      end
-    end
-
-    # call method should only invoked when the expression is a SkmLambda
-    def call(aRuntime, aProcedureCall)
-      expr = expression
-      expr = expr.evaluate(aRuntime) if expr.kind_of?(SkmVariableReference)
-      unless [SkmLambda, Primitive::PrimitiveProcedure].include?(expr.class)
-        err_msg = "Expected a SkmLambda instead of #{expr.class}"
-        raise StandardError, err_msg
-      end
-      # $stderr.puts "SkmDefinition#call #{aProcedureCall.inspect}"
-      expr.call(aRuntime, aProcedureCall)
-    end
-
-    def inspect
-      result = inspect_prefix
-      result << variable.inspect
-      result << ', '
-      result << expression.inspect
-      result << inspect_suffix
-      result
-    end
-
-    def associations
-      [:variable, :expression]
-    end
-  end # class
-
   class ProcedureCall < SkmMultiExpression
     attr_reader :operator
     attr_reader :operands
+
     attr_accessor :call_site
+
+    # @return [FalseClass, TrueClass] True if all arguments are used by callee.
     attr_accessor :operands_consumed
 
     def initialize(aPosition, anOperator, theOperands)
@@ -154,48 +63,32 @@ module Skeem
     end
 
     def evaluate(aRuntime)
+      frame_change = false
       aRuntime.push_call(self)
-      if operator.kind_of?(SkmLambda)
-        callee = operator
-      else
-        var_key = operator.evaluate(aRuntime)
-        if operator.kind_of?(ProcedureCall)
-          return var_key if operands_consumed
-        end
-        if var_key.kind_of?(Primitive::PrimitiveProcedure)
-          callee = var_key
-        else
-          begin
-            aRuntime.include?(var_key.value)
-          rescue NoMethodError => exc
-            # $stderr.puts "VVVVVVVVVVVVVVV"
-            # $stderr.puts 'var_key: ' + var_key.inspect
-            # $stderr.puts 'operator: ' + operator.inspect
-            # $stderr.puts 'operands: ' + operands.inspect
-            # $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
-            # $stderr.puts "^^^^^^^^^^^^^^^"
-            raise exc
-          end
-          unless aRuntime.include?(var_key.value)
-            err = StandardError
-            key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
-            err_msg = "Unknown procedure '#{key}'"
-            raise err, err_msg
-          end
-          callee = aRuntime.environment.fetch(var_key.value)
-        end
-        unless var_key.nil?
-          # $stderr.puts "## In ProcCall #{var_key.value} #############"
-          # $stderr.puts 'operator: ' + operator.inspect
-          # $stderr.puts 'operands: ' + operands.inspect
-          # $stderr.puts "## CALL(#{var_key.value}) ###################"
-          # $stderr.puts 'callee: ' + callee.inspect
-        end
+      # $stderr.puts "\n Start of ProcedureCall#evaluate #{object_id.to_s(16)}"
+      # $stderr.puts "  environment: #{aRuntime.environment.object_id.to_s(16)}, "
+      if aRuntime.environment && aRuntime.environment.parent
+        # $stderr.puts "Parent environment #{aRuntime.environment.parent.object_id.to_s(16)}, "
+        # $stderr.puts aRuntime.environment.inspect
       end
-      result = callee.call(aRuntime, self)
-      operands_consumed = true
+      #$stderr.puts '  operator: ' + operator.inspect
+      #$stderr.puts '  original operands: ' + operands.inspect
+      actuals = transform_operands(aRuntime)
+      #$stderr.puts '  transformed operands: ' + actuals.inspect
+      outcome, result = determine_callee(aRuntime)
+      if outcome == :callee
+        callee = result
+        # if callee.kind_of?(SkmLambda)
+          # aRuntime.push(callee.environment)
+          # frame_change = true
+        # end
+        # $stderr.puts '  callee: ' + callee.inspect
+        result = callee.call(aRuntime, actuals)
+        operands_consumed = true
+        # aRuntime.pop if frame_change
+      end
       aRuntime.pop_call
-      # $stderr.puts "## RETURN #{result.inspect} from #{var_key.value}"
+      # $stderr.puts "\n End of ProcedureCall#evaluate #{object_id.to_s(16)}"
       result
     end
 
@@ -217,6 +110,78 @@ module Skeem
     end
 
     alias children operands
+
+    private
+
+    def determine_callee(aRuntime)
+      case operator
+        when SkmIdentifier
+          callee = fetch_callee(aRuntime, operator)
+        when ProcedureCall
+          result = operator.evaluate(aRuntime)
+          # If child proc call consumes the parent's operand, then we're done
+          return [:result, result] unless result.callable? # if operands_consumed
+          callee = result
+          # callee = fetch_callee(aRuntime, result)
+        when Primitive::PrimitiveProcedure
+          callee = operator
+        when SkmLambda
+          callee = operator
+        else
+          result = operator.evaluate(aRuntime)
+          callee = fetch_callee(aRuntime, result)
+      end
+
+      [:callee, callee]
+    end
+
+    def fetch_callee(aRuntime, var_key)
+      begin
+        aRuntime.include?(var_key.value)
+      rescue NoMethodError => exc
+        # $stderr.puts "VVVVVVVVVVVVVVV"
+        # $stderr.puts 'var_key: ' + var_key.inspect
+        # $stderr.puts 'operator: ' + operator.inspect
+        # $stderr.puts 'operands: ' + operands.inspect
+        # $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
+        # $stderr.puts "^^^^^^^^^^^^^^^"
+        raise exc
+      end
+      unless aRuntime.include?(var_key.value)
+        err = StandardError
+        key = var_key.kind_of?(SkmIdentifier) ? var_key.value : var_key
+        err_msg = "Unknown procedure '#{key}'"
+        # $stderr.puts aRuntime.inspect
+        # $stderr.puts aRuntime.environment.size.inspect
+        raise err, err_msg
+      end
+      callee = aRuntime.environment.fetch(var_key.value)
+      # $stderr.puts "## CALL(#{var_key.value}) ###################"
+      # $stderr.puts 'callee: ' + callee.inspect
+      # $stderr.puts 'operator: ' + operator.inspect
+      # $stderr.puts 'operands: ' + operands.inspect
+
+      callee
+    end
+
+    def transform_operands(aRuntime)
+      return [] if operands == SkmEmptyList.instance
+      actuals = operands.to_a
+
+      result = actuals.map do |actual|
+        case actual
+          when SkmVariableReference
+            aRuntime.fetch(actual.child)
+          else
+            actual.evaluate(aRuntime)
+        end
+      end
+
+      result.nil? ? [] : result
+    end
+
+
+
   end # class
 
   class SkmCondition < SkmMultiExpression
@@ -331,6 +296,10 @@ module Skeem
     end
   end # class
 
+
+
+require_relative 'skm_procedure_exec'
+
   class SkmLambda < SkmMultiExpression
     include DatumDSL
 
@@ -339,6 +308,7 @@ module Skeem
     attr_reader :formals
     attr_reader :definitions
     attr_reader :sequence
+    attr_reader :environment
 
     def initialize(aPosition, theFormals, aBody)
       super(aPosition)
@@ -348,8 +318,11 @@ module Skeem
     end
 
     def evaluate(aRuntime)
-      # formals.evaluate(aRuntime)
       self
+    end
+
+    def callable?
+      true
     end
 =begin
   TODO
@@ -361,17 +334,28 @@ module Skeem
        self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)
     end
 =end
-    def call(aRuntime, aProcedureCall)
+    def call(aRuntime, theActuals)
+      set_cond_environment(aRuntime.environment) # Last chance for anonymous lambda
+      application = SkmProcedureExec.new(self)
+      application.run!(aRuntime, theActuals)
+=begin
+      # $stderr.puts "Start of lambda #{object_id.to_s(16)}"
       aRuntime.nest
+      # $stderr.puts '  Before bind_locals'
       bind_locals(aRuntime, aProcedureCall)
+      # $stderr.puts '  After bind_locals'
       # $stderr.puts 'LOCALS vvvvvvvvvvv'
       # $stderr.puts aRuntime.environment.inspect
       # $stderr.puts 'LOCALS ^^^^^^^^^^^'
       result = evaluate_defs(aRuntime)
+      # $stderr.puts '  Before evaluate_sequence'
       result = evaluate_sequence(aRuntime)
+      # $stderr.puts '  After evaluate_sequence'
       aRuntime.unnest
-
+      # $stderr.puts "  Result: #{result.inspect}"
+      # $stderr.puts "End of lambda #{object_id.to_s(16)}"
       result
+=end
     end
 
     def arity
@@ -385,10 +369,14 @@ module Skeem
     alias eqv? equal?
     alias skm_equal? equal?
 
+    def bound!(aFrame)
+      set_cond_environment(aFrame)
+    end
+
     def inspect
-      result = inspect_prefix + '@formals ' + formals.inspect + ', '
-      result << '@definitions ' + definitions.inspect + ', '
-      result << '@sequence ' + sequence.inspect + inspect_suffix
+      result = inspect_prefix + "@object_id=#{object_id.to_s(16)}, "
+      result << inspect_specific
+      result << inspect_suffix
       result
     end
 
@@ -396,18 +384,18 @@ module Skeem
       [:formals, :definitions, :sequence]
     end
 
-    private
-
-    def bind_locals(aRuntime, aProcedureCall)
-      actuals =  aProcedureCall.operands.to_a
+    def bind_locals(aRuntime, theActuals)
+      actuals =  theActuals
       count_actuals = actuals.size
 
       if (count_actuals < required_arity) ||
         ((count_actuals > required_arity) && !formals.variadic?)
-        raise StandardError, msg_arity_mismatch(aProcedureCall)
+        # $stderr.puts "Error"
+        # $stderr.puts self.inspect
+        raise StandardError, msg_arity_mismatch(theActuals)
       end
       return if count_actuals.zero? && !formals.variadic?
-      bind_required_locals(aRuntime, aProcedureCall)
+      bind_required_locals(aRuntime, theActuals)
       if formals.variadic?
         variadic_part_raw = actuals.drop(required_arity)
         variadic_part = variadic_part_raw.map do |actual|
@@ -422,14 +410,17 @@ module Skeem
         end
         variadic_arg_name = formals.formals.last
         args_coll = SkmPair.create_from_a(variadic_part)
-        a_def = SkmDefinition.new(position, variadic_arg_name, args_coll)
+        # a_def = SkmDefinition.new(position, variadic_arg_name, args_coll)
+        a_def = SkmBinding.new(variadic_arg_name, args_coll)
+        a_def.evaluate(aRuntime)
+        aRuntime.add_binding(a_def.variable, a_def.value)
         # $stderr.puts "Tef #{a_def.inspect}"
         # $stderr.puts "Tef #{actuals.inspect}"
         # $stderr.puts "Tef #{variadic_part.inspect}"
         # $stderr.puts "Tef #{aProcedureCall.inspect}"
-        a_def.evaluate(aRuntime)
+        # a_def.evaluate(aRuntime)
       end
-      aProcedureCall.operands_consumed = true
+      #aProcedureCall.operands_consumed = true
     end
 
     def evaluate_defs(aRuntime)
@@ -440,45 +431,54 @@ module Skeem
       result = nil
       if sequence
         sequence.each do |cmd|
-          if cmd.kind_of?(SkmLambda)
-            caller_index = -2
-            loop do
-              raise StandardError, "Missing argument" unless aRuntime.caller(caller_index)
-              unless aRuntime.caller(caller_index).operands_consumed
-                aRuntime.caller(caller_index).operands_consumed = true
-                result = cmd.call(aRuntime, aRuntime.caller(caller_index))
-                break
-              end
-              caller_index -= 1
-            end
-          else
-            begin
+          begin
+            if cmd.kind_of?(SkmLambda)
+              result = cmd.dup_cond(aRuntime)
+            else
               result = cmd.evaluate(aRuntime)
-            rescue NoMethodError => exc
-              $stderr.puts self.inspect
-              $stderr.puts sequence.inspect
-              $stderr.puts cmd.inspect
-              raise exc
             end
+          rescue NoMethodError => exc
+            $stderr.puts self.inspect
+            $stderr.puts sequence.inspect
+            $stderr.puts cmd.inspect
+            raise exc
           end
         end
       end
 
       result
     end
+    
+    def dup_cond(aRuntime)
+      if environment
+        result = self
+      else
+        twin = self.dup
+        twin.set_cond_environment(aRuntime.environment)
+        result = twin
+      end
+      
+      result
+    end
+
+    def set_cond_environment(theFrame)
+      # $stderr.puts "Lambda #{object_id.to_s(16)}, env [#{environment.object_id.to_s(16)}]"
+      # $stderr.puts "  Runtime environment: #{theFrame.object_id.to_s(16)}"
+      # $stderr.puts "  Called from #{caller(1, 1)}"
+      raise StandardError unless theFrame.kind_of?(SkmFrame)
+      unless environment
+        @environment = theFrame
+        self.freeze
+        # $stderr.puts "  Lambda's environment updated!"
+      end
+    end
+
+    private
 
     # Purpose: bind each formal from lambda to an actual value from the call
-    def bind_required_locals(aRuntime, aProcedureCall)
+    def bind_required_locals(aRuntime, theActuals)
       max_index = required_arity - 1
-      case aProcedureCall.operands
-        when SkmPair
-          actuals =  aProcedureCall.operands.to_a
-        when SkmEmptyList
-          actuals = []
-        else
-          raise StandardError, "Unsupported type of operand list #{aProcedureCall.operands.inspect}"
-          actuals =  aProcedureCall.operands.members
-      end
+      actuals = theActuals
       formal_names = formals.formals.map(&:value)
 
       formals.formals.each_with_index do |arg_name, index|
@@ -496,24 +496,39 @@ module Skeem
         unless arg.kind_of?(SkmElement)
           arg = to_datum(arg)
         end
-        a_def = SkmDefinition.new(position, arg_name, arg)
-        # $stderr.puts "Procedure call #{aProcedureCall.operator.inspect}"
+        # a_def = SkmDefinition.new(position, arg_name, arg)
+        a_def = SkmBinding.new(arg_name, arg)
+        # $stderr.puts "Lambda #{object_id.to_s(16)}"
         # $stderr.puts "LOCAL #{arg_name.value} #{arg.inspect}"
         if arg.kind_of?(SkmVariableReference) && !formal_names.include?(arg.value)
-          aRuntime.define(arg_name, a_def)
+          aRuntime.add_binding(arg_name, a_def)
         else
-          a_def.evaluate(aRuntime)
+          aRuntime.add_binding(a_def.variable, a_def.evaluate(aRuntime))
         end
         break if index >= max_index
       end
     end
 
-    def msg_arity_mismatch(aProcCall)
+    def msg_arity_mismatch(actuals)
       # *** ERROR: wrong number of arguments for #<closure morph> (required 2, got 1)
-      msg1 = "Wrong number of arguments for procedure #{aProcCall.operator} "
-      count_actuals = aProcCall.operands.members.size
+      msg1 = "Wrong number of arguments for procedure "
+      count_actuals = actuals.size
       msg2 = "(required #{required_arity}, got #{count_actuals})"
       msg1 + msg2
+    end
+
+    def inspect_specific
+      #result = "@environment #{environment.object_id.to_s(16)}, "
+      result = ''
+      if environment && environment.parent
+        result << "Parent environment #{environment.parent.object_id.to_s(16)}, "
+        result << environment.inspect
+      end
+      result << '@formals ' + formals.inspect + ', '
+      result << '@definitions ' + definitions.inspect + ', '
+      result << '@sequence ' + sequence.inspect + inspect_suffix
+
+      result
     end
   end # class
 end # module

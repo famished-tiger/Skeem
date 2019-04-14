@@ -1,3 +1,6 @@
+## [0.2.00] - 2019-04-14
+### Major refactoring
+
 ## [0.1.03] - 2019-01-15
 ### Added
 - File `base.skm` implementation of list procedures: `caar`, `cadr`, `cdar`, `cddr`

@@ -48,7 +48,6 @@ module Skeem
       end
 
       def add_binding(aRuntime)
-        create_set!(aRuntime)
       end
 
       def add_arithmetic(aRuntime)
@@ -123,21 +122,9 @@ module Skeem
       end
 
       def add_special_procedures(aRuntime)
-        create_assert(aRuntime)
+        create_test_assert(aRuntime)
         create_debug(aRuntime)
-      end
-
-      def create_set!(aRuntime)
-          primitive = ->(runtime, var_ref, expr) do
-            if runtime.include?(var_ref.child)
-              redefinition = SkmDefinition.new(nil, var_ref.child, expr)
-              redefinition.evaluate(runtime)
-            else
-              raise StandardError, "Unbound variable: '#{var.value}'"
-            end
-        end
-
-        define_primitive_proc(aRuntime, 'set!', binary, primitive)
+        create_inspect(aRuntime)
       end
 
       def create_plus(aRuntime)
@@ -622,7 +609,7 @@ module Skeem
         define_primitive_proc(aRuntime, 'newline', nullary, primitive)
       end
 
-      def create_assert(aRuntime)
+      def create_test_assert(aRuntime)
         primitive = ->(runtime, arg) do
           arg_evaluated = arg.evaluate(runtime)
           if arg_evaluated.boolean? && arg_evaluated.value == false
@@ -636,15 +623,28 @@ module Skeem
           end
         end
 
-        define_primitive_proc(aRuntime, 'assert', unary, primitive)
+        define_primitive_proc(aRuntime, 'test-assert', unary, primitive)
       end
 
+      # DON'T USE IT
+      # Non-standard procedure reserved for internal testing/debugging purposes.      
       def create_debug(aRuntime)
         primitive = ->(runtime) do
           require 'debug'
         end
 
         define_primitive_proc(aRuntime, 'debug', nullary, primitive)
+      end
+      
+      # DON'T USE IT
+      # Non-standard procedure reserved for internal testing/debugging purposes.
+      def create_inspect(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          $stderr.puts 'INSPECT>' + arg_evaluated.inspect
+          Skeem::SkmUndefined.instance
+        end
+        define_primitive_proc(aRuntime, '_inspect', unary, primitive)      
       end
 
       def create_object_predicate(aRuntime, predicate_name, msg_name = nil)
@@ -670,7 +670,7 @@ module Skeem
       end
 
       def define(aRuntime, aKey, anEntry)
-        aRuntime.define(aKey, anEntry)
+        aRuntime.add_binding(aKey, anEntry)
       end
 
       def evaluate_arguments(arglist, aRuntime)

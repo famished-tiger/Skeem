@@ -178,11 +178,10 @@ module Skeem
     end # context
 
     context 'Provided services:' do
-      let(:sample_def) { SkmDefinition.new(nil, identifier('three'), integer(3)) }
-      let(:runtime) { Runtime.new(Environment.new) }
+      let(:runtime) { Runtime.new(SkmFrame.new) }
 
       before(:each) do
-        runtime.define('three', sample_def)
+        runtime.add_binding('three', integer(3))
       end
 
       it "should return the variable's value at evaluation" do
