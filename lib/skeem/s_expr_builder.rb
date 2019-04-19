@@ -95,7 +95,7 @@ module Skeem
         theChildren[2]
       else
         SkmQuotation.new(theChildren[2])
-      end      
+      end
     end
 
     # rule('list' => 'LPAREN datum_star RPAREN').as 'list'
@@ -106,7 +106,7 @@ module Skeem
       end
       SkmPair.create_from_a(theChildren[1])
     end
-    
+
     # rule('list' => 'LPAREN datum_plus PERIOD datum RPAREN').as 'dotted_list'
     def reduce_dotted_list(_production, _range, _tokens, theChildren)
       # if theChildren[1].kind_of?(Array)
@@ -118,9 +118,9 @@ module Skeem
       # else
         # car_arg = theChildren[1]
       # end
-      
+
       SkmPair.new(theChildren[1], theChildren[3])
-    end    
+    end
 
     # rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
     def reduce_vector(_production, aRange, _tokens, theChildren)
@@ -246,10 +246,15 @@ module Skeem
     def reduce_conditional(_production, aRange, _tokens, theChildren)
       SkmCondition.new(aRange, theChildren[2], theChildren[3], theChildren[4])
     end
-    
+
     # rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
     def reduce_assignment(_production, _range, _tokens, theChildren)
       SkmUpdateBinding.new(theChildren[2], theChildren[3])
+    end
+
+    # rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
+    def reduce_short_let_form(_production, aRange, _tokens, theChildren)
+      SkmBindingBlock.new(:let, theChildren[3], theChildren[5])
     end
 
     # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
@@ -260,6 +265,21 @@ module Skeem
     # rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'
     def reduce_quasiquotation_short(_production, aRange, _tokens, theChildren)
       SkmQuasiquotation.new(theChildren[1])
+    end
+
+    # rule('binding_spec_star' => 'binding_spec_star binding_spec').as 'multiple_binding_specs'
+    def reduce_multiple_binding_specs(_production, aRange, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('binding_spec_star' => []).as 'no_binding_spec_yet'
+    def reduce_no_binding_spec_yet(_production, aRange, _tokens, _children)
+      []
+    end
+
+    # rule('binding_spec' => 'LPAREN IDENTIFIER expression RPAREN').as 'binding_spec'
+    def reduce_binding_spec(production, _range, _tokens, theChildren)
+      SkmBinding.new(theChildren[1], theChildren[2])
     end
 
     # rule('list_qq_template' => 'LPAREN qq_template_or_splice_star RPAREN').as 'list_qq'

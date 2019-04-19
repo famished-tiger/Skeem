@@ -29,12 +29,13 @@ module Skeem
       '#(' => 'VECTOR_BEGIN'
     }.freeze
 
-    # Here are all the Scheme keywords (in uppercase)
+    # Here are all the implemented Scheme keywords (in uppercase)
     @@keywords = %w[
       BEGIN
       DEFINE
       IF
       LAMBDA
+      LET
       QUASIQUOTE
       QUOTE
       SET!

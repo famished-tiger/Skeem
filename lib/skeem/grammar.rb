@@ -19,7 +19,7 @@ module Skeem
     add_terminals('STRING_LIT', 'IDENTIFIER')
 
     # Keywords...
-    add_terminals('DEFINE', 'IF', 'LAMBDA')
+    add_terminals('DEFINE', 'IF', 'LAMBDA', 'LET')
     add_terminals('QUOTE', 'QUASIQUOTE', 'SET!')
     add_terminals('UNQUOTE', 'UNQUOTE-SPLICING')
 
@@ -92,9 +92,13 @@ module Skeem
     rule 'number' => 'INTEGER'
     rule 'number' => 'REAL'
     rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
+    rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
     rule 'derived_expression' => 'quasiquotation'
     rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'
+    rule('binding_spec_star' => 'binding_spec_star binding_spec').as 'multiple_binding_specs'
+    rule('binding_spec_star' => []).as 'no_binding_spec_yet'
+    rule('binding_spec' => 'LPAREN IDENTIFIER expression RPAREN').as 'binding_spec'
     rule 'qq_template' => 'simple_datum'
     rule 'qq_template' => 'list_qq_template'
     rule 'qq_template' => 'vector_qq_template'

@@ -106,6 +106,7 @@ module Skeem
       return aLiteral if aLiteral.kind_of?(SkmSimpleDatum)
       return list(aLiteral.members) if aLiteral.kind_of?(SkmList)
       return vector(aLiteral.members) if aLiteral.kind_of?(SkmVector)
+      return aLiteral if aLiteral.kind_of?(Primitive::PrimitiveProcedure)
 
       result = case aLiteral
         when Array

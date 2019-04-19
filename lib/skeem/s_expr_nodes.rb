@@ -129,7 +129,11 @@ module Skeem
           callee = operator
         else
           result = operator.evaluate(aRuntime)
-          callee = fetch_callee(aRuntime, result)
+          if result.kind_of?(Primitive::PrimitiveProcedure)
+            callee = result
+          else
+            callee = fetch_callee(aRuntime, result)
+          end
       end
 
       [:callee, callee]

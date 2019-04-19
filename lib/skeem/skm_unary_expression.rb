@@ -110,4 +110,36 @@ module Skeem
       variable.value
     end
   end # class
+  
+  # Used to represent local binding constructs (let, let*, letrec, letrec*)
+  class SkmBindingBlock < SkmUnaryExpression
+    alias body child
+    
+    attr_reader :kind
+    attr_reader :bindings
+    
+    def initialize(theKind, theBindings, aBody)
+      @kind = theKind
+      @bindings = theBindings
+      super(nil, aBody)
+    end
+    
+    def evaluate(aRuntime)
+      if kind == :let
+        aRuntime.push(SkmFrame.new(aRuntime.environment))
+        locals = bindings.map do |bnd|
+          SkmBinding.new(bnd.variable, bnd.value.evaluate(aRuntime))
+        end
+        locals.each do |bnd|
+          aRuntime.add_binding(bnd.variable.evaluate(aRuntime), bnd.value)
+        end
+      end
+      
+      result = body[:sequence].evaluate(aRuntime)
+      aRuntime.pop
+      result.kind_of?(SkmPair) ? result.last : result
+    end
+    
+  end # class
+  
 end # module

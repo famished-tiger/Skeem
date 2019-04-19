@@ -161,6 +161,11 @@ __Purpose:__ Assign to an existing variable an expression/value to it.
 __Syntax:__   
 * (set! <identifier\> <expression\>)  
 
+### Derived expressions
+#### let  
+__Purpose:__ Define one or more variable local to the block.  
+__Syntax:__   
+* (let (<binding_spec\*\>) <body\>)
 
 
 ### Standard library
@@ -222,7 +227,7 @@ This project is intended to be a safe, welcoming space for collaboration, and co
 
 Copyright
 ---------
-Copyright (c) 2018, Dimitri Geshef.  
+Copyright (c) 2018-2019, Dimitri Geshef.  
 __Skeem__ is released under the MIT License see [LICENSE.txt](https://github.com/famished-tiger/Skeem/blob/master/LICENSE.txt) for details.
 
 ## Code of Conduct

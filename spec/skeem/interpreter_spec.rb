@@ -305,6 +305,42 @@ SKEEM
           expect(result.last.last.value).to eq(4)
       end
     end # context
+    
+    context 'Binding constructs:' do
+      it 'should implement local bindings' do
+        source = <<-SKEEM
+  (let ((x 2)
+        (y 3))
+    (* x y))
+SKEEM
+        result = subject.run(source)
+        expect(result).to eq(6)
+      end
+      
+      it 'should implement precedence of local bindings' do
+        source = <<-SKEEM
+  (define x 23)
+  (define y 42)
+
+  ; local variable y in let block "shadows" the global one
+  (let ((y 43))
+    (+ x y))
+SKEEM
+        result = subject.run(source)
+        expect(result.last).to eq(66)
+      end      
+      
+     it 'should support the nesting of local bindings' do
+        source = <<-SKEEM
+  (let ((x 2) (y 3))
+  (let ((x 7)
+    (z (+ x y)))
+  (* z x)))
+SKEEM
+        result = subject.run(source)
+        expect(result).to eq(35)
+      end      
+    end # context
 
     context 'Quasiquotation:' do
       it 'should implement the quasiquotation of constant literals' do
@@ -660,8 +696,8 @@ SKEEM
       end
     end # context
 
-    context 'More advanced tests' do
-      it 'should implement lambda that calls second-order functions' do
+    context 'Second-order functions' do
+      it 'should implement lambda that calls second-order function' do
         source = <<-SKEEM
   (define twice
     (lambda (x)
@@ -679,9 +715,7 @@ SKEEM
         expect(result.last).to eq(20)
       end
 
-#=begin
-      it 'under construction' do
-        # Fails
+      it 'should implement the composition of second-order functions' do
         source = <<-SKEEM
   (define twice
     (lambda (x)
@@ -698,7 +732,6 @@ SKEEM
         result = subject.run(source)
         expect(result.last).to eq(80)
       end
-#=end
     end # context
   end # describe
 end # module
