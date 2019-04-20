@@ -36,6 +36,7 @@ module Skeem
       IF
       LAMBDA
       LET
+      LET*
       QUASIQUOTE
       QUOTE
       SET!

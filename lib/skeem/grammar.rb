@@ -20,6 +20,7 @@ module Skeem
 
     # Keywords...
     add_terminals('DEFINE', 'IF', 'LAMBDA', 'LET')
+    add_terminals('LET*')
     add_terminals('QUOTE', 'QUASIQUOTE', 'SET!')
     add_terminals('UNQUOTE', 'UNQUOTE-SPLICING')
 
@@ -93,6 +94,7 @@ module Skeem
     rule 'number' => 'REAL'
     rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
     rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
+    rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
     rule 'derived_expression' => 'quasiquotation'
     rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'

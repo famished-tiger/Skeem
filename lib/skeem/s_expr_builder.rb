@@ -256,6 +256,11 @@ module Skeem
     def reduce_short_let_form(_production, aRange, _tokens, theChildren)
       SkmBindingBlock.new(:let, theChildren[3], theChildren[5])
     end
+    
+    # rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
+    def reduce_let_star_form(_production, aRange, _tokens, theChildren)
+      SkmBindingBlock.new(:let_star, theChildren[3], theChildren[5])
+    end    
 
     # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     def reduce_quasiquotation(_production, aRange, _tokens, theChildren)

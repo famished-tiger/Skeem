@@ -168,6 +168,11 @@ __Syntax:__
 * (let (<binding_spec\*\>) <body\>)
 
 
+#### let*  
+__Purpose:__ Define one or more variable local to the block.  
+__Syntax:__   
+* (let* (<binding_spec\*\>) <body\>)
+
 ### Standard library
 This section lists the implemented standard procedures
 

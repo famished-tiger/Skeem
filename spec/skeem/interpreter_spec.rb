@@ -305,7 +305,7 @@ SKEEM
           expect(result.last.last.value).to eq(4)
       end
     end # context
-    
+
     context 'Binding constructs:' do
       it 'should implement local bindings' do
         source = <<-SKEEM
@@ -316,7 +316,7 @@ SKEEM
         result = subject.run(source)
         expect(result).to eq(6)
       end
-      
+
       it 'should implement precedence of local bindings' do
         source = <<-SKEEM
   (define x 23)
@@ -328,8 +328,8 @@ SKEEM
 SKEEM
         result = subject.run(source)
         expect(result.last).to eq(66)
-      end      
-      
+      end
+
      it 'should support the nesting of local bindings' do
         source = <<-SKEEM
   (let ((x 2) (y 3))
@@ -339,7 +339,18 @@ SKEEM
 SKEEM
         result = subject.run(source)
         expect(result).to eq(35)
-      end      
+      end
+
+      it 'should implement let* expression' do
+        source = <<-SKEEM
+  (let ((x 2) (y 3))
+    (let* ((x 7)
+      (z (+ x y)))
+      (* z x)))
+SKEEM
+        result = subject.run(source)
+        expect(result).to eq(70)
+      end
     end # context
 
     context 'Quasiquotation:' do

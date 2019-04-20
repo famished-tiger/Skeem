@@ -1,7 +1,10 @@
+## [0.2.02] - 2019-04-20
+### Added
+- Skeem now supports 'let*' local binding construct
+
 ## [0.2.01] - 2019-04-19
 ### Added
 - Skeem now supports 'let' local binding construct
-
 
 ## [0.2.00] - 2019-04-14
 ### Major refactoring

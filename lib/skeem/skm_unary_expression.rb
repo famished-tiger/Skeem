@@ -125,14 +125,19 @@ module Skeem
     end
     
     def evaluate(aRuntime)
+      aRuntime.push(SkmFrame.new(aRuntime.environment))
       if kind == :let
-        aRuntime.push(SkmFrame.new(aRuntime.environment))
         locals = bindings.map do |bnd|
           SkmBinding.new(bnd.variable, bnd.value.evaluate(aRuntime))
         end
         locals.each do |bnd|
           aRuntime.add_binding(bnd.variable.evaluate(aRuntime), bnd.value)
         end
+      elsif kind == :let_star
+        bindings.each do |bnd|
+          val = bnd.value.evaluate(aRuntime)
+          aRuntime.add_binding(bnd.variable.evaluate(aRuntime), val)
+        end        
       end
       
       result = body[:sequence].evaluate(aRuntime)
