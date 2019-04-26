@@ -116,9 +116,9 @@ module Skeem
             arguments << operands.take(arity.low).flatten
             count_delta = operands.size - arity.low
             arguments << SkmPair.create_from_a(operands.slice(-count_delta, count_delta))
-            #p operands.size
-            #p count_delta
-            #p arguments.inspect
+            # p operands.size
+            # p count_delta
+            # p arguments.inspect
             result = code.send(:call, aRuntime, *arguments.flatten)
           end
         else # Fixed arity...

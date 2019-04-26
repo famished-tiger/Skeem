@@ -1,3 +1,10 @@
+## [0.2.03] - 2019-04-26
+### Changed
+- File `README.md` added new example with procedures holding each their local states.
+
+### Fixed
+- The nesting of a lambda expression nested in a let construct caused an aliasing of the bindings.
+
 ## [0.2.02] - 2019-04-20
 ### Added
 - Skeem now supports 'let*' local binding construct
@@ -23,7 +30,7 @@
 
 ### Changed
 - File `.travis.yml` Added newer Ruby versions and more environments in "Allowed failures" because of Bundler issue.
-- File `README.md` udpated to reflect currently implemented features.
+- File `README.md` updated to reflect currently implemented features.
 - Class `SkmUndefined` uses now the Singleton pattern.
 
 ### Fixed

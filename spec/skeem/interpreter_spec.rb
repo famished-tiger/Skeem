@@ -330,7 +330,7 @@ SKEEM
         expect(result.last).to eq(66)
       end
 
-     it 'should support the nesting of local bindings' do
+      it 'should support the nesting of local bindings' do
         source = <<-SKEEM
   (let ((x 2) (y 3))
   (let ((x 7)
@@ -341,6 +341,29 @@ SKEEM
         expect(result).to eq(35)
       end
 
+      it 'should support the nesting of a lambda in a let expression' do
+        source =<<-SKEEM
+  (define make-counter
+    (lambda ()
+       (let ((count 0))
+          (lambda ()
+             (set! count (+ count 1))
+             count))))
+
+  (define c1 (make-counter))
+  (define c2 (make-counter))
+  (c1)
+  (c2)
+  (c1)
+  (c2)
+  (c1)
+SKEEM
+        result = subject.run(source)
+        expect(result.last).to eq(3)
+      end
+
+
+
       it 'should implement let* expression' do
         source = <<-SKEEM
   (let ((x 2) (y 3))
@@ -350,6 +373,29 @@ SKEEM
 SKEEM
         result = subject.run(source)
         expect(result).to eq(70)
+      end
+    end # context
+
+    context 'Sequencing constructs:' do
+      it 'should implement begin as a sequence of expressions' do
+        source = <<-SKEEM
+  (define x 0)
+  (and (= x 0)
+    (begin (set! x 5)
+      (+ x 1))) ; => 6
+SKEEM
+        result = subject.run(source)
+        expect(result.last).to eq(6)
+      end
+
+      it 'should implement begin as a sequence of expressions' do
+        source = <<-SKEEM
+  (let ()
+    (begin (define x 3) (define y 4))
+    (+ x y))  ; => 7
+SKEEM
+        result = subject.run(source)
+        expect(result).to eq(7)
       end
     end # context
 

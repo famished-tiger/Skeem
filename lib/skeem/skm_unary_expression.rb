@@ -110,20 +110,20 @@ module Skeem
       variable.value
     end
   end # class
-  
+
   # Used to represent local binding constructs (let, let*, letrec, letrec*)
   class SkmBindingBlock < SkmUnaryExpression
     alias body child
-    
+
     attr_reader :kind
     attr_reader :bindings
-    
+
     def initialize(theKind, theBindings, aBody)
       @kind = theKind
       @bindings = theBindings
       super(nil, aBody)
     end
-    
+
     def evaluate(aRuntime)
       aRuntime.push(SkmFrame.new(aRuntime.environment))
       if kind == :let
@@ -137,14 +137,59 @@ module Skeem
         bindings.each do |bnd|
           val = bnd.value.evaluate(aRuntime)
           aRuntime.add_binding(bnd.variable.evaluate(aRuntime), val)
-        end        
+        end
       end
-      
-      result = body[:sequence].evaluate(aRuntime)
+
+      unless body[:defs].empty?
+        body[:defs].each do |dfn|
+          dfn.evaluate(aRuntime)
+        end
+      end
+
+      # $stderr.puts "Environment SkmBindingBlock#evaluate:" + aRuntime.environment.inspect
+      raw_result = body[:sequence].evaluate(aRuntime)
+      result = raw_result.kind_of?(SkmPair) ? raw_result.last : raw_result
+      result = result.doppelganger(aRuntime) if result.kind_of?(SkmLambda)
+
       aRuntime.pop
-      result.kind_of?(SkmPair) ? result.last : result
+      # $stderr.puts "Result SkmBindingBlock#evaluate: " + result.inspect
+      result
     end
-    
+
   end # class
-  
+
+  # Sequencing construct
+  class SkmSequencingBlock < SkmUnaryExpression
+    alias sequence child
+
+    def initialize(aSequence)
+      super(nil, aSequence)
+    end
+
+    def evaluate(aRuntime)
+      result = nil
+      if sequence
+        sequence.kind_of?(SkmPair)
+          sequence.to_a.each do |cmd|
+            begin
+              if cmd.kind_of?(SkmLambda)
+                result = cmd.dup_cond(aRuntime)
+              else
+                result = cmd.evaluate(aRuntime)
+              end
+            rescue NoMethodError => exc
+              $stderr.puts self.inspect
+              $stderr.puts sequence.inspect
+              $stderr.puts cmd.inspect
+              raise exc
+            end
+          end
+        elsif
+          result = sequence.evaluate(aRuntime)
+        end
+
+      result
+    end
+  end # class
+
 end # module

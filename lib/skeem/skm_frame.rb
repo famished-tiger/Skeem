@@ -16,7 +16,14 @@ module Skeem
       @bindings = {}
       @parent = parentFrame
     end
-    
+
+    def initialize_copy(original)
+      @bindings = {}
+      original.bindings.each_pair do |var, val|
+        add_binding(var.dup, val.dup)
+      end
+    end
+
     # Add a binding to this frame.
     # There is no check that the variable name is already in use.
     # @param anIdentifier [String, SkmIdentifier] The variable name
@@ -29,7 +36,7 @@ module Skeem
     # @param anIdentifier [String, SkmIdentifier] The variable name.
     # @param anExpression [SkmElement] The Skeem expression to bind
     def update_binding(anIdentifier, anExpression)
-      variable = valid_identifier(anIdentifier) 
+      variable = valid_identifier(anIdentifier)
       if bindings.include?(variable)
         bind(variable, anExpression)
       elsif parent
@@ -52,7 +59,7 @@ module Skeem
 
     # Tell  the value of an existing variable.
     # @param anIdentifier [String, SkmIdentifier] The variable name.
-    # @return [Boolean]    
+    # @return [Boolean]
     def include?(anIdentifier)
       variable = valid_identifier(anIdentifier)
       my_result = bindings.include?(variable)
@@ -110,9 +117,9 @@ module Skeem
 
       result
     end
-    
+
     private
-    
+
     def valid_identifier(anIdentifier)
       case anIdentifier
         when String
@@ -125,13 +132,13 @@ module Skeem
           raise StandardError, err_msg
       end
     end
-    
+
     def bind(anIdentifier, anExpression)
       @bindings[anIdentifier] = anExpression
-      
+
       # Notify the value that it is bound to a variable from this frame.
-      anExpression.bound!(self)    
+      anExpression.bound!(self)
     end
-    
+
   end # class
 end # module

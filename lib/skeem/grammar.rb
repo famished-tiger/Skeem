@@ -19,8 +19,8 @@ module Skeem
     add_terminals('STRING_LIT', 'IDENTIFIER')
 
     # Keywords...
-    add_terminals('DEFINE', 'IF', 'LAMBDA', 'LET')
-    add_terminals('LET*')
+    add_terminals('BEGIN', 'DEFINE', 'IF', 'LAMBDA')
+    add_terminals('LET', 'LET*')
     add_terminals('QUOTE', 'QUASIQUOTE', 'SET!')
     add_terminals('UNQUOTE', 'UNQUOTE-SPLICING')
 
@@ -29,9 +29,11 @@ module Skeem
     rule('cmd_or_def_plus' => 'cmd_or_def').as 'last_cmd_def'
     rule 'cmd_or_def' => 'command'
     rule 'cmd_or_def' => 'definition'
+    # TODO: add BEGIN here p. 64 R7RS
     rule 'command' => 'expression'
     rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN').as 'definition'
     rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'
+    rule('definition' => 'LPAREN BEGIN definition_star RPAREN').as 'definitions_within_begin'
     rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     rule 'expression' =>  'literal'
     rule 'expression' =>  'procedure_call'
@@ -80,8 +82,8 @@ module Skeem
     rule('identifier_plus' => 'identifier_plus IDENTIFIER').as 'multiple_identifiers'
     rule('identifier_plus' => 'IDENTIFIER').as 'last_identifier'
     rule('body' => 'definition_star sequence').as 'body'
-    rule 'definition_star' => 'definition_star definition'
-    rule 'definition_star' => []
+    rule('definition_star' => 'definition_star definition').as 'definition_star'
+    rule('definition_star' => []).as 'no_definition_yet'
     rule('sequence' => 'command_star expression').as 'sequence'
     rule('command_star' => 'command_star command').as 'multiple_commands'
     rule('command_star' => []).as 'no_command_yet'
@@ -95,6 +97,7 @@ module Skeem
     rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
     rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
     rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
+    rule('derived_expression' => 'LPAREN BEGIN sequence RPAREN').as 'begin_expression'
     rule 'derived_expression' => 'quasiquotation'
     rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'

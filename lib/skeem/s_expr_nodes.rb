@@ -71,10 +71,10 @@ module Skeem
         # $stderr.puts "Parent environment #{aRuntime.environment.parent.object_id.to_s(16)}, "
         # $stderr.puts aRuntime.environment.inspect
       end
-      #$stderr.puts '  operator: ' + operator.inspect
-      #$stderr.puts '  original operands: ' + operands.inspect
+      # $stderr.puts '  operator: ' + operator.inspect
+      # $stderr.puts '  original operands: ' + operands.inspect
       actuals = transform_operands(aRuntime)
-      #$stderr.puts '  transformed operands: ' + actuals.inspect
+      # $stderr.puts '  transformed operands: ' + actuals.inspect
       outcome, result = determine_callee(aRuntime)
       if outcome == :callee
         callee = result
@@ -464,6 +464,14 @@ require_relative 'skm_procedure_exec'
       
       result
     end
+    
+    def doppelganger(aRuntime)
+      twin = self.dup
+      twin.set_cond_environment(aRuntime.environment.dup)
+      result = twin
+      
+      result
+    end    
 
     def set_cond_environment(theFrame)
       # $stderr.puts "Lambda #{object_id.to_s(16)}, env [#{environment.object_id.to_s(16)}]"

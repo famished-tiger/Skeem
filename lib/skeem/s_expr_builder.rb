@@ -72,6 +72,11 @@ module Skeem
       # $stderr.puts lmbd.inspect
       SkmBinding.new(theChildren[3], lmbd)
     end
+    
+    # rule('definition' => 'LPAREN BEGIN definition_star RPAREN').as 'definitions_within_begin'
+    def reduce_definitions_within_begin(_production, aRange, _tokens, theChildren)
+      SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))     
+    end
 
     # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
@@ -226,6 +231,17 @@ module Skeem
       definitions = theChildren[0].nil? ? [] : theChildren[0]
       { defs: definitions, sequence: theChildren[1] }
     end
+    
+    # rule('definition_star' => 'definition_star definition').as 'definition_star'
+    def reduce_definition_star(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+    
+    
+    # rule('definition_star' => []).as 'no_definition_yet' 
+    def reduce_no_definition_yet(_production, _range, _tokens, theChildren)
+      []
+    end    
 
     # rule('sequence' => 'command_star expression').as 'sequence'
     def reduce_sequence(_production, _range, _tokens, theChildren)
@@ -260,6 +276,11 @@ module Skeem
     # rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
     def reduce_let_star_form(_production, aRange, _tokens, theChildren)
       SkmBindingBlock.new(:let_star, theChildren[3], theChildren[5])
+    end
+
+    # rule('derived_expression' => 'LPAREN BEGIN sequence RPAREN').as 'begin_expression'
+    def reduce_begin_expression(_production, aRange, _tokens, theChildren)
+      SkmSequencingBlock.new(theChildren[2])
     end    
 
     # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'

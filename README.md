@@ -108,6 +108,36 @@ Here are a few pointers for the Scheme programming language:
   result = schemer.run(scheme_code)
   puts result.value # => 9332621544394415268169923885626670049071596826438162146859296389521759999322991560894146397615651828625369792082722375825118521091686400000000000000000000000
 ```
+### Example 4 (Defining a procedure that holds its own environment)
+```ruby
+  require 'skeem'
+
+  schemer = Skeem::Interpreter.new
+  scheme_code = <<-SKEEM
+  (define make-counter
+    ;; create a procedure that will bind count and
+    ;; return a new procedure that will iself increment the
+    ;; variable and return its newest value
+    (lambda ()
+       (let ((count 0))
+          (lambda ()
+             (set! count (+ count 1))
+             count))))
+
+  (define c1 (make-counter))
+  (define c2 (make-counter))
+  (define c3 (make-counter))
+
+  ;; Notice how each procedure keeps track of its "own" counter.
+  (c1) ; => 1
+  (c2) ; => 1
+  (c1) ; => 2
+  (c3) ; => 1
+  (c1) ; => 3
+  SKEEM
+
+  result = schemer.run(scheme_code)
+  puts result.last.value # => 3
 
 ## Currently implemented R7RS features
 ### Data type literals
