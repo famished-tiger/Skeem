@@ -138,6 +138,7 @@ Here are a few pointers for the Scheme programming language:
 
   result = schemer.run(scheme_code)
   puts result.last.value # => 3
+```
 
 ## Currently implemented R7RS features
 ### Data type literals
