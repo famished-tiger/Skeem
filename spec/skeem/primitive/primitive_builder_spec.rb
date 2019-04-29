@@ -696,8 +696,9 @@ SKEEM
   (test-assert (> x y))
 SKEEM
           err = StandardError
-          msg = 'Error: assertion failed on line 3, column 4'
-          expect { subject.run(source) }.to raise_error(err, msg)
+          msg1 = 'Error: assertion failed on line 3, column 4'
+          msg2 = 'with <Skeem::SkmBoolean: false>'
+          expect { subject.run(source) }.to raise_error(err, msg1 + ', '+ msg2)
         end
       end # context
     end # describe

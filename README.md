@@ -39,6 +39,8 @@ Here are a few pointers for the Scheme programming language:
 #### Online tutorials and books:
 - [The Scheme Programming Language, 4th Edition](https://www.scheme.com/tspl4/) by Kent Dybvig. A complete, introductory textbook on Scheme based on the older R5RS standard.
 - [Teach Yourself Scheme in Fixnum Days](http://ds26gte.github.io/tyscheme/index.html) by Dorai Sitaram
+- [Yet Another Scheme Tutorial](http://www.shido.info/lisp/idx_scm_e.html) by Shido Takafumi
+- [An Introduction to Scheme and its Implementation](http://www.cs.utexas.edu/ftp/garbage/cs345/schintro-v14/schintro_toc.html) by Paul R. Wilson
 
 ## Usage
 
@@ -253,6 +255,7 @@ Here are a few other ones:
 
 - [rubic gem](https://rubygems.org/gems/rubic). The last commit for the [project](https://github.com/notozeki/rubic) is June 2015.
 
+- [RLisp](https://github.com/davydovanton/rlisp) ...Simple scheme interpreter written on ruby
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/famished-tiger/Skeem.

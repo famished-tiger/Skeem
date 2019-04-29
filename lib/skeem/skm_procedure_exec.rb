@@ -18,14 +18,25 @@ module Skeem
       runtime = aRuntime
       runtime.push(frame)
       definition.bind_locals(runtime, theActuals)
+      evaluate_defs(aRuntime)
+      # definition.evaluate_defs(runtime)
       # $stderr.puts "Locals"
-      # $stderr.puts frame.bindings.keys.join(', ')
-      definition.evaluate_defs(runtime)
+      # $stderr.puts frame.bindings.keys.join(', ')      
       result = definition.evaluate_sequence(runtime)
       runtime.pop
       # $stderr.puts "Lambda result: #{result.object_id.to_s(16)}" if result.kind_of?(SkmLambda)
       
       result
+    end
+    
+    private
+    
+    def evaluate_defs(aRuntime)
+      definition.definitions.each do |bndng|
+        var = bndng.variable.evaluate(aRuntime)
+        val = bndng.value.evaluate(aRuntime)
+        frame.add_binding(var, val)
+      end    
     end
   end # class
 end # module

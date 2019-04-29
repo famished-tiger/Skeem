@@ -58,6 +58,11 @@ module Skeem
     def reduce_last_cmd_def(_production, _range, _tokens, theChildren)
       SkmPair.create_from_a([theChildren.last])
     end
+    
+    # rule('cmd_or_def' => 'LPAREN BEGIN cmd_or_def_plus RPAREN').as 'begin_cmd'
+    def reduce_begin_cmd(_production, _range, _tokens, theChildren)
+       SkmSequencingBlock.new(theChildren[2])  
+    end    
 
     # rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN')
     #  .as 'definition'

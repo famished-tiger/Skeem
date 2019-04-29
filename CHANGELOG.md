@@ -1,7 +1,18 @@
+## [0.2.04] - 2019-04-29
+- Support for local definitions [initial]
+
+### Changed
+- File `grammar.rb` Added one production rule for third `begin` form syntax.
+- Method `SkmBuilder#reduce_begin_cmd` added to implement semantic action for new `begin...` production rule.
+- File `README.md` Added a couple of links for additional Scheme resources.
+
+
+### Removed
+- Method `SkmLambda#evaluate_defs` replaced by homonymous method in `SkmProcedureExec` class.
+
 ## [0.2.03] - 2019-04-26
 ### Changed
 - File `README.md` added new example with procedures holding each their local states.
-
 ### Fixed
 - The nesting of a lambda expression nested in a let construct caused an aliasing of the bindings.
 

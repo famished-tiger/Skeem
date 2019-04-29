@@ -616,8 +616,9 @@ module Skeem
             assert_call = aRuntime.caller
             pos = assert_call.call_site
             # Error: assertion failed: (> 1 2)
-            msg = "assertion failed on line #{pos.line}, column #{pos.column}"
-            raise StandardError, 'Error: ' + msg
+            msg1 = "assertion failed on line #{pos.line}, column #{pos.column}"
+            msg2 = ", with #{arg.inspect}"
+            raise StandardError, 'Error: ' + msg1 + msg2
           else
             boolean(true)
           end

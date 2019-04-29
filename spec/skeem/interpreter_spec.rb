@@ -304,6 +304,20 @@ SKEEM
           result = subject.run(source)
           expect(result.last.last.value).to eq(4)
       end
+      
+      
+      it 'should support the nested define construct' do
+        source = <<-SKEEM
+  (define (quadruple x)
+    (define (double x) ; define a local procedure double
+      (+ x x))
+    (double (double x))) ; nested calls to the local procedure
+ 
+  (quadruple 5) ; => 20
+SKEEM
+        result = subject.run(source)
+        expect(result.last.value).to eq(20)    
+      end
     end # context
 
     context 'Binding constructs:' do

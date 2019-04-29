@@ -29,7 +29,7 @@ module Skeem
     rule('cmd_or_def_plus' => 'cmd_or_def').as 'last_cmd_def'
     rule 'cmd_or_def' => 'command'
     rule 'cmd_or_def' => 'definition'
-    # TODO: add BEGIN here p. 64 R7RS
+    rule('cmd_or_def' => 'LPAREN BEGIN cmd_or_def_plus RPAREN').as 'begin_cmd'
     rule 'command' => 'expression'
     rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN').as 'definition'
     rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'

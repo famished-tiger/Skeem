@@ -342,24 +342,6 @@ require_relative 'skm_procedure_exec'
       set_cond_environment(aRuntime.environment) # Last chance for anonymous lambda
       application = SkmProcedureExec.new(self)
       application.run!(aRuntime, theActuals)
-=begin
-      # $stderr.puts "Start of lambda #{object_id.to_s(16)}"
-      aRuntime.nest
-      # $stderr.puts '  Before bind_locals'
-      bind_locals(aRuntime, aProcedureCall)
-      # $stderr.puts '  After bind_locals'
-      # $stderr.puts 'LOCALS vvvvvvvvvvv'
-      # $stderr.puts aRuntime.environment.inspect
-      # $stderr.puts 'LOCALS ^^^^^^^^^^^'
-      result = evaluate_defs(aRuntime)
-      # $stderr.puts '  Before evaluate_sequence'
-      result = evaluate_sequence(aRuntime)
-      # $stderr.puts '  After evaluate_sequence'
-      aRuntime.unnest
-      # $stderr.puts "  Result: #{result.inspect}"
-      # $stderr.puts "End of lambda #{object_id.to_s(16)}"
-      result
-=end
     end
 
     def arity
@@ -414,7 +396,6 @@ require_relative 'skm_procedure_exec'
         end
         variadic_arg_name = formals.formals.last
         args_coll = SkmPair.create_from_a(variadic_part)
-        # a_def = SkmDefinition.new(position, variadic_arg_name, args_coll)
         a_def = SkmBinding.new(variadic_arg_name, args_coll)
         a_def.evaluate(aRuntime)
         aRuntime.add_binding(a_def.variable, a_def.value)
@@ -425,10 +406,6 @@ require_relative 'skm_procedure_exec'
         # a_def.evaluate(aRuntime)
       end
       #aProcedureCall.operands_consumed = true
-    end
-
-    def evaluate_defs(aRuntime)
-      definitions.each { |a_def| a_def.evaluate(runtime) }
     end
 
     def evaluate_sequence(aRuntime)
