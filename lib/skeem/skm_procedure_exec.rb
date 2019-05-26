@@ -19,9 +19,11 @@ module Skeem
       runtime.push(frame)
       definition.bind_locals(runtime, theActuals)
       evaluate_defs(aRuntime)
-      # definition.evaluate_defs(runtime)
       # $stderr.puts "Locals"
-      # $stderr.puts frame.bindings.keys.join(', ')      
+      # frame.bindings.each_pair do |key, elem|
+        # $stderr.print key.to_s + ' => '
+        # $stderr.puts  elem.kind_of?(SkmLambda) ? "  Lambda = #{elem.object_id.to_s(16)}" : elem.inspect
+      # end
       result = definition.evaluate_sequence(runtime)
       runtime.pop
       # $stderr.puts "Lambda result: #{result.object_id.to_s(16)}" if result.kind_of?(SkmLambda)
@@ -33,8 +35,8 @@ module Skeem
     
     def evaluate_defs(aRuntime)
       definition.definitions.each do |bndng|
+        val = bndng.value.evaluate(aRuntime)      
         var = bndng.variable.evaluate(aRuntime)
-        val = bndng.value.evaluate(aRuntime)
         frame.add_binding(var, val)
       end    
     end

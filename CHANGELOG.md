@@ -1,3 +1,17 @@
+## [0.2.05] - 2019-05-26
+- Passing more standard Scheme tests, `append` procedure implemented.
+
+### Added
+- File `primitive_builder.rb`: Added implementation for standard procedure `append`.
+- Class `LambdaRep`: represents a parse tree of a lambda expression.
+
+### Changed
+- File `grammar.rb`: Changed a grammar rule for (begin ...) expression because R7RS was too restrictive compared to main implementations.
+- Class `SkmBuilder` several method updates (e.g. `reduce_alt_definition`)
+
+### Removed
+- Class `Environment` superseded by class `SkmFrame`
+
 ## [0.2.04] - 2019-04-29
 - Support for local definitions [initial]
 

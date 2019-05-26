@@ -1,6 +1,5 @@
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/datum_dsl'
-require_relative '../../lib/skeem/environment'
 require_relative '../../lib/skeem/s_expr_nodes'
 require_relative '../../lib/skeem/skm_unary_expression' # Load the classes under test
 
@@ -49,7 +48,7 @@ module Skeem
     end # context
 
     context 'Provided services:' do
-      let(:runtime) { Runtime.new(Environment.new) }
+      let(:runtime) { Runtime.new(SkmFrame.new) }
 
       # it 'should return the child(datum) at evaluation' do
         # expect(subject.evaluate(runtime)).to be_equal(subject.child)
@@ -90,7 +89,7 @@ module Skeem
     end # context
 
     context 'Provided services:' do
-      let(:runtime) { Runtime.new(Environment.new) }
+      let(:runtime) { Runtime.new(SkmFrame.new) }
 
       it 'should return the child(template) at evaluation' do
         expect(subject.evaluate(runtime)).to be_equal(subject.child)
@@ -131,7 +130,7 @@ module Skeem
     end # context
 
     context 'Provided services:' do
-      let(:runtime) { Runtime.new(Environment.new) }
+      let(:runtime) { Runtime.new(SkmFrame.new) }
 
       it 'should return the child(template) at evaluation' do
         expect(subject.evaluate(runtime)).to be_equal(subject.child)

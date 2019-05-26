@@ -71,18 +71,18 @@ module Skeem
     end # context
   end # describe
 
-  describe SkmLambda do
+  describe SkmLambdaRep do
     let(:pos) { double('fake-position') }
     let(:s_formals) { double('fake-formals') }
     let(:s_defs) { double('fake-definitions') }
     let(:s_sequence) { double('fake-sequence') }
     let(:s_body) do { defs: s_defs, sequence: s_sequence } end
 
-    subject { SkmLambda.new(pos, s_formals, s_body) }
+    subject { SkmLambdaRep.new(pos, s_formals, s_body) }
 
     context 'Initialization:' do
       it 'should be initialized with a pos and 3 expressions' do
-        expect{ SkmLambda.new(pos, s_formals, s_body) }.not_to raise_error
+        expect{ SkmLambdaRep.new(pos, s_formals, s_body) }.not_to raise_error
       end
 
       it 'should know its formals' do
@@ -100,7 +100,7 @@ module Skeem
 
     context 'Provided services:' do
       it 'should return its text representation' do
-        txt1 = '<Skeem::SkmLambda: @formals #<Double "fake-formals">, '
+        txt1 = '<Skeem::SkmLambdaRep: @formals #<Double "fake-formals">, '
         txt2 = '@definitions #<Double "fake-definitions">, '
         txt3 = '@sequence #<Double "fake-sequence">>>'
         # Remove "unpredictable" part of actual text

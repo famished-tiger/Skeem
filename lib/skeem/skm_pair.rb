@@ -14,6 +14,15 @@ module Skeem
       @cdr = tail
     end
 
+    def klone
+      if cdr.kind_of?(SkmPair)
+        new_cdr = cdr.klone
+      else
+        new_cdr = cdr
+      end
+      self.class.new(car, new_cdr)
+    end
+
     # Construct new instance with car and cdr respectively equal to
     # car.evaluate and cdr.evaluate
     def clone_evaluate(aRuntime)
@@ -82,6 +91,14 @@ module Skeem
       result
     end
 
+    def last_pair
+      if cdr.nil? || (cdr == SkmEmptyList.instance) || (!cdr.kind_of?(SkmPair))
+        self
+      else
+        cdr.last_pair
+      end
+    end
+
     def last
       self.to_a.last
     end
@@ -116,12 +133,20 @@ module Skeem
     end
 
     def append(anElement)
-      if cdr.nil? || cdr.kind_of?(SkmEmptyList)
-        self.cdr = SkmPair.new(anElement, SkmEmptyList.instance)
-      elsif cdr.kind_of?(SkmPair)
-        self.cdr.append(anElement)
+      last_one = self.last_pair
+      if last_one.cdr.nil? || last_one.cdr.kind_of?(SkmEmptyList)
+        last_one.cdr = SkmPair.new(anElement, SkmEmptyList.instance)
       else
         raise StandardError, "Cannot append #{anElement.inspect}"
+      end
+    end
+
+    def append_list(aList)
+      last_one = self.last_pair
+      if last_one.cdr.nil? || last_one.cdr.kind_of?(SkmEmptyList)
+        last_one.cdr = aList
+      else
+        raise StandardError, "Cannot append list #{aList.inspect}"
       end
     end
 

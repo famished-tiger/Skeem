@@ -34,10 +34,36 @@ module Skeem
     end # context
 
     context 'Provided services:' do
-      let(:runtime) { Runtime.new(Environment.new) }
+      let(:runtime) { Runtime.new(SkmFrame.new) }
       let(:list_length_2) { SkmPair.new(integer(10), subject) }
       let(:quirk_element) { double('three') }
       let(:quirk_members) { [integer(10), quirk_element] }
+
+      it 'should clone itself' do
+        cloned = subject.klone
+        expect(cloned.car).to eq(subject.car)
+        expect(cloned.cdr).to eq(subject.cdr)
+      end
+
+      it 'should clone a proper list' do
+        pair2 = SkmPair.new(identifier('b'), SkmEmptyList.instance)
+        pair1 = SkmPair.new(identifier('a'), pair2)
+
+        cloned = pair1.klone
+        expect(cloned.car).to eq(identifier('a'))
+        expect(cloned.cdr.car).to eq(identifier('b'))
+        expect(cloned.cdr.cdr).to be_null
+      end
+
+      it 'should clone a improper list' do
+        pair2 = SkmPair.new(identifier('b'), identifier('c'))
+        pair1 = SkmPair.new(identifier('a'), pair2)
+
+        cloned = pair1.klone
+        expect(cloned.car).to eq(identifier('a'))
+        expect(cloned.cdr.car).to eq(identifier('b'))
+        expect(cloned.cdr.cdr).to eq(identifier('c'))
+      end
 
       it 'should know its length' do
         expect(subject.length).to eq(1)
@@ -86,6 +112,21 @@ module Skeem
 
         # Use a list of length 2
         expect(list_length_2.to_a).to eq([integer(10), sample_car])
+      end
+
+      it 'should return the last pair of a proper list' do
+        expect(subject.last_pair).to eq(subject)
+
+        pair2 = SkmPair.new(identifier('b'), SkmEmptyList.instance)
+        pair1 = SkmPair.new(identifier('a'), pair2)
+        expect(pair1.last_pair).to eq(pair1)
+      end
+
+      it 'should return the last pair of an improper list' do
+        pair3 = SkmPair.new(identifier('c'), identifier('d'))
+        pair2 = SkmPair.new(identifier('b'), pair3)
+        pair1 = SkmPair.new(identifier('a'), pair2)
+        expect(pair1.last_pair).to eq(pair3)
       end
 
       it 'should return the last element of a list' do

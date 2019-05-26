@@ -39,7 +39,7 @@ module Skeem
     rule 'expression' =>  'procedure_call'
     rule 'expression' =>  'lambda_expression'
     rule 'expression' =>  'conditional'
-    rule 'expression' =>  'assignment'    
+    rule 'expression' =>  'assignment'
     rule 'expression' =>  'derived_expression'
     rule 'literal' => 'quotation'
     rule 'literal' => 'self-evaluating'
@@ -97,7 +97,10 @@ module Skeem
     rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
     rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
     rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
-    rule('derived_expression' => 'LPAREN BEGIN sequence RPAREN').as 'begin_expression'
+
+    # As the R7RS grammar is too restrictive, 
+    # the next rule was made more general than its standard counterpart
+    rule('derived_expression' => 'LPAREN BEGIN body RPAREN').as 'begin_expression'
     rule 'derived_expression' => 'quasiquotation'
     rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'

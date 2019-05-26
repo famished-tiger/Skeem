@@ -304,20 +304,21 @@ SKEEM
           result = subject.run(source)
           expect(result.last.last.value).to eq(4)
       end
-      
-      
+
       it 'should support the nested define construct' do
         source = <<-SKEEM
   (define (quadruple x)
     (define (double x) ; define a local procedure double
       (+ x x))
     (double (double x))) ; nested calls to the local procedure
- 
+
   (quadruple 5) ; => 20
 SKEEM
         result = subject.run(source)
-        expect(result.last.value).to eq(20)    
+        expect(result.last.value).to eq(20)
       end
+      
+      
     end # context
 
     context 'Binding constructs:' do
@@ -376,8 +377,6 @@ SKEEM
         expect(result.last).to eq(3)
       end
 
-
-
       it 'should implement let* expression' do
         source = <<-SKEEM
   (let ((x 2) (y 3))
@@ -411,6 +410,21 @@ SKEEM
         result = subject.run(source)
         expect(result).to eq(7)
       end
+      
+      it 'should support begin as lambda body' do
+        source = <<-SKEEM
+  (define kube (lambda (x)
+    (begin
+      (define z x)
+      (* z z z)
+    )
+  ))
+  (kube 3)
+  (kube 4)
+SKEEM
+        result = subject.run(source)
+        expect(result.last).to eq(64)
+      end      
     end # context
 
     context 'Quasiquotation:' do

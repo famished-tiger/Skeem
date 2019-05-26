@@ -104,6 +104,7 @@ module Skeem
         create_cdr(aRuntime)
         create_length(aRuntime)
         create_list2vector(aRuntime)
+        create_append(aRuntime)
         create_setcar(aRuntime)
         create_setcdr(aRuntime)
       end
@@ -485,6 +486,44 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'list->vector', unary, primitive)
       end
+      
+      def create_append(aRuntime)
+        primitive = ->(runtime, arglist) do
+          if arglist.empty?
+            result = SkmEmptyList.instance
+          elsif arglist.size == 1
+            result = arglist[0]
+          else
+            parts = evaluate_arguments(arglist, aRuntime)
+            but_last = parts.take(parts.length - 1)
+            check_arguments(but_last, [SkmPair, SkmEmptyList], 'list', 'append')
+            result = parts.shift.klone  # First list is taken 
+            parts.each do |arg|
+              case arg
+                when SkmPair
+                  cloned = arg.klone
+                  if result.kind_of?(SkmEmptyList)
+                    result = cloned
+                  else
+                    if result.kind_of?(SkmEmptyList)
+                      result = SkmPair.new(arg, SkmEmptyList.instance)
+                    else
+                      result.append_list(cloned)
+                    end
+                  end
+                when SkmEmptyList
+                  # Do nothing
+                else
+                  result.append(arg)
+              end
+            end
+          end
+
+          result
+        end      
+      
+        define_primitive_proc(aRuntime, 'append', zero_or_more, primitive)
+      end
 
       def create_setcar(aRuntime)
         primitive = ->(runtime, pair_arg, obj_arg) do
@@ -682,6 +721,20 @@ module Skeem
           arglist.evaluate(aRuntime).to_a
         end
       end
+      
+      def check_arguments(arguments, requiredRubyClass, requiredSkmType, aProcName)
+        arguments.each do |argument|
+          if requiredRubyClass.kind_of?(Array)
+            unless requiredRubyClass.include?(argument.class)
+              type_error(argument, requiredSkmType, aProcName)
+            end
+          else
+            unless argument.kind_of?(requiredRubyClass)
+              type_error(argument, requiredSkmType, aProcName)
+            end
+          end
+        end
+      end 
 
       def check_argtype(argument, requiredRubyClass, requiredSkmType, aProcName)
         if requiredRubyClass.kind_of?(Array)

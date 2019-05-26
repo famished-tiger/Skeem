@@ -73,7 +73,7 @@ module Skeem
     # rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'
     # Equivalent to: (define IDENTIFIER (lambda (formals) body))
     def reduce_alt_definition(_production, aRange, _tokens, theChildren)
-      lmbd = SkmLambda.new(aRange, theChildren[4], theChildren[6])
+      lmbd = SkmLambdaRep.new(aRange, theChildren[4], theChildren[6])
       # $stderr.puts lmbd.inspect
       SkmBinding.new(theChildren[3], lmbd)
     end
@@ -190,7 +190,7 @@ module Skeem
 
     # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
     def reduce_lambda_expression(_production, aRange, _tokens, theChildren)
-      lmbd = SkmLambda.new(aRange, theChildren[2], theChildren[3])
+      lmbd = SkmLambdaRep.new(aRange, theChildren[2], theChildren[3])
       # $stderr.puts lmbd.inspect
       lmbd
     end
@@ -251,6 +251,7 @@ module Skeem
     # rule('sequence' => 'command_star expression').as 'sequence'
     def reduce_sequence(_production, _range, _tokens, theChildren)
       SkmPair.create_from_a(theChildren[0] << theChildren[1])
+      
     end
 
     # rule('command_star' => 'command_star command').as 'multiple_commands'
@@ -283,9 +284,9 @@ module Skeem
       SkmBindingBlock.new(:let_star, theChildren[3], theChildren[5])
     end
 
-    # rule('derived_expression' => 'LPAREN BEGIN sequence RPAREN').as 'begin_expression'
+    # rule('derived_expression' => 'LPAREN BEGIN body RPAREN').as 'begin_expression'
     def reduce_begin_expression(_production, aRange, _tokens, theChildren)
-      SkmSequencingBlock.new(theChildren[2])
+      SkmSequencingBlock.new(theChildren[2]) 
     end    
 
     # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'

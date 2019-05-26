@@ -452,7 +452,10 @@ SKEEM
             ['(list? #f)', false],
             ['(list? 1)', false],
             ['(list? "bar")', false],
+            ["(list? 'a)", false],
+            ["(list? '(a))", true],
             ["(list? '(1 2 3))", true],
+            ["(list? '(3 . 4))", false],
             ["(list? '())", true]
           ]
           checks.each do |(skeem_expr, expectation)|
@@ -561,6 +564,36 @@ SKEEM
             result = subject.run(skeem_expr)
             expect(result).to eq(expectation)
           end
+        end
+
+        def array2list_ids(arr)
+          arr.map { |elem| SkmIdentifier.create(elem) }
+        end
+
+        it 'should implement the append procedure' do
+          checks = [
+            ["(append '(a b c) '())", array2list_ids(['a', 'b', 'c'])],
+            ["(append '() '(a b c))", array2list_ids(['a', 'b', 'c'])],
+            ["(append '(x) '(y))", array2list_ids(['x', 'y'])],
+            ["(append '(a) '(b c d))", array2list_ids(['a', 'b', 'c', 'd'])],
+            ["(append '(a b) '(c d))", array2list_ids(['a', 'b', 'c', 'd'])],
+            ["(append '(a b) '(c) 'd)", array2list_ids(['a', 'b', 'c', 'd'])],
+            ["(append '(a (b)) '((c)))", [SkmIdentifier.create('a'),
+              SkmPair.create_from_a(array2list_ids(['b'])),
+              SkmPair.create_from_a(array2list_ids(['c']))]]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.to_a).to eq(expectation)
+          end
+        end
+
+        it 'should implement the procedure for an improper list' do
+          result = subject.run("(append '(a b) '(c . d))")
+          expect(result.car).to eq( SkmIdentifier.create('a'))
+          expect(result.cdr.car).to eq( SkmIdentifier.create('b'))
+          expect(result.cdr.cdr.car).to eq( SkmIdentifier.create('c'))
+          expect(result.cdr.cdr.cdr).to eq( SkmIdentifier.create('d'))
         end
 
         it 'should implement the list->vector procedure' do

@@ -221,7 +221,7 @@ This section lists the implemented standard procedures
 * Integer-level: `even?`, `odd?`
 
 #### List procedures
-* `list?`, `null?`, `pair?`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list->vector`, `set-car!`, `set-cdr!`
+* `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list->vector`, `set-car!`, `set-cdr!`
 
 #### String procedures
 * `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`
@@ -255,7 +255,7 @@ Here are a few other ones:
 
 - [rubic gem](https://rubygems.org/gems/rubic). The last commit for the [project](https://github.com/notozeki/rubic) is June 2015.
 
-- [RLisp](https://github.com/davydovanton/rlisp) ...Simple scheme interpreter written on ruby
+- [RLisp](https://github.com/davydovanton/rlisp) ...Simple scheme interpreter written in ruby
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/famished-tiger/Skeem.

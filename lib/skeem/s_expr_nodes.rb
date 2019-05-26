@@ -71,12 +71,12 @@ module Skeem
         # $stderr.puts "Parent environment #{aRuntime.environment.parent.object_id.to_s(16)}, "
         # $stderr.puts aRuntime.environment.inspect
       end
-      # $stderr.puts '  operator: ' + operator.inspect
+      # $stderr.puts '  operator: ' + (operands.kind_of?(SkmLambda) ? "lambda #{object_id.to_s(16)}" : operator.inspect)
       # $stderr.puts '  original operands: ' + operands.inspect
-      actuals = transform_operands(aRuntime)
-      # $stderr.puts '  transformed operands: ' + actuals.inspect
       outcome, result = determine_callee(aRuntime)
       if outcome == :callee
+        actuals = transform_operands(aRuntime)
+        # $stderr.puts '  transformed operands: ' + actuals.inspect
         callee = result
         # if callee.kind_of?(SkmLambda)
           # aRuntime.push(callee.environment)
@@ -125,6 +125,8 @@ module Skeem
           # callee = fetch_callee(aRuntime, result)
         when Primitive::PrimitiveProcedure
           callee = operator
+        when SkmLambdaRep
+          callee = operator.evaluate(aRuntime)
         when SkmLambda
           callee = operator
         else
@@ -301,10 +303,11 @@ module Skeem
   end # class
 
 
-
-require_relative 'skm_procedure_exec'
-
-  class SkmLambda < SkmMultiExpression
+  # Parse tree representation of a Lambda
+  # - Not bound to a frame (aka environment)
+  # - Knows the parse representation of its embedded definitions
+  # - Knows the parse representation of the body
+  class SkmLambdaRep < SkmMultiExpression
     include DatumDSL
 
     # @!attribute [r] formals
@@ -312,13 +315,164 @@ require_relative 'skm_procedure_exec'
     attr_reader :formals
     attr_reader :definitions
     attr_reader :sequence
-    attr_reader :environment
 
     def initialize(aPosition, theFormals, aBody)
       super(aPosition)
       @formals = theFormals
       @definitions = aBody[:defs]
       @sequence = aBody[:sequence]
+    end
+
+    def evaluate(aRuntime)
+      SkmLambda.new(self, aRuntime)
+    end
+
+    def callable?
+      true
+    end
+
+    def call(aRuntime, theActuals)
+      set_cond_environment(aRuntime.environment) # Last chance for anonymous lambda
+      application = SkmProcedureExec.new(self)
+      application.run!(aRuntime, theActuals)
+    end
+
+    def arity
+      formals.arity
+    end
+
+    def required_arity
+      formals.required_arity
+    end
+
+    alias eqv? equal?
+    alias skm_equal? equal?
+
+    def bound!(aFrame)
+      set_cond_environment(aFrame)
+    end
+
+    def inspect
+      result = inspect_prefix + "@object_id=#{object_id.to_s(16)}, "
+      result << inspect_specific
+      result << inspect_suffix
+      result
+    end
+
+    def associations
+      [:formals, :definitions, :sequence]
+    end
+
+    def bind_locals(aRuntime, theActuals)
+      actuals =  theActuals
+      count_actuals = actuals.size
+
+      if (count_actuals < required_arity) ||
+        ((count_actuals > required_arity) && !formals.variadic?)
+        # $stderr.puts "Error"
+        # $stderr.puts self.inspect
+        raise StandardError, msg_arity_mismatch(theActuals)
+      end
+      return if count_actuals.zero? && !formals.variadic?
+      bind_required_locals(aRuntime, theActuals)
+      if formals.variadic?
+        variadic_part_raw = actuals.drop(required_arity)
+        variadic_part = variadic_part_raw.map do |actual|
+          case actual
+            when ProcedureCall
+              actual.evaluate(aRuntime)
+            when SkmQuotation
+              actual.evaluate(aRuntime)
+            else
+              to_datum(actual)
+          end
+        end
+        variadic_arg_name = formals.formals.last
+        args_coll = SkmPair.create_from_a(variadic_part)
+        a_def = SkmBinding.new(variadic_arg_name, args_coll)
+        a_def.evaluate(aRuntime)
+        aRuntime.add_binding(a_def.variable, a_def.value)
+        # $stderr.puts "Tef #{a_def.inspect}"
+        # $stderr.puts "Tef #{actuals.inspect}"
+        # $stderr.puts "Tef #{variadic_part.inspect}"
+        # $stderr.puts "Tef #{aProcedureCall.inspect}"
+        # a_def.evaluate(aRuntime)
+      end
+      #aProcedureCall.operands_consumed = true
+    end
+
+    private
+
+    # Purpose: bind each formal from lambda to an actual value from the call
+    def bind_required_locals(aRuntime, theActuals)
+      max_index = required_arity - 1
+      actuals = theActuals
+      formal_names = formals.formals.map(&:value)
+
+      formals.formals.each_with_index do |arg_name, index|
+        arg = actuals[index]
+        if arg.nil?
+          if actuals.empty? && formals.variadic?
+            arg = SkmPair.create_from_a([])
+          else
+            raise StandardError, "Unbound variable: '#{arg_name.value}'"
+          end
+        end
+
+        # IMPORTANT: execute procedure call in argument list now
+        arg = arg.evaluate(aRuntime) if arg.kind_of?(ProcedureCall)
+        unless arg.kind_of?(SkmElement)
+          arg = to_datum(arg)
+        end
+        # a_def = SkmDefinition.new(position, arg_name, arg)
+        a_def = SkmBinding.new(arg_name, arg)
+        # $stderr.puts "Lambda #{object_id.to_s(16)}"
+        # $stderr.puts "LOCAL #{arg_name.value} #{arg.inspect}"
+        if arg.kind_of?(SkmVariableReference) && !formal_names.include?(arg.value)
+          aRuntime.add_binding(arg_name, a_def)
+        else
+          aRuntime.add_binding(a_def.variable, a_def.evaluate(aRuntime))
+        end
+        break if index >= max_index
+      end
+    end
+
+    def msg_arity_mismatch(actuals)
+      # *** ERROR: wrong number of arguments for #<closure morph> (required 2, got 1)
+      msg1 = "Wrong number of arguments for procedure "
+      count_actuals = actuals.size
+      msg2 = "(required #{required_arity}, got #{count_actuals})"
+      msg1 + msg2
+    end
+
+    def inspect_specific
+      result = ''
+      result << '@formals ' + formals.inspect + ', '
+      result << '@definitions ' + definitions.inspect + ', '
+      result << '@sequence ' + sequence.inspect + inspect_suffix
+
+      result
+    end
+  end # class
+
+
+
+
+require 'forwardable'
+require_relative 'skm_procedure_exec'
+
+  class SkmLambda < SkmMultiExpression
+    include DatumDSL
+    extend Forwardable
+
+    attr_reader :representation
+    attr_reader :environment    
+    
+    def_delegators(:@representation, :formals, :definitions, :sequence)
+
+    def initialize(aRepresentation, aRuntime)
+      @representation = aRepresentation
+      @environment = aRuntime.environment
     end
 
     def evaluate(aRuntime)
@@ -429,7 +583,7 @@ require_relative 'skm_procedure_exec'
 
       result
     end
-    
+
     def dup_cond(aRuntime)
       if environment
         result = self
@@ -438,17 +592,17 @@ require_relative 'skm_procedure_exec'
         twin.set_cond_environment(aRuntime.environment)
         result = twin
       end
-      
+
       result
     end
-    
+
     def doppelganger(aRuntime)
       twin = self.dup
       twin.set_cond_environment(aRuntime.environment.dup)
       result = twin
-      
+
       result
-    end    
+    end
 
     def set_cond_environment(theFrame)
       # $stderr.puts "Lambda #{object_id.to_s(16)}, env [#{environment.object_id.to_s(16)}]"
