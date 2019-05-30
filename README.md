@@ -80,7 +80,7 @@ Here are a few pointers for the Scheme programming language:
 
   scheme_code =<<-SKEEM
     ; Let's implement the 'min' function
-    (define min (lambda(x y) (if (< x y) x y)))
+    (define min (lambda (x y) (if (< x y) x y)))
 
     ; What is the minimum of 2 and 3?
     (min 2 3)
@@ -142,6 +142,30 @@ Here are a few pointers for the Scheme programming language:
   puts result.last.value # => 3
 ```
 
+### Example 5 (Conditional branching)
+
+```ruby
+  require 'skeem'
+
+  schemer = Skeem::Interpreter.new
+
+  scheme_code =<<-SKEEM
+    ; Let's implement the 'signum' function
+    (define signum (lambda (x)
+       (cond
+         ((positive? x) 1)
+         ((zero? x) 0)
+         (else -1))))
+
+    (signum -3)
+  SKEEM
+
+  # Ask Ruby to execute Scheme code
+  result = schemer.run(scheme_code)
+  puts result.value # => -1
+```
+
+
 ## Currently implemented R7RS features
 ### Data type literals
 - Booleans: `#t`, `#true`, `#f`, `#false`
@@ -160,7 +184,7 @@ Here are a few pointers for the Scheme programming language:
 - Variable references
 - Procedure calls
 - Lambda expressions
-- If conditionals
+- Conditionals (if, cond)
 - Definitions
 - Assignments
 
@@ -195,6 +219,12 @@ __Syntax:__
 * (set! <identifier\> <expression\>)  
 
 ### Derived expressions
+#### cond  
+__Purpose:__ Define one or more branchings.  
+__Syntax:__   
+* (cond (<test\> <consequent\>)\+)  
+* (cond (<test\><consequent\>)* (else <alternate\>))
+
 #### let  
 __Purpose:__ Define one or more variable local to the block.  
 __Syntax:__   

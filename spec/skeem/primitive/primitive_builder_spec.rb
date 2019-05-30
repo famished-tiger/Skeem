@@ -558,8 +558,10 @@ SKEEM
             ["(length '())", 0],
             ["(length '(1))", 1],
             ["(length '(1 2))", 2],
-            ["(length '(1 2 3))", 3]
+            ["(length '(1 2 3))", 3],
+           ["(length '(a (b) (c d e)))", 3]
           ]
+
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
             expect(result).to eq(expectation)
@@ -580,11 +582,16 @@ SKEEM
             ["(append '(a b) '(c) 'd)", array2list_ids(['a', 'b', 'c', 'd'])],
             ["(append '(a (b)) '((c)))", [SkmIdentifier.create('a'),
               SkmPair.create_from_a(array2list_ids(['b'])),
-              SkmPair.create_from_a(array2list_ids(['c']))]]
+              SkmPair.create_from_a(array2list_ids(['c']))]],
+            [ "(append '() 'a)", SkmIdentifier.create('a')]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
-            expect(result.to_a).to eq(expectation)
+            if result.kind_of?(SkmPair)
+              expect(result.to_a).to eq(expectation)
+            else
+              expect(result).to eq(expectation)
+            end
           end
         end
 

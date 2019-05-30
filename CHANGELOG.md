@@ -1,3 +1,22 @@
+## [0.2.06] - 2019-05-30
+- NEW Special `cond` (= condional) form implemented. Supports `else` alternative and arrow (=>) syntax.
+- FIX Corner case in procedure `append`.
+
+### Added
+- Class `SkmConditional`. Internal representation of `cond`forms.
+
+### Changed
+- Class `Skeem::Tokenizer`. Added keywords `cond`, `else` and `=>` separator.
+- Method `Tokenizer#_next_token` updated to accept new keywords and arrows `=>`
+- File `grammar.rb`: Added new terminals and new production rules for parsing the `cond` form
+- File `s_expr_builder.rb`: Added new methods for building parse tree of `cond` forms
+- File `interpreter_spec.rb`: Added tests for `cond`form.
+- File `README.md` Updated for `cond` form. Added fifth example illustrating the `cond` form.
+
+### Fixed
+- Method `Primitive#create_append`: test case (append '() 'a)) failed to return a (as identifier)
+
+
 ## [0.2.05] - 2019-05-26
 - Passing more standard Scheme tests, `append` procedure implemented.
 

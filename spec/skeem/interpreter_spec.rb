@@ -156,6 +156,66 @@ SKEEM
         result = subject.run(source)
         expect(result).to eq(1)
       end
+      
+      it 'should implement the cond form' do
+        source = <<-SKEEM
+  (define signum (lambda (x)
+    (cond
+      ((> x 0) 1)
+      ((= x 0) 0)
+      ((< x 0) -1)
+    )))
+SKEEM
+       result = subject.run(source)
+       result = subject.run('(signum 3)')
+       expect(result).to eq(1)
+       
+       result = subject.run('(signum 0)')
+       expect(result).to eq(0)
+
+       result = subject.run('(signum -3)')
+       expect(result).to eq(-1)       
+      end
+      
+      it 'should implement the cond form with arrows' do
+        source = <<-SKEEM
+  (define signum (lambda (x)
+    (cond
+      ((> x 0) => 1)
+      ((= x 0) => 0)
+      ((< x 0) => -1)
+    )))
+SKEEM
+       result = subject.run(source)
+       result = subject.run('(signum 3)')
+       expect(result).to eq(1)
+       
+       result = subject.run('(signum 0)')
+       expect(result).to eq(0)
+
+       result = subject.run('(signum -3)')
+       expect(result).to eq(-1)       
+      end 
+
+      it 'should implement the cond ... else form' do
+        source = <<-SKEEM
+  (define signum (lambda (x)
+    (cond
+      ((> x 0) 1)
+      ((= x 0) 0)
+      (else -1)
+    )))
+SKEEM
+       result = subject.run(source)
+       result = subject.run('(signum 3)')
+       expect(result).to eq(1)
+       
+       result = subject.run('(signum 0)')
+       expect(result).to eq(0)
+
+       result = subject.run('(signum -3)')
+       expect(result).to eq(-1)       
+      end      
 
       it 'should implement the quotation of constant literals' do
          checks = [
@@ -718,7 +778,8 @@ SKEEM
         checks = [
           ['(list)', []],
           ['(list 1)', [1]],
-          ['(list 1 2 3 4)', [1, 2, 3, 4]]
+          ['(list 1 2 3 4)', [1, 2, 3, 4]],
+          ["(list 'a (+ 3 4) 'c)", [identifier('a'), 7, identifier('c')]]
         ]
         checks.each do |(skeem_expr, expectation)|
           result = subject.run(skeem_expr)

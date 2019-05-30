@@ -56,13 +56,13 @@ module Skeem
 
     # rule('cmd_or_def_plus' => 'cmd_or_def').as 'last_cmd_def'
     def reduce_last_cmd_def(_production, _range, _tokens, theChildren)
-      SkmPair.create_from_a([theChildren.last])
+      SkmPair.new(theChildren.last, SkmEmptyList.instance)
     end
-    
+
     # rule('cmd_or_def' => 'LPAREN BEGIN cmd_or_def_plus RPAREN').as 'begin_cmd'
     def reduce_begin_cmd(_production, _range, _tokens, theChildren)
-       SkmSequencingBlock.new(theChildren[2])  
-    end    
+       SkmSequencingBlock.new(theChildren[2])
+    end
 
     # rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN')
     #  .as 'definition'
@@ -77,10 +77,10 @@ module Skeem
       # $stderr.puts lmbd.inspect
       SkmBinding.new(theChildren[3], lmbd)
     end
-    
+
     # rule('definition' => 'LPAREN BEGIN definition_star RPAREN').as 'definitions_within_begin'
     def reduce_definitions_within_begin(_production, aRange, _tokens, theChildren)
-      SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))     
+      SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))
     end
 
     # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
@@ -236,22 +236,21 @@ module Skeem
       definitions = theChildren[0].nil? ? [] : theChildren[0]
       { defs: definitions, sequence: theChildren[1] }
     end
-    
+
     # rule('definition_star' => 'definition_star definition').as 'definition_star'
     def reduce_definition_star(_production, _range, _tokens, theChildren)
       theChildren[0] << theChildren[1]
     end
-    
-    
-    # rule('definition_star' => []).as 'no_definition_yet' 
+
+
+    # rule('definition_star' => []).as 'no_definition_yet'
     def reduce_no_definition_yet(_production, _range, _tokens, theChildren)
       []
-    end    
+    end
 
     # rule('sequence' => 'command_star expression').as 'sequence'
     def reduce_sequence(_production, _range, _tokens, theChildren)
       SkmPair.create_from_a(theChildren[0] << theChildren[1])
-      
     end
 
     # rule('command_star' => 'command_star command').as 'multiple_commands'
@@ -274,20 +273,60 @@ module Skeem
       SkmUpdateBinding.new(theChildren[2], theChildren[3])
     end
 
+    # rule('derived_expression' => 'LPAREN COND cond_clause_plus RPAREN').as 'cond_form'
+    def reduce_cond_form(_production, aRange, _tokens, theChildren)
+      SkmConditional.new(aRange.low, theChildren[2], nil)
+    end
+
+    # rule('derived_expression' => 'LPAREN COND cond_clause_star LPAREN ELSE sequence RPAREN RPAREN').as 'cond_else_form'
+    def reduce_cond_else_form(_production, aRange, _tokens, theChildren)
+      SkmConditional.new(aRange.low, theChildren[2], SkmSequencingBlock.new(theChildren[5]))
+    end
+
     # rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
     def reduce_short_let_form(_production, aRange, _tokens, theChildren)
       SkmBindingBlock.new(:let, theChildren[3], theChildren[5])
     end
-    
+
     # rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
-    def reduce_let_star_form(_production, aRange, _tokens, theChildren)
+    def reduce_let_star_form(_production, _range, _tokens, theChildren)
       SkmBindingBlock.new(:let_star, theChildren[3], theChildren[5])
     end
 
     # rule('derived_expression' => 'LPAREN BEGIN body RPAREN').as 'begin_expression'
-    def reduce_begin_expression(_production, aRange, _tokens, theChildren)
-      SkmSequencingBlock.new(theChildren[2]) 
-    end    
+    def reduce_begin_expression(_production, _range, _tokens, theChildren)
+      SkmSequencingBlock.new(theChildren[2])
+    end
+
+    # rule('cond_clause_plus' => 'cond_clause_plus cond_clause').as 'multiple_cond_clauses'
+    def reduce_multiple_cond_clauses(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('cond_clause_plus' => 'cond_clause').as 'last_cond_clauses'
+    def reduce_last_cond_clauses(_production, _range, _tokens, theChildren)
+      [theChildren[0]]
+    end
+
+    # rule('cond_clause_star' => 'cond_clause_star cond_clause').as 'cond_clauses_star'
+    def reduce_cond_clauses_star(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('cond_clause_star' => []).as 'last_cond_clauses_star'
+    def reduce_last_cond_clauses_star(_production, _range, _tokens, _children)
+      []
+    end
+
+    # rule('cond_clause' => 'LPAREN test sequence RPAREN').as 'cond_clause'
+    def reduce_cond_clause(_production, _range, _tokens, theChildren)
+      [theChildren[1], SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))]
+    end
+    
+    # rule('cond_clause' => 'LPAREN test ARROW recipient RPAREN').as 'cond_arrow_clause'
+    def reduce_cond_arrow_clause(_production, _range, _tokens, theChildren)
+      [theChildren[1], theChildren[3]]
+    end
 
     # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     def reduce_quasiquotation(_production, aRange, _tokens, theChildren)

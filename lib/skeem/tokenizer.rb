@@ -20,6 +20,7 @@ module Skeem
 
     @@lexeme2name = {
       "'" => 'APOSTROPHE',
+      '=>' => 'ARROW',
       '`' => 'GRAVE_ACCENT',
       '(' => 'LPAREN',
       ')' => 'RPAREN',
@@ -32,7 +33,9 @@ module Skeem
     # Here are all the implemented Scheme keywords (in uppercase)
     @@keywords = %w[
       BEGIN
+      COND
       DEFINE
+      ELSE
       IF
       LAMBDA
       LET
@@ -86,7 +89,7 @@ module Skeem
         token = build_token(@@lexeme2name[curr_ch], scanner.getch)
       elsif (lexeme = scanner.scan(/(?:\.)(?=\s)/)) # Single char occurring alone
         token = build_token('PERIOD', lexeme)
-      elsif (lexeme = scanner.scan(/,@?/))
+      elsif (lexeme = scanner.scan(/(?:,@?)|(?:=>)/))
         token = build_token(@@lexeme2name[lexeme], lexeme)
       elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
         token = cardinal_token(lexeme)        

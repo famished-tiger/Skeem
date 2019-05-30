@@ -514,7 +514,11 @@ module Skeem
                 when SkmEmptyList
                   # Do nothing
                 else
-                  result.append(arg)
+                  if result.kind_of?(SkmEmptyList)
+                    result = arg
+                  else
+                    result.append(arg)
+                  end
               end
             end
           end

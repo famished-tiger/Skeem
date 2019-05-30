@@ -233,6 +233,60 @@ module Skeem
     end
   end # class
 
+
+  class SkmConditional < SkmMultiExpression
+    # An array of couples [test, sequence]
+    attr_reader :clauses
+    attr_reader :alternate
+
+    def initialize(aPosition, theClauses, anAlternate)
+      super(aPosition)
+      @clauses = theClauses
+      @alternate = anAlternate
+    end
+
+    def evaluate(aRuntime)
+      clause_matching = false
+      result = nil
+
+      clauses.each do |(test, consequent)|
+        test_result = test.evaluate(aRuntime)
+        next if test_result.boolean? && test_result.value == false
+
+        clause_matching = true
+        result = consequent.evaluate(aRuntime)
+        break
+      end
+
+      unless clause_matching
+        result = alternate ? alternate.evaluate(aRuntime) : SkmUndefined.instance
+      end
+
+      result
+    end
+    
+    def quasiquote(aRuntime)
+        quasi_clauses = clauses.map do |(test, consequent)|
+          test_qq = test.quasiquote(aRuntime)
+          consequent_qq = consequent.quasiquote(aRuntime)
+          [test_qq, consequent_qq]
+      end
+      quasi_alternate = alternate ? alternate.quasiquote(aRuntime) : nil
+      
+      self.class.new(position, quasi_clauses, quasi_alternate)
+    end
+
+    def inspect
+      result = inspect_prefix + '@test ' + test.inspect + ', '
+      result << "@clauses \n" 
+      clauses.each do |(test, consequent)|
+        result << '  '  << test.inspect << ' ' << consequent.inspect << "\n"
+      end
+      result << '@alternate ' + alternate.inspect + inspect_suffix
+      result
+    end    
+  end # class
+  
   SkmArity = Struct.new(:low, :high) do
     def nullary?
       low.zero? && high == 0
@@ -466,8 +520,8 @@ require_relative 'skm_procedure_exec'
     extend Forwardable
 
     attr_reader :representation
-    attr_reader :environment    
-    
+    attr_reader :environment
+
     def_delegators(:@representation, :formals, :definitions, :sequence)
 
     def initialize(aRepresentation, aRuntime)

@@ -11,7 +11,7 @@ module Skeem
     # Delimiters, separators...
     add_terminals('APOSTROPHE', 'COMMA', 'COMMA_AT_SIGN')
     add_terminals('GRAVE_ACCENT', 'LPAREN', 'RPAREN')
-    add_terminals('PERIOD')
+    add_terminals('PERIOD', 'ARROW')
     add_terminals('VECTOR_BEGIN')
 
     # Literal values...
@@ -19,8 +19,8 @@ module Skeem
     add_terminals('STRING_LIT', 'IDENTIFIER')
 
     # Keywords...
-    add_terminals('BEGIN', 'DEFINE', 'IF', 'LAMBDA')
-    add_terminals('LET', 'LET*')
+    add_terminals('BEGIN', 'COND', 'DEFINE', 'ELSE')
+    add_terminals('IF', 'LAMBDA', 'LET', 'LET*')
     add_terminals('QUOTE', 'QUASIQUOTE', 'SET!')
     add_terminals('UNQUOTE', 'UNQUOTE-SPLICING')
 
@@ -95,6 +95,8 @@ module Skeem
     rule 'number' => 'INTEGER'
     rule 'number' => 'REAL'
     rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
+    rule('derived_expression' => 'LPAREN COND cond_clause_plus RPAREN').as 'cond_form'
+    rule('derived_expression' => 'LPAREN COND cond_clause_star LPAREN ELSE sequence RPAREN RPAREN').as 'cond_else_form'
     rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
     rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
 
@@ -102,6 +104,14 @@ module Skeem
     # the next rule was made more general than its standard counterpart
     rule('derived_expression' => 'LPAREN BEGIN body RPAREN').as 'begin_expression'
     rule 'derived_expression' => 'quasiquotation'
+    rule('cond_clause_plus' => 'cond_clause_plus cond_clause').as 'multiple_cond_clauses'
+    rule('cond_clause_plus' => 'cond_clause').as 'last_cond_clauses'
+    rule('cond_clause_star' => 'cond_clause_star cond_clause').as 'cond_clauses_star'
+    rule('cond_clause_star' => []).as 'last_cond_clauses_star'
+    rule('cond_clause' => 'LPAREN test sequence RPAREN').as 'cond_clause'
+    rule('cond_clause' => 'LPAREN test RPAREN')
+    rule('cond_clause' => 'LPAREN test ARROW recipient RPAREN').as 'cond_arrow_clause'
+    rule('recipient' => 'expression')
     rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
     rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'
     rule('binding_spec_star' => 'binding_spec_star binding_spec').as 'multiple_binding_specs'
