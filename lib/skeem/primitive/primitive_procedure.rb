@@ -17,6 +17,10 @@ module Skeem
       def callable?
         true
       end
+      
+      def procedure?
+        true
+      end
 
       # This method should be invoked when the procedure isn't
       # explicitly called (with arguments). In this case, the name

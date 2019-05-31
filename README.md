@@ -160,7 +160,6 @@ Here are a few pointers for the Scheme programming language:
     (signum -3)
   SKEEM
 
-  # Ask Ruby to execute Scheme code
   result = schemer.run(scheme_code)
   puts result.value # => -1
 ```
@@ -187,6 +186,7 @@ Here are a few pointers for the Scheme programming language:
 - Conditionals (if, cond)
 - Definitions
 - Assignments
+- Control procedures
 
 ### Standard syntactic forms
 #### define  
@@ -251,7 +251,7 @@ This section lists the implemented standard procedures
 * Integer-level: `even?`, `odd?`
 
 #### List procedures
-* `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list->vector`, `set-car!`, `set-cdr!`
+* `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list-copy`, `list->vector`, `set-car!`, `set-cdr!`
 
 #### String procedures
 * `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`
@@ -261,6 +261,9 @@ This section lists the implemented standard procedures
 
 #### Vector procedures
 * `vector?`, `make-vector`, `vector`, `vector-length`, `vector-set!`, `vector->list`
+
+#### Control procedures
+* `procedure?`, `apply`, `map`
 
 #### Input/output procedures
 * `newline`

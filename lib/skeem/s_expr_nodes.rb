@@ -384,6 +384,10 @@ module Skeem
     def callable?
       true
     end
+    
+    def procedure?
+      true
+    end
 
     def call(aRuntime, theActuals)
       set_cond_environment(aRuntime.environment) # Last chance for anonymous lambda
@@ -536,6 +540,10 @@ require_relative 'skm_procedure_exec'
     def callable?
       true
     end
+    
+    def procedure?
+      true
+    end    
 =begin
   TODO
     def quasiquote(aRuntime)

@@ -1,3 +1,12 @@
+## [0.2.07] - 2019-05-31
+- New standard procedures implemented: `list-copy`, `procedure?`, `apply` and `map`
+
+### Added
+- File `primitive_builder.rb`. New methods for implementing `list-copy`, `procedure?`, `apply` and `map`
+
+### Changed
+- File `README.md` Added mentions to new procedures. 
+
 ## [0.2.06] - 2019-05-30
 - NEW Special `cond` (= condional) form implemented. Supports `else` alternative and arrow (=>) syntax.
 - FIX Corner case in procedure `append`.

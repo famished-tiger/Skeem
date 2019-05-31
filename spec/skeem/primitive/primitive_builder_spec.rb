@@ -633,6 +633,28 @@ SKEEM
           result = subject.run(source)
           expect(result.last.cdr).to eq(1)
         end
+
+        it 'should implement the list-copy procedure' do
+          checks = [
+            ["(list-copy '())", []],
+            ["(list-copy '(a b c))", ['a', 'b', 'c']]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.to_a).to eq(expectation)
+          end
+
+          source =<<-SKEEM
+  (define a '(1 8 2 8)) ; a may be immutable
+  (define b (list-copy a))
+  (set-car! b 3) ; b is mutable
+SKEEM
+          subject.run(source)
+          result = subject.run('b')
+          expect(result.to_a).to eq([3, 8, 2, 8])
+          result = subject.run('a')
+          expect(result.to_a).to eq([1, 8, 2, 8])
+        end
       end # context
 
       context 'Vector procedures:' do
@@ -707,6 +729,42 @@ SKEEM
             expect(result.to_a).to eq(expectation)
           end
         end
+      end # context
+
+      context 'Control procedures:' do
+        it 'should implement the procedure? predicate' do
+          checks = [
+            ["(procedure? car)", true],
+            ["(procedure? 'car)", false],
+            ["(procedure? (lambda (x) (* x x)))", true],
+            # ["(procedure? '(lambda (x) (* x x)))", false] # Parse failure!
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
+        it 'should implement the apply procedure' do
+          checks = [
+            ["(apply + '(3 4))", 7]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+        
+        it 'should implement the map procedure' do
+          checks = [
+            ["(map car '((a b) (d e) (g h)))", ['a', 'd', 'g']],
+            ["(map + '(1 2 3) '(4 5 6 7))", [5, 7, 9]]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result.to_a).to eq(expectation)
+          end
+        end        
       end # context
 
       context 'IO procedures:' do

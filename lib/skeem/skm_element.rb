@@ -44,6 +44,10 @@ module Skeem
     def pair?
       false
     end
+    
+    def procedure?
+      false
+    end
 
     def vector?
       false

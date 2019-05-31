@@ -17,6 +17,7 @@ module Skeem
         add_symbol_procedures(aRuntime)
         add_list_procedures(aRuntime)
         add_vector_procedures(aRuntime)
+        add_control_procedures(aRuntime)
         add_io_procedures(aRuntime)
         add_special_procedures(aRuntime)
       end
@@ -41,8 +42,8 @@ module Skeem
 
       def one_or_two
         SkmArity.new(1, 2)
-      end      
-      
+      end
+
       def one_or_more
         SkmArity.new(1, '*')
       end
@@ -107,6 +108,9 @@ module Skeem
         create_append(aRuntime)
         create_setcar(aRuntime)
         create_setcdr(aRuntime)
+        create_assq(aRuntime)
+        create_assv(aRuntime)
+        create_list_copy(aRuntime)
       end
 
       def add_vector_procedures(aRuntime)
@@ -116,6 +120,12 @@ module Skeem
         create_make_vector(aRuntime)
         create_vector_ref(aRuntime)
         create_vector2list(aRuntime)
+      end
+
+      def add_control_procedures(aRuntime)
+        create_object_predicate(aRuntime, 'procedure?')
+        create_apply(aRuntime)
+        create_map(aRuntime)
       end
 
       def add_io_procedures(aRuntime)(aRuntime)
@@ -486,46 +496,55 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'list->vector', unary, primitive)
       end
-      
-      def create_append(aRuntime)
-        primitive = ->(runtime, arglist) do
-          if arglist.empty?
-            result = SkmEmptyList.instance
-          elsif arglist.size == 1
-            result = arglist[0]
-          else
-            parts = evaluate_arguments(arglist, aRuntime)
-            but_last = parts.take(parts.length - 1)
-            check_arguments(but_last, [SkmPair, SkmEmptyList], 'list', 'append')
-            result = parts.shift.klone  # First list is taken 
-            parts.each do |arg|
-              case arg
-                when SkmPair
-                  cloned = arg.klone
-                  if result.kind_of?(SkmEmptyList)
-                    result = cloned
-                  else
-                    if result.kind_of?(SkmEmptyList)
-                      result = SkmPair.new(arg, SkmEmptyList.instance)
-                    else
-                      result.append_list(cloned)
-                    end
-                  end
-                when SkmEmptyList
-                  # Do nothing
+
+      def append_core(arglist)
+        if arglist.empty?
+          result = SkmEmptyList.instance
+        elsif arglist.size == 1
+          result = arglist[0]
+        else
+          but_last = arglist.take(arglist.length - 1)
+          check_arguments(but_last, [SkmPair, SkmEmptyList], 'list', 'append')
+          result = arglist.shift.klone  # First list is taken
+          arglist.each do |arg|
+            case arg
+              when SkmPair
+                cloned = arg.klone
+                if result.kind_of?(SkmEmptyList)
+                  result = cloned
                 else
                   if result.kind_of?(SkmEmptyList)
-                    result = arg
+                    result = SkmPair.new(arg, SkmEmptyList.instance)
                   else
-                    result.append(arg)
+                    result.append_list(cloned)
                   end
-              end
+                end
+              when SkmEmptyList
+                # Do nothing
+              else
+                if result.kind_of?(SkmEmptyList)
+                  result = arg
+                else
+                  result.append(arg)
+                end
             end
           end
+        end
 
-          result
-        end      
-      
+        result
+      end
+
+      def create_append(aRuntime)
+        primitive = ->(runtime, arglist) do
+          if arglist.size > 1
+            arguments = evaluate_arguments(arglist, aRuntime)
+          else
+            arguments = arglist
+          end
+
+          append_core(arguments)
+        end
+
         define_primitive_proc(aRuntime, 'append', zero_or_more, primitive)
       end
 
@@ -577,6 +596,47 @@ module Skeem
         define_primitive_proc(aRuntime, 'set-cdr!', binary, primitive)
       end
 
+        # create_assv(aRuntime)
+      def create_assq(aRuntime)
+        primitive = ->(runtime, obj_arg, alist_arg) do
+          # assoc_list = alist_arg.evaluate(runtime)
+          # check_assoc_list(assoc_list, 'assq')
+          # result = boolean(false)
+          # pair = assoc_list
+          # while (pair.cdr && (pair.cdr.kind_of?(SkmPair)) do
+            # are_equal = @primitive_map['equal?'].call(runtime, pair.car, obj_arg)
+            # if are_equal
+              # result = pair
+              # break
+            # else
+              # pair = pair.cdr
+            # end
+          # end
+
+          # result
+        end
+        define_primitive_proc(aRuntime, 'assq', binary, primitive)
+      end
+
+      def check_assoc_list(alist, proc_name)
+        check_argtype(alist, SkmPair, 'association list', 'proc_name')
+      end
+
+      def create_assv(aRuntime)
+      end
+
+
+      def create_list_copy(aRuntime)
+        primitive = ->(runtime, arg) do
+          arg_evaluated = arg.evaluate(runtime)
+          check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'list-copy')
+          arg.klone
+        end
+
+        define_primitive_proc(aRuntime, 'list-copy', unary, primitive)
+      end
+
+
       def create_vector(aRuntime)
         primitive = ->(runtime, arglist) do
           if arglist.empty?
@@ -600,7 +660,7 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'vector-length', unary, primitive)
       end
-      
+
       def create_make_vector(aRuntime)
         primitive = ->(runtime, count_arg, arglist) do
           count = count_arg.evaluate(runtime)
@@ -612,11 +672,11 @@ module Skeem
           end
           elements = Array.new(count.value, filler)
 
-          vector(elements)      
+          vector(elements)
         end
 
         define_primitive_proc(aRuntime, 'make-vector', one_or_two, primitive)
-      end      
+      end
 
       def create_vector_ref(aRuntime)
           # argument 1: a vector, argument 2: an index(integer)
@@ -641,6 +701,58 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'vector->list', unary, primitive)
+      end
+
+      def create_apply(aRuntime)
+        primitive = ->(runtime, first_operand, arglist) do
+          proc_arg = first_operand.evaluate(runtime)
+          if arglist.empty?
+            result = SkmEmptyList.instance
+          else
+            arguments = evaluate_arguments(arglist, runtime)
+            single_list = append_core(arguments)
+            invoke = ProcedureCall.new(nil, proc_arg, single_list.to_a)
+            result = invoke.evaluate(runtime)
+          end
+        end
+
+        define_primitive_proc(aRuntime, 'apply', one_or_more, primitive)
+      end
+
+      def create_map(aRuntime)
+        primitive = ->(runtime, first_operand, list_of_lists) do
+          proc_arg = first_operand.evaluate(runtime)
+          if list_of_lists.empty?
+            result = SkmEmptyList.instance
+          else
+            arguments = evaluate_arguments(list_of_lists, runtime)
+            curr_cells = arguments.to_a
+            arity = curr_cells.size
+            initial_result = nil
+            curr_result = nil
+            loop do
+              call_args = curr_cells.map(&:car)
+              invoke = ProcedureCall.new(nil, proc_arg, call_args)
+              call_result = invoke.evaluate(runtime)
+              new_result = SkmPair.new(call_result, SkmEmptyList.instance)
+              if initial_result
+                curr_result.cdr = new_result
+              else
+                initial_result = new_result
+              end
+              curr_result = new_result
+
+              curr_cells.map!(&:cdr)
+              break if curr_cells.find { |cdr_entry| ! cdr_entry.kind_of?(SkmPair) }
+            end
+
+            result = initial_result
+          end
+
+          result
+        end
+
+        define_primitive_proc(aRuntime, 'map', one_or_more, primitive)
       end
 
       def create_newline(aRuntime)
@@ -671,7 +783,7 @@ module Skeem
       end
 
       # DON'T USE IT
-      # Non-standard procedure reserved for internal testing/debugging purposes.      
+      # Non-standard procedure reserved for internal testing/debugging purposes.
       def create_debug(aRuntime)
         primitive = ->(runtime) do
           require 'debug'
@@ -679,7 +791,7 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'debug', nullary, primitive)
       end
-      
+
       # DON'T USE IT
       # Non-standard procedure reserved for internal testing/debugging purposes.
       def create_inspect(aRuntime)
@@ -688,7 +800,7 @@ module Skeem
           $stderr.puts 'INSPECT>' + arg_evaluated.inspect
           Skeem::SkmUndefined.instance
         end
-        define_primitive_proc(aRuntime, '_inspect', unary, primitive)      
+        define_primitive_proc(aRuntime, '_inspect', unary, primitive)
       end
 
       def create_object_predicate(aRuntime, predicate_name, msg_name = nil)
@@ -701,15 +813,17 @@ module Skeem
         define_primitive_proc(aRuntime, predicate_name, unary, primitive)
       end
 
-      def def_procedure(aRuntime, pairs)
-        pairs.each_slice(2) do |(name, code)|
-          func = PrimitiveProcedure.new(name, code)
-          define(aRuntime, func.identifier, func)
-        end
-      end
+      # def def_procedure(aRuntime, pairs)
+        # pairs.each_slice(2) do |(name, code)|
+          # func = PrimitiveProcedure.new(name, code)
+          # define(aRuntime, func.identifier, func)
+        # end
+      # end
 
       def define_primitive_proc(aRuntime, anIdentifier, anArity, aRubyLambda)
         primitive = PrimitiveProcedure.new(anIdentifier, anArity, aRubyLambda)
+        @primitive_map = {} unless @primitives_map
+        @primitive_map[primitive.identifier] = primitive.code
         define(aRuntime, primitive.identifier, primitive)
       end
 
@@ -725,7 +839,7 @@ module Skeem
           arglist.evaluate(aRuntime).to_a
         end
       end
-      
+
       def check_arguments(arguments, requiredRubyClass, requiredSkmType, aProcName)
         arguments.each do |argument|
           if requiredRubyClass.kind_of?(Array)
@@ -738,7 +852,7 @@ module Skeem
             end
           end
         end
-      end 
+      end
 
       def check_argtype(argument, requiredRubyClass, requiredSkmType, aProcName)
         if requiredRubyClass.kind_of?(Array)
