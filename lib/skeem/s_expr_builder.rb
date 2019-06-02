@@ -86,7 +86,7 @@ module Skeem
     # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
       SkmVariableReference.new(aRange, theChildren[0])
-    end
+    end    
 
     # rule('quotation' => 'APOSTROPHE datum').as 'quotation_short'
     def reduce_quotation_short(_production, _range, _tokens, theChildren)

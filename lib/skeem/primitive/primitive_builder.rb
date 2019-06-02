@@ -61,6 +61,7 @@ module Skeem
 
       def add_comparison(aRuntime)
         create_eqv?(aRuntime)
+        create_eq?(aRuntime)
         create_equal?(aRuntime)
         create_equal(aRuntime)
         create_lt(aRuntime)
@@ -220,15 +221,34 @@ module Skeem
         define_primitive_proc(aRuntime, 'floor-remainder', binary, primitive)
       end
 
+      def core_eqv?(eval_arg1, eval_arg2)
+        raw_result = eval_arg1.eqv?(eval_arg2)
+        boolean(raw_result)
+      end
+
       def create_eqv?(aRuntime)
         primitive = ->(runtime, argument1, argument2) do
           operand_1 = argument1.evaluate(runtime)
           operand_2 = argument2.evaluate(runtime)
-          raw_result = operand_1.eqv?(operand_2)
-          boolean(raw_result)
+          core_eqv?(operand_1, operand_2)
         end
 
         define_primitive_proc(aRuntime, 'eqv?', binary, primitive)
+      end
+
+      def core_eq?(eval_arg1, eval_arg2)
+        raw_result = eval_arg1.skm_eq?(eval_arg2)
+        boolean(raw_result)
+      end
+
+      def create_eq?(aRuntime)
+        primitive = ->(runtime, argument1, argument2) do
+          operand_1 = argument1.evaluate(runtime)
+          operand_2 = argument2.evaluate(runtime)
+          core_eq?(operand1, operand2)
+        end
+
+        define_primitive_proc(aRuntime, 'eq?', binary, primitive)
       end
 
       def create_equal?(aRuntime)
@@ -355,7 +375,7 @@ module Skeem
               argument = raw_arg.evaluate(aRuntime)
               last_result = argument
               raw_result &&= !(argument.boolean? && !argument.value)
-              break unless raw_result
+              break unless raw_result # stop here, a false was found...
             end
             raw_result = last_result if raw_result
             # $stderr.puts raw_result.inspect
@@ -379,7 +399,7 @@ module Skeem
               argument = raw_arg.evaluate(aRuntime)
               last_result = argument
               raw_result ||= (!argument.boolean? || argument.value)
-              break if raw_result
+              break if raw_result # stop here, a true was found...
             end
             raw_result = last_result if raw_result
             to_datum(raw_result)
@@ -596,35 +616,63 @@ module Skeem
         define_primitive_proc(aRuntime, 'set-cdr!', binary, primitive)
       end
 
-        # create_assv(aRuntime)
       def create_assq(aRuntime)
         primitive = ->(runtime, obj_arg, alist_arg) do
-          # assoc_list = alist_arg.evaluate(runtime)
-          # check_assoc_list(assoc_list, 'assq')
-          # result = boolean(false)
-          # pair = assoc_list
-          # while (pair.cdr && (pair.cdr.kind_of?(SkmPair)) do
-            # are_equal = @primitive_map['equal?'].call(runtime, pair.car, obj_arg)
-            # if are_equal
-              # result = pair
-              # break
-            # else
-              # pair = pair.cdr
-            # end
-          # end
+          assoc_list = alist_arg.evaluate(runtime)
+          check_assoc_list(assoc_list, 'assq')
+          obj = obj_arg.evaluate(runtime)          
+          result = boolean(false)
+          unless assoc_list.empty?
+            pair = assoc_list
+            begin
+              are_equal = core_eq?(pair.car.car, obj)
+              if are_equal.value
+                result = pair.car
+                break
+              end
+              pair = pair.cdr
+            end while (pair && (pair.kind_of?(SkmPair)))
+          end
 
-          # result
+          result
         end
         define_primitive_proc(aRuntime, 'assq', binary, primitive)
       end
+      
+      def create_assv(aRuntime)
+        primitive = ->(runtime, obj_arg, alist_arg) do
+          assoc_list = alist_arg.evaluate(runtime)
+          check_assoc_list(assoc_list, 'assq')
+          obj = obj_arg.evaluate(runtime)          
+          result = boolean(false)
+          unless assoc_list.empty?
+            pair = assoc_list
+            begin
+              are_equal = core_eqv?(pair.car.car, obj)
+              if are_equal.value
+                result = pair.car
+                break
+              end
+              pair = pair.cdr
+            end while (pair && (pair.kind_of?(SkmPair)))
+          end
+
+          result
+        end
+        define_primitive_proc(aRuntime, 'assv', binary, primitive)      
+      end      
 
       def check_assoc_list(alist, proc_name)
-        check_argtype(alist, SkmPair, 'association list', 'proc_name')
-      end
+        check_argtype(alist, [SkmPair, SkmEmptyList], 'association list', proc_name)
 
-      def create_assv(aRuntime)
+        unless alist.empty?
+          cell = SkmPair.new(integer(1), alist)
+          begin
+            cell = cell.cdr
+            check_argtype(cell, SkmPair, 'association list', proc_name)
+          end while cell.cdr.kind_of?(SkmPair)
+        end
       end
-
 
       def create_list_copy(aRuntime)
         primitive = ->(runtime, arg) do

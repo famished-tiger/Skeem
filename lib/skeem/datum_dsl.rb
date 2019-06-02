@@ -104,7 +104,6 @@ module Skeem
     # Conversion from Ruby object value to Skeem datum
     def to_datum(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmSimpleDatum)
-      return list(aLiteral.members) if aLiteral.kind_of?(SkmList)
       return vector(aLiteral.members) if aLiteral.kind_of?(SkmVector)
       return aLiteral if aLiteral.kind_of?(Primitive::PrimitiveProcedure)
 

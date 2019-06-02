@@ -72,61 +72,6 @@ module Skeem
     end
   end # class
 
-  # @deprecated Use {#SkmPair} class instead.
-  class SkmList < SkmCompoundDatum
-    def tail()
-      SkmList.new(members.slice(1..-1))
-    end
-
-    def list?
-      true
-    end
-
-    def null?
-      empty?
-    end
-
-    def evaluate(aRuntime)
-      if empty?
-        self.class.new(nil)
-      else
-        first_evaluated = members.first.evaluate(aRuntime)
-
-        if first_evaluated.kind_of?(SkmIdentifier)
-          aRuntime.evaluate_form(self)
-        else
-          members_eval = members.map { |elem| elem.evaluate(aRuntime) }
-          self.class.new(members_eval)
-        end
-      end
-    end
-
-
-    # Factory method.
-    # Construct an Enumerator that will return iteratively the result
-    # of 'evaluate' method of each members of self.
-    def to_eval_enum(aRuntime)
-=begin
-      elements = self.members
-
-      new_enum = Enumerator.new do |result|
-        context = aRuntime
-        elements.each { |elem| result << elem.evaluate(context) }
-      end
-
-      new_enum
-=end
-      members.map { |elem| elem.evaluate(aRuntime) }
-    end
-
-    def done!()
-      # Do nothing
-    end
-
-    alias head first
-    alias rest tail
-  end # class
-
   class SkmVector < SkmCompoundDatum
     def vector?
       true

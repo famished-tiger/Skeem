@@ -78,42 +78,6 @@ module Skeem
       end
     end # context
   end # describe
-
-  describe SkmList do
-    let(:sample_members) { [1, 2, 3] }
-    subject { SkmList.new(sample_members) }
-
-    context 'Initialization:' do
-      it 'should be initialized with its members' do
-        expect{ SkmList.new(sample_members) }.not_to raise_error
-      end
-      
-      it 'should react positively to list? predicate' do
-        expect(subject).to be_list
-      end
-
-      it 'should react correctly to null? predicate' do
-        expect(subject).not_to be_null
-        expect(SkmList.new([])).to be_null
-      end      
-    end # context
-
-    context 'Provided services:' do
-      it 'should retrieve its first member' do
-        expect(subject.first).to eq(1)
-        expect(subject.head).to eq(1)
-      end
-
-      it 'should retrieve its tail members' do
-        expect(subject.tail.inspect).to eq('<Skeem::SkmList: 2, 3>')
-        expect(subject.rest.inspect).to eq('<Skeem::SkmList: 2, 3>')
-      end
-
-      it 'should return its text representation' do
-        expect(subject.inspect).to eq('<Skeem::SkmList: 1, 2, 3>')
-      end
-    end # context
-  end # describe
   
   describe SkmVector do
     let(:sample_members) { [1, 2, 3] }

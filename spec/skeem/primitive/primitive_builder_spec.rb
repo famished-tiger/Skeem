@@ -634,6 +634,29 @@ SKEEM
           expect(result.last.cdr).to eq(1)
         end
 
+        it 'should implement the assq procedure' do
+          subject.run("(define e '((a 1) (b 2) (c 3)))")
+          result = subject.run("(assq 'a e)")
+          expect(result.to_a).to eq(['a', 1])
+          result = subject.run("(assq 'b e)")
+          expect(result.to_a).to eq(['b', 2])
+          result = subject.run("(assq 'c e)")
+          expect(result.to_a).to eq(['c', 3])
+          result = subject.run("(assq 'd e)")
+          expect(result).to eq(false)
+          result = subject.run("(assq 'a '())")
+          expect(result).to eq(false)
+          result = subject.run("(assq 'a '())")
+          expect(result).to eq(false)
+          result = subject.run("(assq '(a) '(((a)) ((b)) ((c))))")
+          expect(result).to eq(false)
+        end
+
+        it 'should implement the assv procedure' do
+          result = subject.run("(assv 5 '((2 3) (5 7) (11 13)))")
+          expect(result.to_a).to eq([5, 7])
+        end
+
         it 'should implement the list-copy procedure' do
           checks = [
             ["(list-copy '())", []],
@@ -737,7 +760,7 @@ SKEEM
             ["(procedure? car)", true],
             ["(procedure? 'car)", false],
             ["(procedure? (lambda (x) (* x x)))", true],
-            # ["(procedure? '(lambda (x) (* x x)))", false] # Parse failure!
+            # ["(procedure? '(lambda (x) (* x x)))", false] # Parse fail: non-standard syntax
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
@@ -754,7 +777,7 @@ SKEEM
             expect(result).to eq(expectation)
           end
         end
-        
+
         it 'should implement the map procedure' do
           checks = [
             ["(map car '((a b) (d e) (g h)))", ['a', 'd', 'g']],
@@ -764,7 +787,7 @@ SKEEM
             result = subject.run(skeem_expr)
             expect(result.to_a).to eq(expectation)
           end
-        end        
+        end
       end # context
 
       context 'IO procedures:' do

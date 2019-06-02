@@ -1,3 +1,16 @@
+## [0.2.08] - 2019-06-02
+- New standard procedures implemented: `assq`, `assv`
+
+### Added
+- File `primitive_builder.rb`. New methods for implementing `assq`, `assv`
+
+### Changed
+- File `README.md` Added mentions to new procedures.
+
+### Removed
+- Superseded class `SkmList` removed.
+
+
 ## [0.2.07] - 2019-05-31
 - New standard procedures implemented: `list-copy`, `procedure?`, `apply` and `map`
 

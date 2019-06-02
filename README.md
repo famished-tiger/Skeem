@@ -252,6 +252,7 @@ This section lists the implemented standard procedures
 
 #### List procedures
 * `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list-copy`, `list->vector`, `set-car!`, `set-cdr!`
+ , `assq`, `assv`
 
 #### String procedures
 * `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`
