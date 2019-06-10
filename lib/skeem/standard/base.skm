@@ -1,7 +1,14 @@
 ; Standard R7RS procedures from section 6.2.6
 
-; (zero? z)
-; Returns true iff z is zero
+;; (exact-integer? z)
+(define exact-integer?
+  (lambda (z)
+    (and 
+      (exact? z)
+      (integer? z)))) 
+
+;; (zero? z)
+;; Returns true iff z is zero
 (define zero?
   (lambda (z)
     (if (= z 0)
@@ -9,10 +16,10 @@
       #f)))
 
 ; (positive? x)      
-; Return true if x greater or equal to zero; false otherwise
+; Return true if x greater than zero; false otherwise
 (define positive?
   (lambda (x)
-    (if (>= x 0)
+    (if (> x 0)
       #t
       #f)))
 
@@ -105,7 +112,7 @@
 ;; (test-eqv expected test-expr)
 (define test-eqv 
   (lambda (x y) 
-    (test-assert (equal? x y))))
+    (test-assert (eqv? x y))))
 
 ;; Test the equality (with equal? predicate) between an expected value and
 ;; an expression

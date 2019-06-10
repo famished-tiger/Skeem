@@ -100,7 +100,7 @@ SKEEM
             ["(eqv? 'a 'a)", true],
             ["(eqv? 'a 'b)", false],
             ['(eqv? 2 2)', true],
-            ['(eqv? 2 2.0)', false],
+            ['(eqv? 2 2.0)', true],
             ['(eqv? 3 2)', false],
             ["(eqv? '() '())", true],
             ['(eqv? 100000000 100000000)', true],

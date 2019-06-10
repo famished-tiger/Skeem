@@ -92,10 +92,10 @@ module Skeem
       elsif (lexeme = scanner.scan(/(?:,@?)|(?:=>)/))
         token = build_token(@@lexeme2name[lexeme], lexeme)
       elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
-        token = cardinal_token(lexeme)        
-      elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?=\s|[|()";]|$)/))
+        token = cardinal_token(lexeme)
+      elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:.0+)?(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
-      elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]+)?(?:(?:e|E)[+-]?[0-9]+)?/))
+      elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]*)?(?:(?:e|E)[+-]?[0-9]+)?/))
         # Order dependency: must be tested after INTEGER case
         token = build_token('REAL', lexeme)
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
@@ -124,7 +124,7 @@ module Skeem
 
       return token
     end
-    
+
 =begin
 #t #f These are the boolean constants (section 6.3), along
 with the alternatives #true and #false.
@@ -138,7 +138,7 @@ numbers (section 6.2.5).
 #<n>= #<n># These are used for labeling and referencing
 other literal data (section 2.4).
         # token = build_token('BOOLEAN', lexeme)
-=end    
+=end
     def cardinal_token(aLexeme)
       case aLexeme
       when /^#true|false|t|f$/
@@ -146,7 +146,7 @@ other literal data (section 2.4).
       when '#('
         token = build_token(@@lexeme2name[aLexeme], aLexeme)
       end
-      
+
       return token
     end
 
@@ -175,7 +175,7 @@ other literal data (section 2.4).
       when 'STRING_LIT'
         value = to_string(aLexeme, aFormat)
       when 'IDENTIFIER'
-        value = to_identifier(aLexeme, aFormat)        
+        value = to_identifier(aLexeme, aFormat)
       else
         value = aLexeme
       end
@@ -204,7 +204,7 @@ other literal data (section 2.4).
 
       return value
     end
-    
+
     def to_string(aLexeme, aFormat)
       case aFormat
       when :default
@@ -212,7 +212,7 @@ other literal data (section 2.4).
       end
 
       return value
-    end  
+    end
 
     def to_identifier(aLexeme, aFormat)
       case aFormat
@@ -221,26 +221,27 @@ other literal data (section 2.4).
       end
 
       return value
-    end     
-    
+    end
+
     def skip_whitespaces
       pre_pos = scanner.pos
 
       loop do
-        ws_found = false
-        cmt_found = false
-        found = scanner.skip(/[ \t\f]+/)
-        ws_found = true if found
-        found = scanner.skip(/(?:\r\n)|\r|\n/)
-        if found
+        ws_found = scanner.skip(/[ \t\f]+/) ? true : false
+        nl_found = scanner.skip(/(?:\r\n)|\r|\n/)
+        if nl_found
           ws_found = true
           next_line
         end
+        cmt_found = false
         next_ch = scanner.peek(1)
         if next_ch == ';'
           cmt_found = true
           scanner.skip(/;[^\r\n]*(?:(?:\r\n)|\r|\n)?/)
           next_line
+        elsif scanner.peek(2) == '#|'
+          skip_block_comment
+          next
         end
         break unless ws_found or cmt_found
       end
@@ -248,7 +249,28 @@ other literal data (section 2.4).
       curr_pos = scanner.pos
       return if curr_pos == pre_pos
     end
-    
+
+    def skip_block_comment()
+      # require 'debug'
+      scanner.skip(/#\|/)
+      nesting_level = 1
+      loop do
+        comment_part = scanner.scan_until(/(?:\|\#)|(?:\#\|)|(?:(?:\r\n)|\r|\n)/)
+        unless comment_part
+          raise ScanError, "Unterminated '#| ... |#' comment on line #{lineno}"
+        end
+        case scanner.matched
+          when /(?:(?:\r\n)|\r|\n)/
+            next_line
+          when '|#'
+            nesting_level -= 1
+            break if nesting_level.zero?
+          when '#|'
+            nesting_level += 1
+        end
+      end
+    end
+
     def next_line
       @lineno += 1
       @line_start = scanner.pos

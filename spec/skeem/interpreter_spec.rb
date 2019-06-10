@@ -664,23 +664,8 @@ SKEEM
         checks = [
           ['(positive? 3.1)', true],
           ['(positive? -3.1)', false],
-          ['(positive? 0)', true],
-          ['(positive? 0.0)', true],
-          ['(positive? 3)', true],
-          ['(positive? -3)', false]
-        ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
-      end
-
-      it 'should implement the positive? predicate' do
-        checks = [
-          ['(positive? 3.1)', true],
-          ['(positive? -3.1)', false],
-          ['(positive? 0)', true],
-          ['(positive? 0.0)', true],
+          ['(positive? 0)', false],
+          ['(positive? 0.0)', false],
           ['(positive? 3)', true],
           ['(positive? -3)', false]
         ]

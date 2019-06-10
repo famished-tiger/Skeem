@@ -69,6 +69,7 @@ module Skeem
           [' 3', 3],
           ['+3 ', +3],
           ['-3', -3],
+          ['-3.0', -3],
           ['-1234', -1234]
         ]
 
@@ -167,7 +168,7 @@ module Skeem
       end
     end
 
-    context 'Semi-colon comments:' do
+    context 'Comments:' do
       it 'should skip heading comments' do
         input = "; Starting comment\n \"Some text\""
         subject.reinitialize(input)
@@ -197,6 +198,32 @@ module Skeem
         expect(token.terminal).to eq('STRING_LIT')
         expect(token.lexeme).to eq('Second text')
       end
+
+      it 'should skip block comments' do
+        input = '"First text" #| Middle comment |# "Second text"'
+        subject.reinitialize(input)
+        tokens = subject.tokens
+        expect(tokens.size).to eq(2)
+        token = tokens[0]
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('First text')
+        token = tokens[1]
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('Second text')
+      end
+      
+      it 'should cope with nested block comments' do
+        input = '"First text" #| One #| Two |# comment #| Three |# |# "Second text"'
+        subject.reinitialize(input)
+        tokens = subject.tokens
+        expect(tokens.size).to eq(2)
+        token = tokens[0]
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('First text')
+        token = tokens[1]
+        expect(token.terminal).to eq('STRING_LIT')
+        expect(token.lexeme).to eq('Second text')
+      end      
     end
 
     context 'Scanning Scheme sample code' do

@@ -114,19 +114,35 @@ module Skeem
           result = code.call(aRuntime)
         elsif arity.variadic? || (arity.low < arity.high)
           if arity.low.zero?
-            result = code.call(aRuntime, operands)
+            if ['and', 'or', 'append'].include? identifier
+              # Defer the evaluation of arguments to the primitive
+              result = code.call(aRuntime, operands)
+            else
+              evaluated_args = operands.map {|opernd| opernd.evaluate(aRuntime) }
+              result = code.call(aRuntime, evaluated_args)
+            end
           else
-            arguments = []
-            arguments << operands.take(arity.low).flatten
+            # require 'debug'
+            args = operands.take(arity.low)
+            args.map! { |arg| arg.evaluate(aRuntime) } unless args.empty?
             count_delta = operands.size - arity.low
-            arguments << SkmPair.create_from_a(operands.slice(-count_delta, count_delta))
+            remaining = operands.slice(-count_delta, count_delta).map do |arg|
+              arg.evaluate(aRuntime)
+            end
+            args << remaining.flatten
             # p operands.size
             # p count_delta
-            # p arguments.inspect
-            result = code.send(:call, aRuntime, *arguments.flatten)
+            # p args.inspect
+            result = code.send(:call, aRuntime, *args)
           end
         else # Fixed arity...
-          result = code.send(:call, aRuntime, *operands)
+          if identifier == 'set-car!' || identifier == 'set-cdr!'
+            # Defer evaluation inside the primitive
+            result = code.send(:call, aRuntime, *operands)
+          else
+            evaluated_args = operands.map {|opernd| opernd.evaluate(aRuntime) }
+            result = code.send(:call, aRuntime, *evaluated_args)          
+          end
         end
 
         result

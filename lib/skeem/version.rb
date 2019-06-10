@@ -1,3 +1,3 @@
 module Skeem
-  VERSION = '0.2.08'.freeze
+  VERSION = '0.2.09'.freeze
 end

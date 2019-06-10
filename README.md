@@ -166,6 +166,10 @@ Here are a few pointers for the Scheme programming language:
 
 
 ## Currently implemented R7RS features
+### Comments
+- Semi-colon delimited comments: `; This comment stops at the end of line`
+- Block `#| ... |#` comments
+
 ### Data type literals
 - Booleans: `#t`, `#true`, `#f`, `#false`
 - Of the number hierarchy:  
@@ -246,7 +250,8 @@ This section lists the implemented standard procedures
 * `boolean?`, `and`, `or`,  `not`
 
 #### Numerical operations
-* Number-level: `number?`, `real?`, `integer?`, `zero?`, `+`, `-`, `*`, `/`, `=`, `square`, `number->string`
+* Number-level: `number?`, `complex?`, `real?`, `integer?`, `zero?`, `exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`,
+`=`, `square`, `number->string`
 * Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `floor-remainder`
 * Integer-level: `even?`, `odd?`
 

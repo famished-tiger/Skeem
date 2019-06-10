@@ -97,6 +97,10 @@ module Skeem
     def number?
       true
     end
+    
+    def complex?
+      false
+    end
 
     def eqv?(other)
       return true if self.equal?(other)
@@ -117,6 +121,10 @@ module Skeem
 
   class SkmReal < SkmNumber
     def real?
+      true
+    end
+    
+    def complex?
       true
     end
 

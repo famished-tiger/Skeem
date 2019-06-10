@@ -1,3 +1,26 @@
+## [0.2.09] - 2019-06-10
+- New procedures: `complex?`, `exact-integer?`
+- Support for `#| ... |#` block comments (including nesting)
+
+### Added
+- File `base.skm`: Added integer number predicate `exact-integer?`
+- File `primitive_builder.rb`: Added numeric type predicate `complex?`
+- New method `Tokenizer#skip_block_comment` to handle "| ... |#" comments (including their nesting)
+- New folder `test_skeem` containing a test suite in `Skeem`
+
+### Changed
+- Method 'PrimitiveProcedure#do_call' whenever possible, the arguments are evaluated before executing the primitive.
+- File `primitive_builder.rb`: Lambda expression refactoring as most argument evaluations became redundant.
+- Method `Tokenizer#_next_token` numeric literals with only zero(es) in their fractional part are implicitly converted to integers `3.0` => 3 
+- Method `Tokenizer#skip_whitespaces` refactoring & detection of block comments 
+
+### Fixed
+- File `base.skm`: predicate `positive?` returned #t when argument was zero. Now: (positive? 0) returns #f as expected.
+
+### Removed
+- Empty method `PrimitiveBuilder#add_binding` removed.
+
+
 ## [0.2.08] - 2019-06-02
 - New standard procedures implemented: `assq`, `assv`
 
