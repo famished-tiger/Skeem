@@ -51,7 +51,8 @@ module Skeem
         create_minus(aRuntime)
         create_multiply(aRuntime)
         create_divide(aRuntime)
-        create_modulo(aRuntime)
+        create_floor_slash(aRuntime)
+        create_truncate_slash(aRuntime)
       end
 
       def add_comparison(aRuntime)
@@ -63,12 +64,15 @@ module Skeem
         create_gt(aRuntime)
         create_lte(aRuntime)
         create_gte(aRuntime)
+        create_max(aRuntime)
+        create_min(aRuntime)
       end
 
       def add_number_procedures(aRuntime)
         create_object_predicate(aRuntime, 'number?')
         create_object_predicate(aRuntime, 'complex?')
         create_object_predicate(aRuntime, 'real?')
+        create_object_predicate(aRuntime, 'rational?')
         create_object_predicate(aRuntime, 'integer?')
         create_object_predicate(aRuntime, 'exact?')
         create_number2string(aRuntime)
@@ -178,19 +182,44 @@ module Skeem
         define_primitive_proc(aRuntime, '*', zero_or_more, primitive)
       end
 
+      def reciprocal(aLiteral)
+
+        case aLiteral
+          when Integer
+            result = Rational(1, aLiteral)
+          when Rational
+            result = Rational(aLiteral.denominator, aLiteral.numerator)
+          else
+            result = 1 / aLiteral.to_f
+        end
+
+        result
+      end
 
       def create_divide(aRuntime)
         primitive = ->(_runtime, first_operand, arglist) do
           raw_result = first_operand.value
           if arglist.empty?
-            raw_result = 1 / raw_result.to_f
+            raw_result = reciprocal(raw_result)
           else
             arglist.each do |elem|
-              if raw_result > elem.value && raw_result.modulo(elem.value).zero?
-                raw_result /= elem.value
-              else
-                raw_result = raw_result.to_f
-                raw_result /= elem.value
+              elem_value = elem.value
+              case [raw_result.class, elem_value.class]
+                when [Integer, Integer]
+                  if raw_result.modulo(elem_value).zero?
+                    raw_result = raw_result / elem_value
+                  else
+                    raw_result = Rational(raw_result, elem_value)
+                  end
+
+                when [Integer, Rational]
+                  raw_result = raw_result * reciprocal(elem_value)
+
+                when [Rational, Rational]
+                  raw_result = raw_result * reciprocal(elem_value)
+                else
+                  raw_result = raw_result.to_f
+                  raw_result /= elem_value
               end
             end
           end
@@ -199,14 +228,25 @@ module Skeem
 
         define_primitive_proc(aRuntime, '/', one_or_more, primitive)
       end
-
-      def create_modulo(aRuntime)
+      
+      def create_floor_slash(aRuntime)
         primitive = ->(_runtime, operand_1, operand_2) do
-          raw_result = operand_1.value.modulo(operand_2.value)
-          to_datum(raw_result)
+          (quotient, modulus) = operand_1.value.divmod(operand_2.value)
+          SkmPair.new(to_datum(quotient), to_datum(modulus)) # improper list!
         end
 
-        define_primitive_proc(aRuntime, 'floor-remainder', binary, primitive)
+        define_primitive_proc(aRuntime, 'floor/', binary, primitive)      
+      end      
+
+      def create_truncate_slash(aRuntime)
+        primitive = ->(_runtime, operand_1, operand_2) do
+          modulo_ = operand_1.value / operand_2.value
+          modulo_ += 1 if modulo_ < 0
+          remainder_ = operand_1.value.remainder(operand_2.value)
+          SkmPair.new(to_datum(modulo_), to_datum(remainder_)) # improper list!
+        end
+
+        define_primitive_proc(aRuntime, 'truncate/', binary, primitive)
       end
 
       def core_eqv?(eval_arg1, eval_arg2)
@@ -309,7 +349,7 @@ module Skeem
 
         define_primitive_proc(aRuntime, '>=', one_or_more, primitive)
       end
-      
+
       def primitive_comparison(operator, _runtime, first_operand, arglist)
         operands = [first_operand].concat(arglist)
         result = true
@@ -317,7 +357,43 @@ module Skeem
           result &&= elem1.value.send(operator, elem2.value)
         end
 
-        boolean(result)      
+        boolean(result)
+      end
+
+      def create_max(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          if arglist.empty?
+            result = first_operand
+          else
+            arr = arglist.to_a
+            arr.prepend(first_operand)
+            result = arr.max do |a, b|
+              a.value <=> b.value if a.real? && b.real?
+            end
+          end
+
+          result
+        end
+
+        define_primitive_proc(aRuntime, 'max', one_or_more, primitive)
+      end
+
+      def create_min(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          if arglist.empty?
+            result = first_operand
+          else
+            arr = arglist.to_a
+            arr.prepend(first_operand)
+            result = arr.min do |a, b|
+              a.value <=> b.value if a.real? && b.real?
+            end
+          end
+
+          result
+        end
+
+        define_primitive_proc(aRuntime, 'min', one_or_more, primitive)
       end
 
       def create_number2string(aRuntime)

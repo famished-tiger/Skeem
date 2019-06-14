@@ -33,6 +33,19 @@ module Skeem
           raise StandardError, aLiteral.inspect
       end
     end
+    
+    def rational(aLiteral)
+      return aLiteral if aLiteral.kind_of?(SkmRational)
+
+      result = case aLiteral
+        when Rational
+          SkmRational.create(aLiteral)
+        when /^[+-]?\d+\/\d+$/
+          SkmRational.create(Rational(aLiteral))
+        else
+          raise StandardError, aLiteral.inspect
+      end
+    end    
 
     def real(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmReal)
@@ -112,6 +125,8 @@ module Skeem
           aLiteral.map { |elem| to_datum(elem) }
         when Integer
           SkmInteger.create(aLiteral)
+        when Rational
+          SkmRational.create(aLiteral)
         when Float
           SkmReal.create(aLiteral)
         when TrueClass, FalseClass
@@ -133,6 +148,8 @@ module Skeem
         boolean(aLiteral)
       elsif aLiteral =~ /^#f(?:alse)?|false$/
         boolean(aLiteral)
+      elsif aLiteral =~ /^[+-]?\d+\/\d+$/
+        rational(aLiteral)
       elsif aLiteral =~ /^[+-]?\d+$/
         integer(aLiteral)
       elsif aLiteral =~ /^[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?$/

@@ -174,6 +174,7 @@ Here are a few pointers for the Scheme programming language:
 - Booleans: `#t`, `#true`, `#f`, `#false`
 - Of the number hierarchy:  
   `real` (e.g. 2.718, 6.671e-11),  
+  `rational` (e.g. 22/7, 1/137, -13/41)
   `integer` (42, -3)
 - Lists (quoted) : '(1 two "three")
 - Strings: `"Hello, world."`
@@ -250,9 +251,10 @@ This section lists the implemented standard procedures
 * `boolean?`, `and`, `or`,  `not`
 
 #### Numerical operations
-* Number-level: `number?`, `complex?`, `real?`, `integer?`, `zero?`, `exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`,
+* Number-level: `number?`, `complex?`, `real?`, `rational?`, `integer?`, `zero?`, `exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`,
 `=`, `square`, `number->string`
-* Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `floor-remainder`
+* Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `max`, `min`,  `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,
+  `truncate-remainder`, `quotient`, `remainder`, `modulo`
 * Integer-level: `even?`, `odd?`
 
 #### List procedures

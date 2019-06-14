@@ -132,13 +132,19 @@ module Skeem
       false
     end
   end # class
-
-  class SkmInteger < SkmReal
-    def integer?
+  
+  class SkmRational < SkmReal
+    def rational?
       true
     end
 
     def exact?
+      true
+    end
+  end # class  
+
+  class SkmInteger < SkmRational
+    def integer?
       true
     end
   end # class

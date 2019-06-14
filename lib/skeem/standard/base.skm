@@ -36,8 +36,34 @@
 (define inexact?
   (lambda (z) 
     (not (exact? z))))
+    
+(define floor-quotient
+  (lambda (n1 n2)
+    (car (floor/ n1 n2))))
 
-; For backwards compatibility
+(define floor-remainder
+  (lambda (n1 n2)
+    (cdr (floor/ n1 n2))))
+    
+(define truncate-quotient
+  (lambda (n1 n2)
+    (car (truncate/ n1 n2))))
+
+(define truncate-remainder
+  (lambda (n1 n2)
+    (cdr (truncate/ n1 n2))))
+
+; For R5RS compatibility
+(define quotient
+  (lambda (x y)
+    (truncate-quotient x y)))
+    
+; For R5RS compatibility
+(define remainder
+  (lambda (x y)
+    (truncate-remainder x y)))
+    
+; For R5RS compatibility
 (define modulo
   (lambda (x y)
     (floor-remainder x y)))

@@ -1,3 +1,24 @@
+## [0.2.10] - 2019-06-14
+- Skeem now supports rational numbers (fractions)
+- Added procedures: `max`, `min`, `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,
+  `truncate-remainder`, `quotient`, `remainder`, `modulo`
+
+### Added
+- `DatumDSL#rational` conversion method
+
+### Changed
+- `DatumDSL#to_datum(aLiteral): added conversion of literal rational into rational value.
+- File `grammar.rb` Added new terminal RATIONAL and rule deriving number from rational
+- File `primitive_builder.rb` Implemented primitive procedures floor/ and truncate/
+- Class `SkmInteger` now inherits from `SkmRational` class
+- File `base.skm` added implementation of  `floor-quotient`, `floor-remainder`, `truncate-quotient`, 
+  `truncate-remainder`, `quotient`, `remainder`, `modulo`
+ - Class Tokenizer updated to recognize rational numbers.
+ - Test suite file `base_tests.scm` expanded.
+
+### Fixed
+- File `primitive_builder.rb` Fixed and extended implementation of `/`procedure
+
 ## [0.2.09] - 2019-06-10
 - New procedures: `complex?`, `exact-integer?`
 - Support for `#| ... |#` block comments (including nesting)

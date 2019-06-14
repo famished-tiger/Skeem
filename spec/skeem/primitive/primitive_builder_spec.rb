@@ -35,6 +35,8 @@ SKEEM
             ['(+)', 0], # '+' as nullary operator. Example from section 6.2.6
             ['(+ -3)', -3], # '+' as unary operator
             ['(+ 3 4)', 7], # '+' as binary operator. Example from section 4.1.3
+            ['(+ 1/2 2/3)', Rational(7,6)],
+            ['(+ 1/2 3)', Rational(7,2)],
             ['(+ 2 2.34)', 4.34]
           ].each do |(expr, predicted)|
             result = subject.run(expr)
@@ -45,6 +47,7 @@ SKEEM
         it 'should implement the minus operator' do
           [
             ['(- 3)', -3], # '-' as unary operator (= sign change)
+            ['(- -2/3)', Rational(2, 3)],
             ['(- 3 4)', -1], # '-' as binary operator. Example from section 6.2.6
             ['(- 3 4 5)', -6] # '-' as variadic operator. Example from section 6.2.6
           ].each do |(expr, predicted)|
@@ -58,6 +61,7 @@ SKEEM
             ['(*)', 1], # '*' as nullary operator. Example from section 6.2.6
             ['(* 4)', 4], # '*' as unary operator. Example from section 6.2.6
             ['(* 5 8)', 40], # '*' as binary operator.
+            ['(* 2/3 5/7)', Rational(10, 21)],
             ['(* 2 3 4 5)', 120] # '*' as variadic operator.
           ].each do |(expr, predicted)|
             result = subject.run(expr)
@@ -67,28 +71,45 @@ SKEEM
 
         it 'should implement the division operator' do
           [
-            ['(/ 3)', 1.0/3], # '/' as unary operator (= inverse of argument)
-            ['(/ 3 4)', 3.0/4], # '/' as binary operator.
-            ['(/ 3 4 5)', 3.0/20] # '/' as variadic operator. Example from section 6.2.6
+            ['(/ 3)', Rational(1, 3)], # '/' as unary operator (= inverse of argument)
+            ['(/ 3/4)', Rational(4, 3)],
+            ['(/ 3 4)', Rational(3, 4)], # '/' as binary operator.
+            ['(/ 2/3 5/7)', Rational(14, 15)],
+            ['(/ 3 4 5)', Rational(3, 20)] # '/' as variadic operator. Example from section 6.2.6
           ].each do |(expr, predicted)|
             result = subject.run(expr)
             expect(result).to eq(predicted)
           end
+
+          result = subject.run('(/ 3 4.5)')
+          expect(result.value).to be_within(0.000001).of(0.66666667)
         end
 
-        it 'should implement the floor-remainder (modulo) procedure' do
+        it 'should implement the floor/ procedure' do
           checks = [
-            ['(floor-remainder 16 4)', 0], # Binary procedure.
-            ['(floor-remainder 5 2)', 1],
-            ['(floor-remainder -45.0 7)', 4.0],
-            ['(floor-remainder 10.0 -3.0)', -2.0],
-            ['(floor-remainder -17 -9)', -8]
+            ['(floor/ 5 2)', [2, 1]], # Binary procedure.
+            ['(floor/ -5 2)', [-3, 1]],
+            ['(floor/ 5 -2)', [-3, -1]],
+            ['(floor/ -5 -2)', [2, -1]]
           ]
           checks.each do |(skeem_expr, expectation)|
             result = subject.run(skeem_expr)
-            expect(result).to eq(expectation)
+            expect([result.car, result.cdr]).to eq(expectation)
           end
         end
+        
+        it 'should implement the truncate/ procedure' do
+          checks = [
+            ['(truncate/ 5 2)', [2, 1]], # Binary procedure.
+            ['(truncate/ -5 2)', [-2, -1]],
+            ['(truncate/ 5 -2)', [-2, 1]],
+            ['(truncate/ -5 -2)', [2, -1]]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect([result.car, result.cdr]).to eq(expectation)
+          end
+        end        
       end # context
 
       context 'Comparison operators' do
@@ -228,12 +249,37 @@ SKEEM
             expect(result).to eq(expectation)
           end
         end
+
+        it 'should implement the max procedure' do
+          checks = [
+            ['(max 3 4)', 4],
+            ['(max 3.9 4)', 4],
+            ['(max 4 -7 2 0 -6)', 4]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
+        it 'should implement the min procedure' do
+          checks = [
+            ['(min 3 4)', 3],
+            ['(min 3.9 4)', 3.9],
+            ['(min 4 -7 2 0 -6)', -7]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
       end # context
 
       context 'Number procedures:' do
         it 'should implement the number? predicate' do
           checks = [
             ['(number? 3.1)', true],
+            ['(number? 22/7)', true],
             ['(number? 3)', true],
             ['(number? "3")', false],
             ['(number? #t)', false]
@@ -247,6 +293,7 @@ SKEEM
         it 'should implement the real? predicate' do
           checks = [
             ['(real? 3.1)', true],
+            ['(real? 22/7)', true],
             ['(real? 3)', true],
             ['(real? "3")', false],
             ['(real? #t)', false]
@@ -257,10 +304,26 @@ SKEEM
           end
         end
 
+        it 'should implement the rational? predicate' do
+          checks = [
+            ['(rational? 3.1)', false],
+            ['(rational? 3.0)', true],
+            ['(rational? 22/7)', true],
+            ['(rational? 3)', true],
+            ['(rational? "3")', false],
+            ['(rational? #t)', false]
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
         it 'should implement the integer? predicate' do
           checks = [
             ['(integer? 3.1)', false],
-            # ['(integer? 3.0)', true], TODO: should pass when exact? will be implemented
+            ['(integer? 3.0)', true],
+            ['(integer? 22/7)', false],
             ['(integer? 3)', true],
             ['(integer? "3")', false],
             ['(integer? #t)', false]
@@ -274,6 +337,7 @@ SKEEM
         it 'should implement the number->string procedure' do
           checks = [
             ['(number->string 3.4)', '3.4'],
+            ['(number->string 22/7)', '22/7'],
             ['(number->string 1e2)', '100.0'],
             ['(number->string 1e-23)', '1.0e-23'],
             ['(number->string -7)', '-7']

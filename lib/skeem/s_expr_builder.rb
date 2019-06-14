@@ -16,6 +16,7 @@ module Skeem
       'BOOLEAN' => SkmBoolean,
       'IDENTIFIER' => SkmIdentifier,
       'INTEGER' => SkmInteger,
+      'RATIONAL' => SkmRational,
       'REAL' => SkmReal,
       'STRING_LIT' => SkmString
     }.freeze

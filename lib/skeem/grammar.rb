@@ -15,8 +15,8 @@ module Skeem
     add_terminals('VECTOR_BEGIN')
 
     # Literal values...
-    add_terminals('BOOLEAN', 'INTEGER', 'REAL')
-    add_terminals('STRING_LIT', 'IDENTIFIER')
+    add_terminals('BOOLEAN', 'INTEGER', 'RATIONAL')
+    add_terminals('REAL', 'STRING_LIT', 'IDENTIFIER')
 
     # Keywords...
     add_terminals('BEGIN', 'COND', 'DEFINE', 'ELSE')
@@ -93,6 +93,7 @@ module Skeem
     rule 'alternate' => 'expression'
     rule 'alternate' => []
     rule 'number' => 'INTEGER'
+    rule 'number' => 'RATIONAL'
     rule 'number' => 'REAL'
     rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
     rule('derived_expression' => 'LPAREN COND cond_clause_plus RPAREN').as 'cond_form'

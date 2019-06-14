@@ -12,8 +12,16 @@ module Skeem
     def number?
       false
     end
+    
+    def complex?
+      false
+    end    
 
     def real?
+      false
+    end
+    
+    def rational?
       false
     end
 

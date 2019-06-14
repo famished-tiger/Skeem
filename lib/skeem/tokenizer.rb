@@ -93,6 +93,8 @@ module Skeem
         token = build_token(@@lexeme2name[lexeme], lexeme)
       elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
         token = cardinal_token(lexeme)
+      elsif (lexeme = scanner.scan(/[+-]?[0-9]+\/[0-9]+(?=\s|[|()";]|$)/))
+        token = build_token('RATIONAL', lexeme) # Decimal radix        
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:.0+)?(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]*)?(?:(?:e|E)[+-]?[0-9]+)?/))
@@ -152,10 +154,10 @@ other literal data (section 2.4).
 
     def build_token(aSymbolName, aLexeme, aFormat = :default)
       begin
-        value = convert_to(aLexeme, aSymbolName, aFormat)
+        (value, symb) = convert_to(aLexeme, aSymbolName, aFormat)
         col = scanner.pos - aLexeme.size - @line_start + 1
         pos = Rley::Lexical::Position.new(@lineno, col)
-        token = Rley::Lexical::Token.new(value, aSymbolName, pos)
+        token = Rley::Lexical::Token.new(value, symb, pos)
       rescue StandardError => exc
         puts "Failing with '#{aSymbolName}' and '#{aLexeme}'"
         raise exc
@@ -165,11 +167,15 @@ other literal data (section 2.4).
     end
 
     def convert_to(aLexeme, aSymbolName, aFormat)
+      symb = aSymbolName
       case aSymbolName
       when 'BOOLEAN'
         value = to_boolean(aLexeme, aFormat)
       when 'INTEGER'
         value = to_integer(aLexeme, aFormat)
+      when 'RATIONAL'
+        value = to_rational(aLexeme, aFormat)
+        symb = 'INTEGER' if value.kind_of?(Integer)
       when 'REAL'
         value = to_real(aLexeme, aFormat)
       when 'STRING_LIT'
@@ -180,7 +186,7 @@ other literal data (section 2.4).
         value = aLexeme
       end
 
-      return value
+      return [value, symb]
     end
 
     def to_boolean(aLexeme, aFormat)
@@ -196,6 +202,16 @@ other literal data (section 2.4).
       return value
     end
 
+    def to_rational(aLexeme, aFormat)
+      case aFormat
+      when :default
+        value = Rational(aLexeme)
+        value = value.numerator if value.denominator == 1
+      end
+
+      return value
+    end
+    
     def to_real(aLexeme, aFormat)
       case aFormat
       when :default

@@ -82,6 +82,29 @@ module Skeem
       end
     end # context
 
+    context 'Rational literals recognition:' do
+      it 'should tokenize rational in default radix 10' do
+        tests = [
+          # couple [raw input, expected]
+          ['1/2', Rational(1, 2)],
+          ['-22/7', -Rational(22, 7)],
+        ]
+
+        tests.each do |(input, prediction)|
+          subject.reinitialize(input)
+          token = subject.tokens.first
+          expect(token.terminal).to eq('RATIONAL')
+          expect(token.lexeme).to eq(prediction)
+        end
+        
+        # Special case: implicit promotion to integer
+        subject.reinitialize('8/4')
+        token = subject.tokens.first
+        expect(token.terminal).to eq('INTEGER')
+        expect(token.lexeme).to eq(2)        
+      end
+    end # context
+
     context 'Real number recognition:' do
       it 'should tokenize real numbers' do
         tests = [
@@ -211,7 +234,7 @@ module Skeem
         expect(token.terminal).to eq('STRING_LIT')
         expect(token.lexeme).to eq('Second text')
       end
-      
+
       it 'should cope with nested block comments' do
         input = '"First text" #| One #| Two |# comment #| Three |# |# "Second text"'
         subject.reinitialize(input)
@@ -223,7 +246,7 @@ module Skeem
         token = tokens[1]
         expect(token.terminal).to eq('STRING_LIT')
         expect(token.lexeme).to eq('Second text')
-      end      
+      end
     end
 
     context 'Scanning Scheme sample code' do

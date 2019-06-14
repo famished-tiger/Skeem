@@ -825,6 +825,82 @@ SKEEM
           expect(result).to eq(expectation)
         end
       end
+
+      it 'should implement the floor-quotient procedure' do
+        checks = [
+          ['(floor-quotient 5 2)', 2],
+          ['(floor-quotient -5 2)', -3],
+          ['(floor-quotient 5 -2)', -3],
+          ['(floor-quotient -5 -2)', 2]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end
+      
+      it 'should implement the floor-remainder (modulo) procedure' do
+        checks = [
+          ['(floor-remainder 16 4)', 0],
+          ['(floor-remainder 5 2)', 1],
+          ['(floor-remainder -45.0 7)', 4.0],
+          ['(floor-remainder 10.0 -3.0)', -2.0],
+          ['(floor-remainder -17 -9)', -8],
+          ['(modulo 16 4)', 0],
+          ['(modulo 5 2)', 1],
+          ['(modulo -45.0 7)', 4.0],
+          ['(modulo 10.0 -3.0)', -2.0],
+          ['(modulo -17 -9)', -8]          
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end
+      
+        it 'should implement the truncate-quotient procedure' do
+          checks = [
+            ['(truncate-quotient 5 2)', 2],
+            ['(truncate-quotient -5 2)', -2],
+            ['(truncate-quotient 5 -2)', -2],
+            ['(truncate-quotient -5 -2)', 2],
+            ['(quotient 5 2)', 2],
+            ['(quotient -5 2)', -2],
+            ['(quotient 5 -2)', -2],
+            ['(quotient -5 -2)', 2]            
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+
+        it 'should implement the truncate-remainder procedure' do
+          checks = [
+            ['(truncate-remainder 5 2)', 1],
+            ['(truncate-remainder -5 2)', -1],
+            ['(truncate-remainder 5 -2)', 1],
+            ['(truncate-remainder -5 -2)', -1],
+            ['(remainder 5 2)', 1],
+            ['(remainder -5 2)', -1],
+            ['(remainder 5 -2)', 1],
+            ['(remainder -5 -2)', -1]            
+          ]
+          checks.each do |(skeem_expr, expectation)|
+            result = subject.run(skeem_expr)
+            expect(result).to eq(expectation)
+          end
+        end
+      
+      it 'should implement the test-equal procedure' do
+        checks = [
+          ["(test-equal (cons 1 2) (cons 1 2))", true]
+        ]
+        checks.each do |(skeem_expr, expectation)|
+          result = subject.run(skeem_expr)
+          expect(result).to eq(expectation)
+        end
+      end      
     end # context
 
     context 'Second-order functions' do
