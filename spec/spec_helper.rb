@@ -14,3 +14,21 @@ RSpec.configure do |config|
   # Display stack trace in case of failure
   config.full_backtrace = true
 end
+
+module SkeemSpec
+  def compare_to_predicted(arrActualsPredictions)
+    arrActualsPredictions.each_with_index do |(source, predicted), index|
+      begin
+        result = subject.run(source)
+        if block_given?
+          yield result, predicted
+        else
+          expect(result).to eq(predicted)
+        end
+      rescue Exception => exc
+        $stderr.puts "Row #{index + 1} failed."
+        throw exc
+      end
+    end
+  end
+end

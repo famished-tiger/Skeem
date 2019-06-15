@@ -5,6 +5,7 @@ require_relative '../../lib/skeem/interpreter' # Load the class under test
 
 module Skeem
   describe Interpreter do
+    include SkeemSpec
     include DatumDSL
 
     context 'Initialization:' do
@@ -39,13 +40,12 @@ module Skeem
     context 'Interpreting self-evaluating expressions' do
       it 'should evaluate isolated booleans' do
         samples = [
-        ['#f', false],
-        ['#false', false],
-        ['#t', true],
-        ['#true', true]
-      ]
-        samples.each do |source, predicted|
-          result = subject.run(source)
+          ['#f', false],
+          ['#false', false],
+          ['#t', true],
+          ['#true', true]
+        ]
+        compare_to_predicted(samples) do |result, predicted|
           expect(result).to be_kind_of(SkmBoolean)
           expect(result).to eq(predicted)
         end
@@ -59,8 +59,7 @@ module Skeem
           ['+12345', 12345],
           ['-12345', -12345]
         ]
-        samples.each do |source, predicted|
-          result = subject.run(source)
+        compare_to_predicted(samples) do |result, predicted|
           expect(result).to be_kind_of(SkmInteger)
           expect(result).to eq(predicted)
         end
@@ -74,8 +73,7 @@ module Skeem
           ['+123e+45', 123e+45],
           ['-123e-45', -123e-45]
         ]
-        samples.each do |source, predicted|
-          result = subject.run(source)
+        compare_to_predicted(samples) do |result, predicted|
           expect(result).to be_kind_of(SkmReal)
           expect(result).to eq(predicted)
         end
@@ -83,10 +81,9 @@ module Skeem
 
       it 'should evaluate isolated strings' do
         samples = [
-        ['"Hello, world"', 'Hello, world']
-      ]
-        samples.each do |source, predicted|
-          result = subject.run(source)
+          ['"Hello, world"', 'Hello, world']
+        ]
+        compare_to_predicted(samples) do |result, predicted|
           expect(result).to be_kind_of(SkmString)
           expect(result).to eq(predicted)
         end
@@ -132,10 +129,7 @@ SKEEM
           ['(if (> 3 2) "yes")', 'yes'],
           ['(if (> 2 3) "yes")', SkmUndefined.instance]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the complete conditional form' do
@@ -143,10 +137,7 @@ SKEEM
           ['(if (> 3 2) "yes" "no")', 'yes'],
           ['(if (> 2 3) "yes" "no")', 'no']
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
         source = <<-SKEEM
   ; Example from R7RS section 4.1.5
   (if (> 3 2)
@@ -156,7 +147,7 @@ SKEEM
         result = subject.run(source)
         expect(result).to eq(1)
       end
-      
+
       it 'should implement the cond form' do
         source = <<-SKEEM
   (define signum (lambda (x)
@@ -166,17 +157,15 @@ SKEEM
       ((< x 0) -1)
     )))
 SKEEM
-       result = subject.run(source)
-       result = subject.run('(signum 3)')
-       expect(result).to eq(1)
-       
-       result = subject.run('(signum 0)')
-       expect(result).to eq(0)
-
-       result = subject.run('(signum -3)')
-       expect(result).to eq(-1)       
+        result = subject.run(source)
+        checks = [
+          ['(signum 3)', 1],
+          ['(signum 0)', 0],
+          ['(signum -3)', -1]
+        ]
+        compare_to_predicted(checks)
       end
-      
+
       it 'should implement the cond form with arrows' do
         source = <<-SKEEM
   (define signum (lambda (x)
@@ -186,16 +175,14 @@ SKEEM
       ((< x 0) => -1)
     )))
 SKEEM
-       result = subject.run(source)
-       result = subject.run('(signum 3)')
-       expect(result).to eq(1)
-       
-       result = subject.run('(signum 0)')
-       expect(result).to eq(0)
-
-       result = subject.run('(signum -3)')
-       expect(result).to eq(-1)       
-      end 
+        result = subject.run(source)
+        checks = [
+          ['(signum 3)', 1],
+          ['(signum 0)', 0],
+          ['(signum -3)', -1]
+        ]
+        compare_to_predicted(checks)
+      end
 
       it 'should implement the cond ... else form' do
         source = <<-SKEEM
@@ -206,16 +193,14 @@ SKEEM
       (else -1)
     )))
 SKEEM
-       result = subject.run(source)
-       result = subject.run('(signum 3)')
-       expect(result).to eq(1)
-       
-       result = subject.run('(signum 0)')
-       expect(result).to eq(0)
-
-       result = subject.run('(signum -3)')
-       expect(result).to eq(-1)       
-      end      
+        result = subject.run(source)
+        checks = [
+          ['(signum 3)', 1],
+          ['(signum 0)', 0],
+          ['(signum -3)', -1]
+        ]
+        compare_to_predicted(checks)
+      end
 
       it 'should implement the quotation of constant literals' do
          checks = [
@@ -228,10 +213,7 @@ SKEEM
           ["'\"abc\"", 'abc'],
           ["'#t", true]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the quotation of vectors' do
@@ -280,12 +262,12 @@ SKEEM
         subject.run(source)
         procedure = subject.fetch('abs')
         expect(procedure.arity).to eq(1)
-        result = subject.run('(abs -3)')
-        expect(result).to eq(3)
-        result = subject.run('(abs 0)')
-        expect(result).to eq(0)
-        result = subject.run('(abs 3)')
-        expect(result).to eq(3)
+        checks = [
+          ['(abs -3)', 3],
+          ['(abs 0)', 0],
+          ['(abs 3)', 3]
+        ]
+        compare_to_predicted(checks)
       end
 
       it 'should implement the lambda function with two args' do
@@ -298,12 +280,12 @@ SKEEM
         subject.run(source)
         procedure = subject.fetch('min')
         expect(procedure.arity).to eq(2)
-        result = subject.run('(min 1 2)')
-        expect(result).to eq(1)
-        result = subject.run('(min 2 1)')
-        expect(result).to eq(1)
-        result = subject.run('(min 2 2)')
-        expect(result).to eq(2)
+        checks = [
+          ['(min 1 2)', 1],
+          ['(min 2 1)', 1],
+          ['(min 2 2)', 2]
+        ]
+        compare_to_predicted(checks)
       end
 
       it 'should implement recursive functions' do
@@ -377,8 +359,8 @@ SKEEM
         result = subject.run(source)
         expect(result.last.value).to eq(20)
       end
-      
-      
+
+
     end # context
 
     context 'Binding constructs:' do
@@ -470,7 +452,7 @@ SKEEM
         result = subject.run(source)
         expect(result).to eq(7)
       end
-      
+
       it 'should support begin as lambda body' do
         source = <<-SKEEM
   (define kube (lambda (x)
@@ -484,7 +466,7 @@ SKEEM
 SKEEM
         result = subject.run(source)
         expect(result.last).to eq(64)
-      end      
+      end
     end # context
 
     context 'Quasiquotation:' do
@@ -499,10 +481,7 @@ SKEEM
           ['`"abc"', 'abc'],
           ['`#t', true]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the quasiquotation of vectors' do
@@ -654,10 +633,7 @@ SKEEM
           ['(zero? 3)', false],
           ['(zero? -3)', false]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the positive? predicate' do
@@ -669,10 +645,7 @@ SKEEM
           ['(positive? 3)', true],
           ['(positive? -3)', false]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the negative? predicate' do
@@ -684,10 +657,7 @@ SKEEM
           ['(negative? 3)', false],
           ['(negative? -3)', true]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the even? predicate' do
@@ -697,10 +667,7 @@ SKEEM
           ['(even? 2.0)', true],
           ['(even? -120762398465)', false]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the odd? predicate' do
@@ -710,10 +677,7 @@ SKEEM
           ['(odd? 2.0)', false],
           ['(odd? -120762398465)', true]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the abs function' do
@@ -725,10 +689,7 @@ SKEEM
           ['(abs 3)', 3],
           ['(abs -7)', 7]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the square function' do
@@ -737,10 +698,7 @@ SKEEM
           ['(square 2.0)', 4.0],
           ['(square -7)', 49]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the not procedure' do
@@ -753,10 +711,7 @@ SKEEM
           ['(not (list))', false],
           ["(not 'nil)", false]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the list procedure' do
@@ -766,8 +721,7 @@ SKEEM
           ['(list 1 2 3 4)', [1, 2, 3, 4]],
           ["(list 'a (+ 3 4) 'c)", [identifier('a'), 7, identifier('c')]]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
+        compare_to_predicted(checks) do |result, expectation|
           expect(result.to_a).to eq(expectation)
         end
       end
@@ -777,10 +731,7 @@ SKEEM
           ["(caar '((a)))", 'a'],
           ["(caar '((1 2) 3 4))", 1]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the cadr procedure' do
@@ -788,18 +739,14 @@ SKEEM
           ["(cadr '(a b c))", 'b'],
           ["(cadr '((1 2) 3 4))", 3]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the cdar procedure' do
         checks = [
           ["(cdar '((7 6 5 4 3 2 1) 8 9))", [6, 5, 4, 3, 2, 1]]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
+        compare_to_predicted(checks) do |result, expectation|
           expect(result.to_a).to eq(expectation)
         end
       end
@@ -808,8 +755,7 @@ SKEEM
         checks = [
           ["(cddr '(2 1))", []]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
+        compare_to_predicted(checks) do |result, expectation|
           expect(result.to_a).to eq(expectation)
         end
       end
@@ -820,10 +766,7 @@ SKEEM
           ["(symbol=? 'a (string->symbol \"a\"))", true],
           ["(symbol=? 'a 'b)", false]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
 
       it 'should implement the floor-quotient procedure' do
@@ -833,12 +776,9 @@ SKEEM
           ['(floor-quotient 5 -2)', -3],
           ['(floor-quotient -5 -2)', 2]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
-      
+
       it 'should implement the floor-remainder (modulo) procedure' do
         checks = [
           ['(floor-remainder 16 4)', 0],
@@ -850,14 +790,11 @@ SKEEM
           ['(modulo 5 2)', 1],
           ['(modulo -45.0 7)', 4.0],
           ['(modulo 10.0 -3.0)', -2.0],
-          ['(modulo -17 -9)', -8]          
+          ['(modulo -17 -9)', -8]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
+        compare_to_predicted(checks)
       end
-      
+
         it 'should implement the truncate-quotient procedure' do
           checks = [
             ['(truncate-quotient 5 2)', 2],
@@ -867,12 +804,9 @@ SKEEM
             ['(quotient 5 2)', 2],
             ['(quotient -5 2)', -2],
             ['(quotient 5 -2)', -2],
-            ['(quotient -5 -2)', 2]            
+            ['(quotient -5 -2)', 2]
           ]
-          checks.each do |(skeem_expr, expectation)|
-            result = subject.run(skeem_expr)
-            expect(result).to eq(expectation)
-          end
+          compare_to_predicted(checks)
         end
 
         it 'should implement the truncate-remainder procedure' do
@@ -884,23 +818,17 @@ SKEEM
             ['(remainder 5 2)', 1],
             ['(remainder -5 2)', -1],
             ['(remainder 5 -2)', 1],
-            ['(remainder -5 -2)', -1]            
+            ['(remainder -5 -2)', -1]
           ]
-          checks.each do |(skeem_expr, expectation)|
-            result = subject.run(skeem_expr)
-            expect(result).to eq(expectation)
-          end
+          compare_to_predicted(checks)
         end
-      
+
       it 'should implement the test-equal procedure' do
         checks = [
           ["(test-equal (cons 1 2) (cons 1 2))", true]
         ]
-        checks.each do |(skeem_expr, expectation)|
-          result = subject.run(skeem_expr)
-          expect(result).to eq(expectation)
-        end
-      end      
+        compare_to_predicted(checks)
+      end
     end # context
 
     context 'Second-order functions' do
