@@ -1,4 +1,4 @@
-## [0.2.10] - 2019-06-14
+## [0.2.10] - 2019-06-15
 - Skeem now supports rational numbers (fractions)
 - Added procedures: `max`, `min`, `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,
   `truncate-remainder`, `quotient`, `remainder`, `modulo`

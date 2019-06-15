@@ -202,17 +202,20 @@ module Skeem
           if arglist.empty?
             raw_result = reciprocal(raw_result)
           else
+            # Ugly: Ruby version dependency: Rubies older than 2.4 have class Fixnum instead of Integer
+            int_class = (RUBY_VERSION[0..2] < "2.4") ? Fixnum : Integer
+
             arglist.each do |elem|
               elem_value = elem.value
               case [raw_result.class, elem_value.class]
-                when [Integer, Integer]
+                when [int_class, int_class]
                   if raw_result.modulo(elem_value).zero?
                     raw_result = raw_result / elem_value
                   else
                     raw_result = Rational(raw_result, elem_value)
                   end
 
-                when [Integer, Rational]
+                when [int_class, Rational]
                   raw_result = raw_result * reciprocal(elem_value)
 
                 when [Rational, Rational]
@@ -228,15 +231,15 @@ module Skeem
 
         define_primitive_proc(aRuntime, '/', one_or_more, primitive)
       end
-      
+
       def create_floor_slash(aRuntime)
         primitive = ->(_runtime, operand_1, operand_2) do
           (quotient, modulus) = operand_1.value.divmod(operand_2.value)
           SkmPair.new(to_datum(quotient), to_datum(modulus)) # improper list!
         end
 
-        define_primitive_proc(aRuntime, 'floor/', binary, primitive)      
-      end      
+        define_primitive_proc(aRuntime, 'floor/', binary, primitive)
+      end
 
       def create_truncate_slash(aRuntime)
         primitive = ->(_runtime, operand_1, operand_2) do
