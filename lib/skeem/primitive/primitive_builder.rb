@@ -366,7 +366,7 @@ module Skeem
             result = first_operand
           else
             arr = arglist.to_a
-            arr.prepend(first_operand)
+            arr.unshift(first_operand)
             result = arr.max do |a, b|
               a.value <=> b.value if a.real? && b.real?
             end
@@ -384,7 +384,7 @@ module Skeem
             result = first_operand
           else
             arr = arglist.to_a
-            arr.prepend(first_operand)
+            arr.unshift(first_operand)
             result = arr.min do |a, b|
               a.value <=> b.value if a.real? && b.real?
             end
