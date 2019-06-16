@@ -1,3 +1,14 @@
+## [0.2.11] - 2019-06-16
+- Added procedures: `gcd`, `lcm`, `numerator`, `denominator`, `floor`, `ceiling`, `truncate`,
+  `round`.
+
+### Changed
+- File `interpreter_spec.rb`: Refactoring by DRYing code
+- File `primitive_builder_spec.rb`: Refactoring by DRYing code
+- File `base.skm` added implementation of  `truncate`
+- File `primitive_builder.rb` Implemented primitive procedures `gcd`, `lcm`, `numerator`, `denominator`, `floor`, `ceiling`, `round`.
+- File `README.md` Added mentions to new procedures.
+
 ## [0.2.10] - 2019-06-15
 - Skeem now supports rational numbers (fractions)
 - Added procedures: `max`, `min`, `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,
@@ -15,6 +26,7 @@
   `truncate-remainder`, `quotient`, `remainder`, `modulo`
  - Class Tokenizer updated to recognize rational numbers.
  - Test suite file `base_tests.scm` expanded.
+ - File `README.md` Added mentions to new procedures.
 
 ### Fixed
 - File `primitive_builder.rb` Fixed and extended implementation of `/`procedure

@@ -6,7 +6,7 @@ require_relative '../../../lib/skeem/interpreter'
 module Skeem
   module Primitive
     describe 'Testing primitive procedures' do
-      include SkeemSpec
+      include InterpreterSpec
 
       subject do
         # We load the interpreter with the primitive procedures only
@@ -101,6 +101,69 @@ SKEEM
           compare_to_predicted(checks) do |result, expectation|
             expect([result.car, result.cdr]).to eq(expectation)
           end
+        end
+
+        it 'should implement the gcd procedure' do
+          checks = [
+            ['(gcd)', 0],
+            ['(gcd 47)', 47],
+            ['(gcd 7 11)', 1],
+            ['(gcd 32 -36)', 4],
+            ['(gcd 32 -36 25)', 1]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the lcm procedure' do
+          checks = [
+            ['(lcm)', 1],
+            ['(lcm 47)', 47],
+            ['(lcm 7 11)', 77],
+            ['(lcm 32 -36)', 288],
+            ['(lcm 32 -36 10)', 1440],
+            ['(lcm 32.0 -36)', 288]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the numerator procedure' do
+          checks = [
+            ['(numerator (/ 6 4))', 3]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the denominator procedure' do
+          checks = [
+            ['(denominator (/ 6 4))', 2]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the floor procedure' do
+          checks = [
+            ['(floor -4.3)', -5],
+            ['(floor 3.5)', 3]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the ceiling procedure' do
+          checks = [
+            ['(ceiling -4.3)', -4],
+            ['(ceiling 3.5)', 4]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the round procedure' do
+          checks = [
+            ['(round -4.3)', -4],
+            ['(round 3.5)', 4],
+            ['(round 7/2)', 4],
+            ['(round 7)', 7]
+          ]
+          compare_to_predicted(checks)
         end
       end # context
 
@@ -502,9 +565,7 @@ SKEEM
         end
 
         it 'should implement the car procedure' do
-          example = "(car '(a b c))" # => a
-          result = subject.run(example)
-          expect(result).to eq('a')
+          expect_expr("(car '(a b c))").to eq('a')
 
           example = "(car '((a) b c d))" # => (a)
           result = subject.run(example)
@@ -512,9 +573,7 @@ SKEEM
           expect(result.length).to eq(1)
           expect(result.car).to eq('a')
 
-          example = "(car '(1 . 2))"
-          result = subject.run(example)
-          expect(result).to eq(1)
+          expect_expr("(car '(1 . 2))").to eq(1)
 
           example = "(car '())" # => error
           expect { subject.run(example) }.to raise_error(StandardError)
@@ -527,9 +586,7 @@ SKEEM
           expect(result.length).to eq(3)
           expect(result.to_a).to eq(['b', 'c', 'd'])
 
-          example = "(cdr '(1 . 2))"
-          result = subject.run(example)
-          expect(result).to eq(2)
+          expect_expr("(cdr '(1 . 2))").to eq(2)
 
           example = "(cdr '())" # => error
           expect { subject.run(example) }.to raise_error(StandardError)
@@ -612,7 +669,7 @@ SKEEM
 
         it 'should implement the assq procedure' do
           subject.run("(define e '((a 1) (b 2) (c 3)))")
-          checks = [ 
+          checks = [
             ["(assq 'a e)", ['a', 1]],
             ["(assq 'b e)", ['b', 2]],
             ["(assq 'c e)", ['c', 3]],
@@ -621,12 +678,10 @@ SKEEM
           compare_to_predicted(checks) do |result, expectation|
             expect(result.to_a).to eq(expectation)
           end
-          result = subject.run("(assq 'a '())")
-          expect(result).to eq(false)
-          result = subject.run("(assq 'a '())")
-          expect(result).to eq(false)
-          result = subject.run("(assq '(a) '(((a)) ((b)) ((c))))")
-          expect(result).to eq(false)
+
+          expect_expr("(assq 'a '())").to eq(false)
+          expect_expr("(assq 'a '())").to eq(false)
+          expect_expr("(assq '(a) '(((a)) ((b)) ((c))))").to eq(false)
         end
 
         it 'should implement the assv procedure' do

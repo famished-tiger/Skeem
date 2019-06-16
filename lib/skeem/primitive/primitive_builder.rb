@@ -53,6 +53,13 @@ module Skeem
         create_divide(aRuntime)
         create_floor_slash(aRuntime)
         create_truncate_slash(aRuntime)
+        create_gcd(aRuntime)
+        create_lcm(aRuntime)
+        create_numerator(aRuntime)
+        create_denominator(aRuntime)
+        create_floor(aRuntime)
+        create_ceiling(aRuntime)
+        create_round(aRuntime)
       end
 
       def add_comparison(aRuntime)
@@ -250,6 +257,94 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'truncate/', binary, primitive)
+      end
+
+      def create_gcd(aRuntime)
+        primitive = ->(_runtime, arglist) do
+          if arglist.empty?
+            integer(0)
+          else
+            first_one = arglist.shift
+            divisor = first_one.value
+
+            arglist.each do |elem|
+              divisor = divisor.gcd(elem.value)
+              break if divisor == 1
+            end
+
+            to_datum(divisor)
+          end
+        end
+        define_primitive_proc(aRuntime, 'gcd', zero_or_more, primitive)
+      end
+
+      def create_lcm(aRuntime)
+        primitive = ->(_runtime, arglist) do
+          if arglist.empty?
+            integer(1)
+          else
+            values = arglist.map(&:value)
+            multiple = values.reduce(1, :lcm)
+
+            to_datum(multiple)
+          end
+        end
+        define_primitive_proc(aRuntime, 'lcm', zero_or_more, primitive)
+      end
+
+      def create_numerator(aRuntime)
+        primitive = ->(_runtime, arg_evaluated) do
+          case arg_evaluated
+            when SkmInteger
+              result = arg_evaluated
+            when SkmRational, SkmReal
+              result = integer(arg_evaluated.value.numerator)
+          end
+          result
+        end
+
+        define_primitive_proc(aRuntime, 'numerator', unary, primitive)
+      end
+
+      def create_denominator(aRuntime)
+        primitive = ->(_runtime, arg_evaluated) do
+          case arg_evaluated
+            when SkmInteger
+              result = 1
+            when SkmRational, SkmReal
+              result = arg_evaluated.value.denominator
+          end
+          integer(result)
+        end
+
+        define_primitive_proc(aRuntime, 'denominator', unary, primitive)
+      end
+
+      def create_floor(aRuntime)
+        primitive = ->(_runtime, arg_evaluated) do
+          result = arg_evaluated.value.floor
+          integer(result)
+        end
+
+        define_primitive_proc(aRuntime, 'floor', unary, primitive)
+      end
+
+      def create_ceiling(aRuntime)
+        primitive = ->(_runtime, arg_evaluated) do
+          result = arg_evaluated.value.ceil
+          integer(result)
+        end
+
+        define_primitive_proc(aRuntime, 'ceiling', unary, primitive)
+      end
+
+      def create_round(aRuntime)
+        primitive = ->(_runtime, arg_evaluated) do
+          result = arg_evaluated.value.round
+          integer(result)
+        end
+
+        define_primitive_proc(aRuntime, 'round', unary, primitive)
       end
 
       def core_eqv?(eval_arg1, eval_arg2)

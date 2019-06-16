@@ -5,7 +5,7 @@ require_relative '../../lib/skeem/interpreter' # Load the class under test
 
 module Skeem
   describe Interpreter do
-    include SkeemSpec
+    include InterpreterSpec
     include DatumDSL
 
     context 'Initialization:' do
@@ -202,6 +202,14 @@ SKEEM
         compare_to_predicted(checks)
       end
 
+      it 'should implement the truncate procedure' do
+        checks = [
+          ['(truncate -4.3)', -4],
+          ['(truncate 3.5)', 3]
+        ]
+        compare_to_predicted(checks)
+      end
+
       it 'should implement the quotation of constant literals' do
          checks = [
           ['(quote a)', 'a'],
@@ -394,8 +402,7 @@ SKEEM
     (z (+ x y)))
   (* z x)))
 SKEEM
-        result = subject.run(source)
-        expect(result).to eq(35)
+        expect_expr(source).to eq(35)
       end
 
       it 'should support the nesting of a lambda in a let expression' do
@@ -426,8 +433,7 @@ SKEEM
       (z (+ x y)))
       (* z x)))
 SKEEM
-        result = subject.run(source)
-        expect(result).to eq(70)
+        expect_expr(source).to eq(70)
       end
     end # context
 

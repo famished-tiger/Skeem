@@ -3,9 +3,9 @@
 ;; (exact-integer? z)
 (define exact-integer?
   (lambda (z)
-    (and 
+    (and
       (exact? z)
-      (integer? z)))) 
+      (integer? z))))
 
 ;; (zero? z)
 ;; Returns true iff z is zero
@@ -15,7 +15,7 @@
       #t
       #f)))
 
-; (positive? x)      
+; (positive? x)
 ; Return true if x greater than zero; false otherwise
 (define positive?
   (lambda (x)
@@ -24,7 +24,7 @@
       #f)))
 
 ; (negative? x)
-; Returns true iff x < 0      
+; Returns true iff x < 0
 (define negative?
   (lambda (x)
     (if (< x 0)
@@ -32,11 +32,11 @@
       #f)))
 
 ; (inexact? z)
-; Returns true iff z is not an exact number      
+; Returns true iff z is not an exact number
 (define inexact?
-  (lambda (z) 
+  (lambda (z)
     (not (exact? z))))
-    
+
 (define floor-quotient
   (lambda (n1 n2)
     (car (floor/ n1 n2))))
@@ -44,7 +44,7 @@
 (define floor-remainder
   (lambda (n1 n2)
     (cdr (floor/ n1 n2))))
-    
+
 (define truncate-quotient
   (lambda (n1 n2)
     (car (truncate/ n1 n2))))
@@ -57,16 +57,23 @@
 (define quotient
   (lambda (x y)
     (truncate-quotient x y)))
-    
+
 ; For R5RS compatibility
 (define remainder
   (lambda (x y)
     (truncate-remainder x y)))
-    
+
 ; For R5RS compatibility
 (define modulo
   (lambda (x y)
     (floor-remainder x y)))
+
+(define truncate
+  (lambda (x)
+    (if (positive? x)
+      (floor x)
+      (ceiling x)
+    )))
 
 ; (odd? n)
 ; Returns true iff n is odd
@@ -102,47 +109,47 @@
   (if obj #f #t))
 
 ; (list arg ...)
-; Allocates and returns a new list from its arguments   
+; Allocates and returns a new list from its arguments
 (define list
   (lambda args args))
- 
-(define caar 
+
+(define caar
   (lambda (x)
     (car (car x))))
 
-(define cadr 
-  (lambda (x) 
+(define cadr
+  (lambda (x)
     (car (cdr x))))
 
-(define cdar 
+(define cdar
  (lambda(x)
    (cdr (car x))))
 
-(define cddr 
- (lambda (x) 
+(define cddr
+ (lambda (x)
    (cdr (cdr x))))
 
-;; (list-ref list n)    
+;; (list-ref list n)
 ;; Return the nth (sero-based) element of list
 ;; n must be a nonnegative integer
 ;(define list-ref
 ;  (lambda (ls n)
 ;    (if (= n 0)
 ;        (car ls)
-;        (list-ref (cdr ls) (- n 1))))) 
- 
+;        (list-ref (cdr ls) (- n 1)))))
+
 (define symbol=? string=?)
 
 ;; Test the equivalence (with eqv? predicate) between an expected value and
 ;; an expression
 ;; (test-eqv expected test-expr)
-(define test-eqv 
-  (lambda (x y) 
+(define test-eqv
+  (lambda (x y)
     (test-assert (eqv? x y))))
 
 ;; Test the equality (with equal? predicate) between an expected value and
 ;; an expression
 ;; (test-equal expected test-expr)
-(define test-equal 
-  (lambda (x y) 
+(define test-equal
+  (lambda (x y)
     (test-assert (equal? x y))))

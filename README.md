@@ -254,7 +254,7 @@ This section lists the implemented standard procedures
 * Number-level: `number?`, `complex?`, `real?`, `rational?`, `integer?`, `zero?`, `exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`,
 `=`, `square`, `number->string`
 * Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `max`, `min`,  `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,
-  `truncate-remainder`, `quotient`, `remainder`, `modulo`
+  `truncate-remainder`, `quotient`, `remainder`, `modulo`, `gcd`, `lcm`, `numerator`, `denominator`, `floor`, `ceiling`, `truncate`, `round`
 * Integer-level: `even?`, `odd?`
 
 #### List procedures

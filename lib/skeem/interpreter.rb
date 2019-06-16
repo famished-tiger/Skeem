@@ -29,12 +29,12 @@ module Skeem
       @parser ||= Parser.new
       @ptree = parser.parse(source)
       # $stderr.puts @ptree.root.inspect if mode.nil?
-      # require 'debug' unless mode.nil?      
+      # require 'debug' unless mode.nil?
     end
-    
+
     def run(source, mode = nil)
       parse(source, mode)
-      # require 'debug' unless mode.nil?       
+      # require 'debug' unless mode.nil?
       @ptree.root.evaluate(runtime)
     end
 

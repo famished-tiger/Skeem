@@ -15,7 +15,13 @@ RSpec.configure do |config|
   config.full_backtrace = true
 end
 
-module SkeemSpec
+module InterpreterSpec
+  def expect_expr(aSkeemExpr)
+    result = subject.run(aSkeemExpr)
+    expect(result)
+  end
+
+  # This method assumes that 'subject' is a Skeem::Interpreter instance.
   def compare_to_predicted(arrActualsPredictions)
     arrActualsPredictions.each_with_index do |(source, predicted), index|
       begin
