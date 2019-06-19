@@ -6,7 +6,7 @@
 [![Gem Version](https://badge.fury.io/rb/skeem.svg)](https://badge.fury.io/rb/skeem)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/famished-tiger/Skeem/blob/master/LICENSE.txt)
 
-__Skeem__ will be an interpreter of a subset of the Scheme programming language.
+__Skeem__ is a Scheme language interpreter written in Ruby.
 
 
 ## Installation
@@ -171,10 +171,11 @@ Here are a few pointers for the Scheme programming language:
 - Block `#| ... |#` comments
 
 ### Data type literals
-- Booleans: `#t`, `#true`, `#f`, `#false`
+- Booleans: `#t`, `#true`, `#f`, `#false`  
+- Characters: `#\a`, `#\newline`, `#\x3BB`
 - Of the number hierarchy:  
   `real` (e.g. 2.718, 6.671e-11),  
-  `rational` (e.g. 22/7, 1/137, -13/41)
+  `rational` (e.g. 22/7, 1/137, -13/41)  
   `integer` (42, -3)
 - Lists (quoted) : '(1 two "three")
 - Strings: `"Hello, world."`
@@ -250,6 +251,9 @@ This section lists the implemented standard procedures
 #### Boolean procedures
 * `boolean?`, `and`, `or`,  `not`
 
+#### Character procedures
+* `char?`
+
 #### Numerical operations
 * Number-level: `number?`, `complex?`, `real?`, `rational?`, `integer?`, `zero?`, `exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`,
 `=`, `square`, `number->string`
@@ -258,11 +262,11 @@ This section lists the implemented standard procedures
 * Integer-level: `even?`, `odd?`
 
 #### List procedures
-* `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list-copy`, `list->vector`, `set-car!`, `set-cdr!`
+* `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list-copy`, `list->vector`, `reverse`,  `set-car!`, `set-cdr!`
  , `assq`, `assv`
 
 #### String procedures
-* `string?`, `string=?`,  `string-append`, `string-length`, `string->symbol`
+* `string?`, `string=?`, `string`, `make-string`, `string-append`, `string-length`, `string->symbol`
 
 #### Symbol procedures
 * `symbol?`, `symbol=?`, `symbol->string`

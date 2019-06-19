@@ -98,6 +98,11 @@ module Skeem
         cdr.last_pair
       end
     end
+    
+    def proper?
+      last_node = self.last_pair
+      last_node.cdr.nil? || (last_node.cdr == SkmEmptyList.instance)
+    end
 
     def last
       self.to_a.last

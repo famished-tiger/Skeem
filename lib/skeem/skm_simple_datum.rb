@@ -97,7 +97,7 @@ module Skeem
     def number?
       true
     end
-    
+
     def complex?
       false
     end
@@ -123,7 +123,7 @@ module Skeem
     def real?
       true
     end
-    
+
     def complex?
       true
     end
@@ -132,7 +132,7 @@ module Skeem
       false
     end
   end # class
-  
+
   class SkmRational < SkmReal
     def rational?
       true
@@ -141,12 +141,18 @@ module Skeem
     def exact?
       true
     end
-  end # class  
+  end # class
 
   class SkmInteger < SkmRational
     def integer?
       true
     end
+  end # class
+
+  class SkmChar < SkmSimpleDatum
+    def char?
+      true
+    end  
   end # class
 
   class SkmString < SkmSimpleDatum

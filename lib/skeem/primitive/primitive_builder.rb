@@ -11,6 +11,7 @@ module Skeem
         add_comparison(aRuntime)
         add_number_procedures(aRuntime)
         add_boolean_procedures(aRuntime)
+        add_char_procedures(aRuntime)
         add_string_procedures(aRuntime)
         add_symbol_procedures(aRuntime)
         add_list_procedures(aRuntime)
@@ -89,10 +90,17 @@ module Skeem
         create_and(aRuntime)
         create_or(aRuntime)
         create_object_predicate(aRuntime, 'boolean?')
+        create_boolean_equal(aRuntime)
+      end
+
+      def add_char_procedures(aRuntime)
+        create_object_predicate(aRuntime, 'char?')
       end
 
       def add_string_procedures(aRuntime)
         create_object_predicate(aRuntime, 'string?')
+        create_make_string(aRuntime)
+        create_string_string(aRuntime)
         create_string_equal(aRuntime)
         create_string_append(aRuntime)
         create_string_length(aRuntime)
@@ -114,6 +122,7 @@ module Skeem
         create_length(aRuntime)
         create_list2vector(aRuntime)
         create_append(aRuntime)
+        create_reverse(aRuntime)
         create_setcar(aRuntime)
         create_setcdr(aRuntime)
         create_assq(aRuntime)
@@ -552,15 +561,61 @@ module Skeem
         define_primitive_proc(aRuntime, 'or', zero_or_more, primitive)
       end
 
+      # Return true, if all arguments have the same values
+      def all_same?(first_operand, arglist)
+        if arglist.empty?
+          boolean(true)
+        else
+          first_value = first_operand.value
+          all_equal = arglist.all? { |elem| first_value == elem.value }
+          boolean(all_equal)
+        end
+      end
+
+      def create_boolean_equal(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          all_same?(first_operand, arglist)
+        end
+
+        define_primitive_proc(aRuntime, 'boolean=?', one_or_more, primitive)
+      end
+
+      def create_make_string(aRuntime)
+        primitive = ->(runtime, count_arg, arglist) do
+          count = count_arg
+          check_argtype(count, SkmInteger, 'integer', 'make_string')
+          if arglist.empty?
+            filler = SkmChar.create(rand(0xff).chr)
+          else
+            filler = arglist.first
+            check_argtype(filler, SkmChar, 'char', 'make_string')
+          end
+          string(filler.value.to_s * count.value)
+        end
+
+        define_primitive_proc(aRuntime, 'make-string', one_or_two, primitive)
+      end
+
+      def create_string_string(aRuntime)
+        primitive = ->(_runtime, arglist) do
+          if arglist.empty?
+            value = ''
+          else
+            value = arglist.reduce('') do |interim, some_char|
+              check_argtype(some_char, SkmChar, 'character', 'string')
+              interim << some_char.value
+            end
+          end
+
+          string(value)
+        end
+
+        define_primitive_proc(aRuntime, 'string', zero_or_more, primitive)
+      end
+
       def create_string_equal(aRuntime)
         primitive = ->(_runtime, first_operand, arglist) do
-          if arglist.empty?
-            boolean(true)
-          else
-            first_value = first_operand.value
-            all_equal = arglist.all? { |elem| first_value == elem.value }
-            boolean(all_equal)
-          end
+          all_same?(first_operand, arglist)
         end
 
         define_primitive_proc(aRuntime, 'string=?', one_or_more, primitive)
@@ -701,6 +756,23 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'append', zero_or_more, primitive)
+      end
+
+      def create_reverse(aRuntime)
+        primitive = ->(_runtime, arg_evaluated) do
+          check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'reverse')
+          if arg_evaluated == SkmEmptyList.instance
+            result = arg_evaluated
+          else
+            err_msg = 'reverse procedure requires a proper list as argument'
+            raise StandardError, err_msg  unless arg_evaluated.proper?
+            elems_reversed = arg_evaluated.to_a.reverse
+            result = SkmPair.create_from_a(elems_reversed)
+          end
+          result
+        end
+
+        define_primitive_proc(aRuntime, 'reverse', unary, primitive)
       end
 
       def create_setcar(aRuntime)

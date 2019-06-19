@@ -78,7 +78,7 @@ module Skeem
     private
 
     def _next_token
-      skip_whitespaces
+      skip_intertoken_spaces
       curr_ch = scanner.peek(1)
       return nil if curr_ch.nil? || curr_ch.empty?
 
@@ -91,10 +91,12 @@ module Skeem
         token = build_token('PERIOD', lexeme)
       elsif (lexeme = scanner.scan(/(?:,@?)|(?:=>)/))
         token = build_token(@@lexeme2name[lexeme], lexeme)
+      elsif (token = recognize_char_token)
+        # Do nothing
       elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
         token = cardinal_token(lexeme)
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+\/[0-9]+(?=\s|[|()";]|$)/))
-        token = build_token('RATIONAL', lexeme) # Decimal radix        
+        token = build_token('RATIONAL', lexeme) # Decimal radix
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:.0+)?(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]*)?(?:(?:e|E)[+-]?[0-9]+)?/))
@@ -128,11 +130,6 @@ module Skeem
     end
 
 =begin
-#t #f These are the boolean constants (section 6.3), along
-with the alternatives #true and #false.
-#\ This introduces a character constant (section 6.6).
-#( This introduces a vector constant (section 6.8). Vector
-constants are terminated by ) .
 #u8( This introduces a bytevector constant (section 6.9).
 Bytevector constants are terminated by ) .
 #e #i #b #o #d #x These are used in the notation for
@@ -150,6 +147,23 @@ other literal data (section 2.4).
       end
 
       return token
+    end
+
+    def recognize_char_token()
+      token = nil
+      if lexeme = scanner.scan(/#\\/)
+        if lexeme = scanner.scan(/(?:alarm|backspace|delete|escape|newline|null|return|space|tab)/)
+          token = build_token('CHAR', lexeme, :name)
+        elsif lexeme = scanner.scan(/[^x]/)
+          token = build_token('CHAR', lexeme, :escaped)
+        elsif lexeme = scanner.scan(/x[0-9a-fA-F]+/)
+          token = build_token('CHAR', lexeme, :hex_value)
+        elsif lexeme = scanner.scan(/x/)
+          token = build_token('CHAR', lexeme, :escaped)          
+        end
+      end
+
+      token
     end
 
     def build_token(aSymbolName, aLexeme, aFormat = :default)
@@ -178,6 +192,8 @@ other literal data (section 2.4).
         symb = 'INTEGER' if value.kind_of?(Integer)
       when 'REAL'
         value = to_real(aLexeme, aFormat)
+      when 'CHAR'
+        value = to_char(aLexeme, aFormat)
       when 'STRING_LIT'
         value = to_string(aLexeme, aFormat)
       when 'IDENTIFIER'
@@ -199,7 +215,7 @@ other literal data (section 2.4).
         value = aLexeme.to_i
       end
 
-      return value
+      value
     end
 
     def to_rational(aLexeme, aFormat)
@@ -209,16 +225,29 @@ other literal data (section 2.4).
         value = value.numerator if value.denominator == 1
       end
 
-      return value
+      value
     end
-    
+
     def to_real(aLexeme, aFormat)
       case aFormat
       when :default
         value = aLexeme.to_f
       end
 
-      return value
+      value
+    end
+
+    def to_char(aLexeme, aFormat)
+      case aFormat
+        when :name
+          value = named_char(aLexeme)
+        when :escaped
+          value = escaped_char(aLexeme)
+        when :hex_value
+          value = hex_value_char(aLexeme)
+      end
+
+      value
     end
 
     def to_string(aLexeme, aFormat)
@@ -239,7 +268,38 @@ other literal data (section 2.4).
       return value
     end
 
-    def skip_whitespaces
+    def named_char(aLexeme)
+      name = aLexeme.sub(/^\#\\/, '')
+      name2char = {
+        'alarm' => ?\a,
+        'backspace' => ?\b,
+        'delete' => ?\x7f,
+        'escape' => ?\e,
+        'newline' => ?\n,
+        'null' => ?\x00,
+        'return' => ?\r,
+        'space' => ?\s,
+        'tab' => ?\t
+      }
+
+      name2char[name]
+    end
+    
+    def escaped_char(aLexeme)
+      aLexeme.chr
+    end
+    
+    def hex_value_char(aLexeme)
+      hex_literal = aLexeme.sub(/^x/, '')
+      hex_value = hex_literal.to_i(16)
+      if hex_value < 0xff
+        hex_value.chr
+      else
+        [hex_value].pack('U')
+      end
+    end
+
+    def skip_intertoken_spaces
       pre_pos = scanner.pos
 
       loop do

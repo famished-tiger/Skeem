@@ -1,3 +1,19 @@
+## [0.2.12] - 2019-06-19
+- Skeem now supports character datatype
+- Added procedures: `boolean=?`, `char?`, `string`, `make-string`, `reverse`
+  
+### Added
+- Class `SkmChar`
+- Method `SkmPair#proper?` to check whether a pair/list is a proper one.
+
+### Changed
+- Class Tokenizer updated to recognize character literals (specified by name, by hexadecimal code, escaped).
+- File `grammar.rb` Added new terminal CHAR and one derivation rule
+- File `primitive_builder.rb` Implemented primitive procedures `boolean=?`, `char?`, `string`, `make-string`, `reverse`
+- File `README.md` Added mentions to new procedures.
+- File `tokenize_spec.rb`DRYing the spec file.`
+- File `primitive_builder_spec.rb`: Added tests for new procedures.
+
 ## [0.2.11] - 2019-06-16
 - Added procedures: `gcd`, `lcm`, `numerator`, `denominator`, `floor`, `ceiling`, `truncate`,
   `round`.
@@ -19,12 +35,12 @@
 
 ### Changed
 - `DatumDSL#to_datum(aLiteral): added conversion of literal rational into rational value.
+ - Class Tokenizer updated to recognize rational numbers.
 - File `grammar.rb` Added new terminal RATIONAL and rule deriving number from rational
 - File `primitive_builder.rb` Implemented primitive procedures floor/ and truncate/
 - Class `SkmInteger` now inherits from `SkmRational` class
 - File `base.skm` added implementation of  `floor-quotient`, `floor-remainder`, `truncate-quotient`, 
   `truncate-remainder`, `quotient`, `remainder`, `modulo`
- - Class Tokenizer updated to recognize rational numbers.
  - Test suite file `base_tests.scm` expanded.
  - File `README.md` Added mentions to new procedures.
 

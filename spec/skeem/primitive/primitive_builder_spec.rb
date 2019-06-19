@@ -413,6 +413,16 @@ SKEEM
           ]
           compare_to_predicted(checks)
         end
+
+        it 'should implement the boolean=? procedure' do
+          checks = [
+            ['(boolean=? #t #t)', true],
+            ['(boolean=? #f #f)', true],
+            ['(boolean=? #t #f)', false],
+            ['(boolean=? #f #t)', false]
+          ]
+          compare_to_predicted(checks)
+        end
       end # context
 
       context 'String procedures:' do
@@ -440,6 +450,24 @@ SKEEM
             ['(string=? "Mom" "Mom")', true],
             ['(string=? "Mom" "Mum")', false],
             ['(string=? "Mom" "Dad")', false]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the string procedure' do
+          checks = [
+            ['(string)', ''],
+            ['(string #\a #\b #\c)', 'abc'],
+            ['(string #\H #\e #\l #\l #\o #\x021 #\newline)', "Hello!\n"]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the make-string procedure' do
+          checks = [
+            ['(make-string 0)', ''],
+            ['(make-string 0 #\x)', ''],
+            ['(make-string 5 #\x)', 'x' * 5]
           ]
           compare_to_predicted(checks)
         end
@@ -635,6 +663,22 @@ SKEEM
           expect(result.cdr.car).to eq( SkmIdentifier.create('b'))
           expect(result.cdr.cdr.car).to eq( SkmIdentifier.create('c'))
           expect(result.cdr.cdr.cdr).to eq( SkmIdentifier.create('d'))
+        end
+
+
+        it 'should implement the reverse procedure' do
+          checks = [
+            ["(reverse '())", SkmEmptyList.instance],
+            ["(reverse '(a b c))", array2list_ids(['c', 'b', 'a'])],
+            ["(reverse '((a) b c))", array2list_ids(['c', 'b']) << SkmPair.new(SkmIdentifier.create('a'), nil)]
+          ]
+          compare_to_predicted(checks) do |result, expectation|
+            if result.kind_of?(SkmPair)
+              expect(result.to_a).to eq(expectation)
+            else
+              expect(result).to eq(expectation)
+            end
+          end
         end
 
         it 'should implement the list->vector procedure' do

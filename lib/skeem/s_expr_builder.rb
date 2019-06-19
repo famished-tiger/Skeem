@@ -14,6 +14,7 @@ module Skeem
   class SkmBuilder < Rley::ParseRep::ASTBaseBuilder
     Terminal2NodeClass = {
       'BOOLEAN' => SkmBoolean,
+      'CHAR' => SkmChar,
       'IDENTIFIER' => SkmIdentifier,
       'INTEGER' => SkmInteger,
       'RATIONAL' => SkmRational,

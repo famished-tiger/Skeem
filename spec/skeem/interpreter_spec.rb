@@ -718,7 +718,7 @@ SKEEM
           ["(not 'nil)", false]
         ]
         compare_to_predicted(checks)
-      end
+      end      
 
       it 'should implement the list procedure' do
         checks = [

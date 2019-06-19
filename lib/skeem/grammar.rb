@@ -15,8 +15,8 @@ module Skeem
     add_terminals('VECTOR_BEGIN')
 
     # Literal values...
-    add_terminals('BOOLEAN', 'INTEGER', 'RATIONAL')
-    add_terminals('REAL', 'STRING_LIT', 'IDENTIFIER')
+    add_terminals('BOOLEAN', 'INTEGER', 'RATIONAL', 'REAL')
+    add_terminals('CHAR', 'STRING_LIT', 'IDENTIFIER')
 
     # Keywords...
     add_terminals('BEGIN', 'COND', 'DEFINE', 'ELSE')
@@ -47,6 +47,7 @@ module Skeem
     rule('quotation' => 'LPAREN QUOTE datum RPAREN').as 'quotation'
     rule 'self-evaluating' => 'BOOLEAN'
     rule 'self-evaluating' => 'number'
+    rule 'self-evaluating' => 'CHAR'
     rule 'self-evaluating' => 'STRING_LIT'
     rule 'self-evaluating' => 'vector'
     rule 'datum' => 'simple_datum'

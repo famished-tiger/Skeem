@@ -122,7 +122,6 @@ module Skeem
               result = code.call(aRuntime, evaluated_args)
             end
           else
-            # require 'debug'
             args = operands.take(arity.low)
             args.map! { |arg| arg.evaluate(aRuntime) } unless args.empty?
             count_delta = operands.size - arity.low

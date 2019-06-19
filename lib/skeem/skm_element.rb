@@ -32,6 +32,10 @@ module Skeem
     def boolean?
       false
     end
+    
+    def char?
+      false
+    end
 
     def string?
       false

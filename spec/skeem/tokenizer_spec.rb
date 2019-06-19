@@ -11,6 +11,16 @@ module Skeem
       end
     end
 
+    # Assumption: subject is a Skeem::Tokenizer
+		def check_tokens(tokenTests, tokType)
+		  tokenTests.each do |(input, prediction)|
+        subject.reinitialize(input)
+        token = subject.tokens.first
+        expect(token.terminal).to eq(tokType)
+        expect(token.lexeme).to eq(prediction)
+		  end
+		end
+
     def unquoted(aString)
       aString.gsub(/(^")|("$)/, '')
     end
@@ -52,12 +62,7 @@ module Skeem
           [' #false', false]
         ]
 
-        tests.each do |(input, prediction)|
-          subject.reinitialize(input)
-          token = subject.tokens.first
-          expect(token.terminal).to eq('BOOLEAN')
-          expect(token.lexeme).to eq(prediction)
-        end
+        check_tokens(tests, 'BOOLEAN')
       end
     end # context
 
@@ -73,12 +78,7 @@ module Skeem
           ['-1234', -1234]
         ]
 
-        tests.each do |(input, prediction)|
-          subject.reinitialize(input)
-          token = subject.tokens.first
-          expect(token.terminal).to eq('INTEGER')
-          expect(token.lexeme).to eq(prediction)
-        end
+        check_tokens(tests, 'INTEGER')
       end
     end # context
 
@@ -90,18 +90,13 @@ module Skeem
           ['-22/7', -Rational(22, 7)],
         ]
 
-        tests.each do |(input, prediction)|
-          subject.reinitialize(input)
-          token = subject.tokens.first
-          expect(token.terminal).to eq('RATIONAL')
-          expect(token.lexeme).to eq(prediction)
-        end
-        
+        check_tokens(tests, 'RATIONAL')
+
         # Special case: implicit promotion to integer
         subject.reinitialize('8/4')
         token = subject.tokens.first
         expect(token.terminal).to eq('INTEGER')
-        expect(token.lexeme).to eq(2)        
+        expect(token.lexeme).to eq(2)
       end
     end # context
 
@@ -115,12 +110,43 @@ module Skeem
           ['123e+45', 1.23e+47]
         ]
 
-        tests.each do |(input, prediction)|
-          subject.reinitialize(input)
-          token = subject.tokens.first
-          expect(token.terminal).to eq('REAL')
-          expect(token.lexeme).to eq(prediction)
-        end
+        check_tokens(tests, 'REAL')
+      end
+    end # context
+
+    context 'Character literal recognition:' do
+      it 'should tokenize named characters' do
+        tests = [
+          # couple [raw input, expected]
+          ["#\\alarm", ?\a],
+          ["#\\newline", ?\n],
+          ["#\\return", ?\r]
+        ]
+
+        check_tokens(tests, 'CHAR')
+      end
+
+      it 'should tokenize escaped characters' do
+        tests = [
+          # couple [raw input, expected]
+          ["#\\a", ?a],
+          ["#\\A", ?A],
+          ["#\\(", ?(],
+          ["#\\ ", ?\s]
+        ]
+
+        check_tokens(tests, 'CHAR')
+      end
+
+      it 'should tokenize hex-coded characters' do
+        tests = [
+          # couple [raw input, expected]
+          ["#\\x07", ?\a],
+          ["#\\x1B", ?\e],
+          ["#\\x3BB", ?\u03bb]
+        ]
+
+        check_tokens(tests, 'CHAR')
       end
     end # context
 
