@@ -53,6 +53,7 @@ module Skeem
     rule 'datum' => 'simple_datum'
     rule 'datum' => 'compound_datum'
     rule 'simple_datum' => 'BOOLEAN'
+    rule 'simple_datum' => 'CHAR'
     rule 'simple_datum' => 'number'
     rule 'simple_datum' => 'STRING_LIT'
     rule 'simple_datum' => 'symbol'

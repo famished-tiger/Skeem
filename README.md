@@ -176,7 +176,7 @@ Here are a few pointers for the Scheme programming language:
 - Of the number hierarchy:  
   `real` (e.g. 2.718, 6.671e-11),  
   `rational` (e.g. 22/7, 1/137, -13/41)  
-  `integer` (42, -3)
+  `integer` (42, -3 also in hexadecimal notation: #x3af)
 - Lists (quoted) : '(1 two "three")
 - Strings: `"Hello, world."`
 - Identifiers (symbols): `really-cool-procedure`
@@ -249,17 +249,17 @@ This section lists the implemented standard procedures
 * `eqv?`, `equal?`
 
 #### Boolean procedures
-* `boolean?`, `and`, `or`,  `not`
+* `boolean?`, `boolean=?`, `and`, `or`,  `not`
 
 #### Character procedures
-* `char?`
+* `char?` `char->integer`, `char=?`, `char<?`, `char>?`,`char<=?`, `char>=?`
 
 #### Numerical operations
 * Number-level: `number?`, `complex?`, `real?`, `rational?`, `integer?`, `zero?`, `exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`,
 `=`, `square`, `number->string`
 * Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `max`, `min`,  `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,
   `truncate-remainder`, `quotient`, `remainder`, `modulo`, `gcd`, `lcm`, `numerator`, `denominator`, `floor`, `ceiling`, `truncate`, `round`
-* Integer-level: `even?`, `odd?`
+* Integer-level: `even?`, `odd?`, `integer->char`
 
 #### List procedures
 * `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list-copy`, `list->vector`, `reverse`,  `set-car!`, `set-cdr!`

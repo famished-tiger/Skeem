@@ -755,6 +755,96 @@ SKEEM
         end
       end # context
 
+      context 'Character procedures:' do
+        it 'should implement the char? procedure' do
+          checks = [
+            ['(char? #f)', false],
+            ["(char? 'a)", false],
+            ['(char? #\a)', true],
+            ['(char? "a")', false],
+            ["(char? '(#\\a 1))", false]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the char->integer procedure' do
+          checks = [
+            ['(char->integer #\space)', 0x20],
+            ['(char->integer #\newline)', 0x0a],
+            ['(char->integer #\a)', ?a.ord],
+            ['(char->integer #\x05a)', 0x5a]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the integer->char procedure' do
+          checks = [
+            ['(integer->char #x20)', ?\s],
+            ['(integer->char 48)', ?0],
+            ['(integer->char #x0a)', ?\n],
+            ['(integer->char #x3bb)', ?\u03bb]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the char=? procedure' do
+          checks = [
+            ['(char=? #\a)', true],
+            ['(char=? #\a #\a)', true],
+            ['(char=? #\a #\b)', false],
+            ['(char=? #\space #\space #\space)', true],
+            ['(char=? #\space #\space #\newline)', false]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the char<? procedure' do
+          checks = [
+            ['(char<? #\a)', true],
+            ['(char<? #\a #\a)', false],
+            ['(char<? #\a #\b)', true],
+            ['(char<? #\a #\b #\c)', true],
+            ['(char<? #\a #\c #\b)', false]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the char>? procedure' do
+          checks = [
+            ['(char>? #\b)', true],
+            ['(char>? #\b #\b)', false],
+            ['(char>? #\b #\a)', true],
+            ['(char>? #\c #\b #\a)', true],
+            ['(char>? #\c #\a #\b)', false]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the char<=? procedure' do
+          checks = [
+            ['(char<=? #\a)', true],
+            ['(char<=? #\a #\a)', true],
+            ['(char<=? #\b #\a)', false],
+            ['(char<=? #\a #\b #\c)', true],
+            ['(char<=? #\a #\c #\c)', true],
+            ['(char<=? #\a #\c #\b)', false]
+          ]
+          compare_to_predicted(checks)
+        end
+
+        it 'should implement the char>=? procedure' do
+          checks = [
+            ['(char>=? #\a)', true],
+            ['(char>=? #\a #\a)', true],
+            ['(char>=? #\a #\b)', false],
+            ['(char>=? #\c #\b #\a)', true],
+            ['(char>=? #\c #\b #\b)', true],
+            ['(char>=? #\c #\a #\b)', false]
+          ]
+          compare_to_predicted(checks)
+        end
+      end # context
+
       context 'Vector procedures:' do
         it 'should implement the vector? procedure' do
           checks = [

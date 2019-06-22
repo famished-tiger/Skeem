@@ -1,3 +1,17 @@
+## [0.2.13] - 2019-06-22
+- Skeem now accepts integers in hexadecimal notation
+- Added procedures: `char->integer`, `integer->char`, `char=?`, `char<?`, `char>?`, `char<=?`, `char>=?`
+
+### Changed
+- Class Tokenizer updated to recognize integer literals in hexadecimal notation.
+- `DatumDSL#char(aLiteral): added conversion of char literal into SkmChar.
+- File `grammar.rb` Added a rule to derive a simple datum from a character literal 
+- File `primitive_builder.rb` Implemented primitive procedures `char->integer`, `integer->char`, `char=?`, `char<?`, `char>?`, `char<=?`, `char>=?`
+- File `README.md` Added mentions to new procedures.
+- File `tokenize_spec.rb: added tests for haxadecimal integers.
+- File `primitive_builder_spec.rb`: Added tests for new procedures. 
+
+
 ## [0.2.12] - 2019-06-19
 - Skeem now supports character datatype
 - Added procedures: `boolean=?`, `char?`, `string`, `make-string`, `reverse`

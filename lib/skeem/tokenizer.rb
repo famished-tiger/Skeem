@@ -93,15 +93,17 @@ module Skeem
         token = build_token(@@lexeme2name[lexeme], lexeme)
       elsif (token = recognize_char_token)
         # Do nothing
-      elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
-        token = cardinal_token(lexeme)
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+\/[0-9]+(?=\s|[|()";]|$)/))
         token = build_token('RATIONAL', lexeme) # Decimal radix
-      elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:.0+)?(?=\s|[|()";]|$)/))
+      elsif (lexeme = scanner.scan(/(?:#[dD])?[+-]?[0-9]+(?:.0+)?(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
+      elsif (lexeme = scanner.scan(/#[xX][+-]?[0-9a-fA-F]+(?=\s|[|()";]|$)/))
+        token = build_token('INTEGER', lexeme) # Hexadecimal radix        
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]*)?(?:(?:e|E)[+-]?[0-9]+)?/))
         # Order dependency: must be tested after INTEGER case
         token = build_token('REAL', lexeme)
+      elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
+        token = cardinal_token(lexeme)        
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
         token = build_token('STRING_LIT', lexeme)
       elsif (lexeme = scanner.scan(/[a-zA-Z!$%&*\/:<=>?@^_~][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
@@ -136,7 +138,6 @@ Bytevector constants are terminated by ) .
 numbers (section 6.2.5).
 #<n>= #<n># These are used for labeling and referencing
 other literal data (section 2.4).
-        # token = build_token('BOOLEAN', lexeme)
 =end
     def cardinal_token(aLexeme)
       case aLexeme
@@ -210,9 +211,26 @@ other literal data (section 2.4).
     end
 
     def to_integer(aLexeme, aFormat)
-      case aFormat
-      when :default, :base10
-        value = aLexeme.to_i
+      literal = aLexeme.downcase
+      prefix_pattern = /^#[dx]/
+      matching = literal.match(prefix_pattern)
+      if matching
+        case matching[0]
+          when '#d'
+            format = :base10
+          when '#x'
+            format = :base16
+        end
+        literal = matching.post_match
+      else
+        format = :default
+      end
+      
+      case format
+        when :default, :base10
+          value = literal.to_i
+        when :base16
+          value = literal.to_i(16)
       end
 
       value

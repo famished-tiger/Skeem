@@ -95,6 +95,13 @@ module Skeem
 
       def add_char_procedures(aRuntime)
         create_object_predicate(aRuntime, 'char?')
+        create_char2int(aRuntime)
+        create_int2char(aRuntime)
+        create_char_equal(aRuntime)
+        create_char_lt(aRuntime)
+        create_char_gt(aRuntime)
+        create_char_lte(aRuntime)
+        create_char_gte(aRuntime)
       end
 
       def add_string_procedures(aRuntime)
@@ -572,13 +579,88 @@ module Skeem
         end
       end
 
+      # Return true, if all arguments are monotonously increasing
+      def compare_all(first_operand, arglist, operation)
+        if arglist.empty?
+          result = true
+        else
+          result = first_operand.value.send(operation, arglist[0].value)
+          if result
+            arglist.each_cons(2) do |(operand1, operand2)|
+              value1 = operand1.value
+              result &&= value1.send(operation, operand2.value)
+            end
+          end
+        end
+        boolean(result)
+      end
+
       def create_boolean_equal(aRuntime)
         primitive = ->(_runtime, first_operand, arglist) do
-          all_same?(first_operand, arglist)
+          compare_all(first_operand, arglist, :==)
         end
 
         define_primitive_proc(aRuntime, 'boolean=?', one_or_more, primitive)
       end
+
+      def create_char2int(aRuntime)
+        primitive = ->(runtime, arg_evaluated) do
+          check_argtype(arg_evaluated, SkmChar, 'character', 'char->integer')
+          integer(arg_evaluated.value.ord)
+        end
+
+        define_primitive_proc(aRuntime, 'char->integer', unary, primitive)
+      end
+
+      def create_int2char(aRuntime)
+        primitive = ->(runtime, arg_evaluated) do
+          check_argtype(arg_evaluated, SkmInteger, 'integer', 'integer->char')
+          char(arg_evaluated.value.ord)
+        end
+
+        define_primitive_proc(aRuntime, 'integer->char', unary, primitive)
+      end
+
+      def create_char_equal(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          compare_all(first_operand, arglist, :==)
+        end
+
+        define_primitive_proc(aRuntime, 'char=?', one_or_more, primitive)
+      end
+
+      def create_char_lt(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          compare_all(first_operand, arglist, :<)
+        end
+
+        define_primitive_proc(aRuntime, 'char<?', one_or_more, primitive)
+      end
+
+      def create_char_gt(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          compare_all(first_operand, arglist, :>)
+        end
+
+        define_primitive_proc(aRuntime, 'char>?', one_or_more, primitive)
+      end
+
+      def create_char_lte(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          compare_all(first_operand, arglist, :<=)
+        end
+
+        define_primitive_proc(aRuntime, 'char<=?', one_or_more, primitive)
+      end
+
+      def create_char_gte(aRuntime)
+        primitive = ->(_runtime, first_operand, arglist) do
+          compare_all(first_operand, arglist, :>=)
+        end
+
+        define_primitive_proc(aRuntime, 'char>=?', one_or_more, primitive)
+      end
+
 
       def create_make_string(aRuntime)
         primitive = ->(runtime, count_arg, arglist) do

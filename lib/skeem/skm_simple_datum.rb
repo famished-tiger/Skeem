@@ -152,7 +152,14 @@ module Skeem
   class SkmChar < SkmSimpleDatum
     def char?
       true
-    end  
+    end
+
+    def self.create_from_int(anInteger)
+      int_value = anInteger.kind_of?(SkmInteger) ? anInteger.value : anInteger
+      char_value = int_value < 0xff ? int_value.chr : [int_value].pack('U')
+      create(char_value)
+    end
+
   end # class
 
   class SkmString < SkmSimpleDatum

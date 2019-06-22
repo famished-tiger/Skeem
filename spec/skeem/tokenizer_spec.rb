@@ -80,6 +80,33 @@ module Skeem
 
         check_tokens(tests, 'INTEGER')
       end
+      
+      it 'should tokenize integers with explicit radix 10' do
+        tests = [
+          # couple [raw input, expected]
+          ['#d0', 0],
+          ['#D3', 3],
+          ['#d+3 ', +3],
+          ['#D-3', -3],
+          ['#d-3.0', -3],
+          ['#D-1234', -1234]
+        ]
+
+        check_tokens(tests, 'INTEGER')
+      end
+
+      it 'should tokenize integers in hexadecimal notation' do
+        tests = [
+          # couple [raw input, expected]
+          ['#x0', 0],
+          ['#Xf', 0xf],
+          ['#x+F ', 0xf],
+          ['#X-f', -0xf],
+          ['#X-12Ac', -0x12ac]
+        ]
+
+        check_tokens(tests, 'INTEGER')
+      end      
     end # context
 
     context 'Rational literals recognition:' do

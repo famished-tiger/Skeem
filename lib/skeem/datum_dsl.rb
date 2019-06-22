@@ -33,7 +33,7 @@ module Skeem
           raise StandardError, aLiteral.inspect
       end
     end
-    
+
     def rational(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmRational)
 
@@ -45,7 +45,7 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
-    end    
+    end
 
     def real(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmReal)
@@ -55,6 +55,23 @@ module Skeem
           SkmReal.create(aLiteral)
         when /^[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?$/
           SkmReal.create(aLiteral.to_f)
+        else
+          raise StandardError, aLiteral.inspect
+      end
+    end
+
+    def char(aLiteral)
+      return aLiteral if aLiteral.kind_of?(SkmChar)
+
+      result = case aLiteral
+        when Numeric
+          SkmChar.create_from_int(aLiteral)
+        when String
+          value = aLiteral.empty? ? '' : aLiteral.chr
+          SkmChar.create(value)
+        when SkmString
+          value = aLiteral.value.empty? ? '' : aLiteral.value.chr
+          SkmChar.create(value)
         else
           raise StandardError, aLiteral.inspect
       end
