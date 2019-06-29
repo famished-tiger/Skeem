@@ -264,7 +264,7 @@ module Skeem
 
       result
     end
-    
+
     def quasiquote(aRuntime)
         quasi_clauses = clauses.map do |(test, consequent)|
           test_qq = test.quasiquote(aRuntime)
@@ -272,21 +272,21 @@ module Skeem
           [test_qq, consequent_qq]
       end
       quasi_alternate = alternate ? alternate.quasiquote(aRuntime) : nil
-      
+
       self.class.new(position, quasi_clauses, quasi_alternate)
     end
 
     def inspect
       result = inspect_prefix + '@test ' + test.inspect + ', '
-      result << "@clauses \n" 
+      result << "@clauses \n"
       clauses.each do |(test, consequent)|
         result << '  '  << test.inspect << ' ' << consequent.inspect << "\n"
       end
       result << '@alternate ' + alternate.inspect + inspect_suffix
       result
-    end    
+    end
   end # class
-  
+
   SkmArity = Struct.new(:low, :high) do
     def nullary?
       low.zero? && high == 0
@@ -312,6 +312,169 @@ module Skeem
       result
     end
   end
+
+  class SkmIterationSpec
+    attr_reader :variable
+    attr_reader :init_expr
+    attr_reader :step_expr
+
+    def initialize(anIdentifier, anInitialization, aStep)
+      @variable = anIdentifier
+      @init_expr = anInitialization
+      @step_expr = aStep
+    end
+  end # class
+
+class SkmDoExprBuilder
+  attr_reader :bindings
+  attr_reader :update_steps
+  attr_reader :test
+  attr_reader :do_result
+  attr_reader :commands
+
+  # 3 => iteration_spec_star, 6 => test, 7 => do_result, 9 => command_star
+
+  def initialize(iterSpecs, aTest, doResult, theCommands)
+    iteration_specs_set(iterSpecs)
+    @test = aTest
+    @do_result = doResult
+    commands_set(theCommands)
+  end
+
+  def do_expression
+    DoExpression.new(test, do_result, commands, update_steps)
+  end
+
+  private
+
+  def iteration_specs_set(iterSpecs)
+    @bindings = iterSpecs.map do |iter_spec|
+        var = iter_spec.variable
+        val = iter_spec.init_expr
+        SkmBinding.new(var, val)
+      end
+
+    to_update = iterSpecs.select { |iter_spec| iter_spec.step_expr }
+    if to_update
+      steps = to_update.map do |iter_spec|
+        SkmDelayedUpdateBinding.new(iter_spec.variable, iter_spec.step_expr)
+      end
+      if steps.size == 1
+        @update_steps = steps[0]
+      else
+        @update_steps = SkmPair.create_from_a(steps)
+      end
+    else
+      @update_steps = SkmEmptyList.instance
+    end
+  end
+
+  def commands_set(theCommands)
+    case theCommands.size
+      when 0
+        @commands = SkmEmptyList.instance
+      when 1
+        @commands = theCommands[0]
+      else
+        @commands = SkmSequencingBlock.new(SkmPair.create_from_a(theCommands))
+    end
+  end
+end # class
+
+  # Syntax outline:
+  #  LPAREN DO LPAREN iteration_spec_star RPAREN
+  #  LPAREN test do_result RPAREN
+  #  command_star RPAREN
+  # Semantics:
+  #   Initialization:
+  #   Set of variables is initialized (each with its init expression)
+  #   Iteration:
+  #     test expression is evaluation
+  #       if false:
+  #         command expressions are executed in order
+  #         step expressions are executed and bound to the respective variable
+  #         iteration resumes
+  #       if true:
+  #         the do_result expressions are excuted
+  #         value of last expression is returned
+  # ; (do ((vec (make-vector 5))
+  # ; (i 0 (+ i 1)))
+  # ; ((= i 5) vec)
+  # ; (vector-set! vec i i))
+  # Can be transformed into:
+  #  (let* (
+  #    ;; Variable init
+  #    (vec (make-vector 5))
+  #    (i 0)
+  #    ;; Utility procedures
+  #    (update-step (lambda ()
+  #      (begin
+  #        (set! i (+ i 1))
+  #      )))
+  #    (do-results (lambda ()
+  #      (begin
+  #        vec
+  #      )))
+  #    (do-commands (lambda ()
+  #      (begin
+  #        (vector-set! vec i i)
+  #      ))))
+  #    (begin
+  #      (define do-iteration (lambda ()
+  #        (if (= i 5)
+  #          (do-results)
+  #          (begin
+  #            (do-commands)
+  #            (update-step)
+  #            (do-iteration))))))
+  #      (do-iteration))
+  class DoExpression < SkmMultiExpression
+    # iterate until the test expression becomes true
+    attr_reader :test
+
+    # expression to execute in each iteration
+    attr_reader :commands
+
+    # expression to execute before return
+    attr_reader :do_result
+
+    # Update variables
+    attr_reader :update_steps
+
+    def initialize(aTest, doResult, theCommands, theUpdates)
+      @test = aTest
+      @do_result = doResult
+      @commands = theCommands
+      @update_steps = theUpdates
+    end
+
+    def evaluate(aRuntime)
+      # require 'debug'
+      loop do
+        test_result = test.evaluate(aRuntime)
+        if test_result.boolean? && test_result.value == false
+          # Only #f is considered as false, everything else is true
+          commands.evaluate(aRuntime) if commands
+          if update_steps
+            update_steps.evaluate(aRuntime)
+            case update_steps
+              when SkmEmptyList.instance
+                ; Do nothing
+              when SkmPair
+                arr = update_steps.to_a
+                arr.each { |delayed_binding| delayed_binding.do_it!(aRuntime) }
+              else
+                update_steps.do_it!(aRuntime)
+            end
+          end
+        else
+          break
+        end
+      end
+
+      do_result ? do_result.evaluate(aRuntime) : SkmUndefined.instance
+    end
+  end # class
 
   class SkmFormals
     attr_reader :formals
@@ -384,7 +547,7 @@ module Skeem
     def callable?
       true
     end
-    
+
     def procedure?
       true
     end
@@ -540,10 +703,10 @@ require_relative 'skm_procedure_exec'
     def callable?
       true
     end
-    
+
     def procedure?
       true
-    end    
+    end
 =begin
   TODO
     def quasiquote(aRuntime)

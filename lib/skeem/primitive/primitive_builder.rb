@@ -34,6 +34,10 @@ module Skeem
       def binary
         SkmArity.new(2, 2)
       end
+      
+      def ternary
+        SkmArity.new(3, 3)
+      end
 
       def zero_or_more
         SkmArity.new(0, '*')
@@ -143,6 +147,7 @@ module Skeem
         create_vector_length(aRuntime)
         create_make_vector(aRuntime)
         create_vector_ref(aRuntime)
+        create_vector_set(aRuntime)
         create_vector2list(aRuntime)
       end
 
@@ -999,7 +1004,6 @@ module Skeem
             filler = arglist.first.evaluate(runtime)
           end
           elements = Array.new(count.value, filler)
-
           vector(elements)
         end
 
@@ -1017,6 +1021,20 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'vector-ref', binary, primitive)
+      end
+      
+      def create_vector_set(aRuntime)
+          # Arguments aren't evaluated yet!...
+          primitive = ->(runtime, vector, k, object) do
+          index = k.evaluate(runtime)
+          check_argtype(vector, SkmVector, 'vector', 'vector-set!')
+          check_argtype(index, SkmInteger, 'integer', 'vector-set!')
+          # TODO: index checking
+          vector.members[index.value] = object
+          vector
+        end
+        
+        define_primitive_proc(aRuntime, 'vector-set!', ternary, primitive)
       end
 
       def create_vector2list(aRuntime)

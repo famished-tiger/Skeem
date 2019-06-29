@@ -189,9 +189,10 @@ Here are a few pointers for the Scheme programming language:
 - Variable references
 - Procedure calls
 - Lambda expressions
-- Conditionals (if, cond)
+- Conditionals (`if`, `cond`)
 - Definitions
 - Assignments
+- Iteration (`do`)
 - Control procedures
 
 ### Standard syntactic forms
@@ -230,6 +231,17 @@ __Purpose:__ Define one or more branchings.
 __Syntax:__   
 * (cond (<test\> <consequent\>)\+)  
 * (cond (<test\><consequent\>)* (else <alternate\>))
+
+#### do
+__Purpose:__ Sequential iteration  
+__Example__
+```scheme
+(do (
+    (vec (make-vector 5))
+    (i 0 (+ i 1)))
+  ((= i 5) vec)
+  (vector-set! vec i i)) ; => #(0 1 2 3 4)
+```
 
 #### let  
 __Purpose:__ Define one or more variable local to the block.  

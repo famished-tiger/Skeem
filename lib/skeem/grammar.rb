@@ -19,7 +19,7 @@ module Skeem
     add_terminals('CHAR', 'STRING_LIT', 'IDENTIFIER')
 
     # Keywords...
-    add_terminals('BEGIN', 'COND', 'DEFINE', 'ELSE')
+    add_terminals('BEGIN', 'COND', 'DEFINE', 'DO', 'ELSE')
     add_terminals('IF', 'LAMBDA', 'LET', 'LET*')
     add_terminals('QUOTE', 'QUASIQUOTE', 'SET!')
     add_terminals('UNQUOTE', 'UNQUOTE-SPLICING')
@@ -106,6 +106,12 @@ module Skeem
     # As the R7RS grammar is too restrictive, 
     # the next rule was made more general than its standard counterpart
     rule('derived_expression' => 'LPAREN BEGIN body RPAREN').as 'begin_expression'
+    do_syntax = <<-END_SYNTAX
+    LPAREN DO LPAREN iteration_spec_star RPAREN 
+      LPAREN test do_result RPAREN
+      command_star RPAREN
+END_SYNTAX
+    rule('derived_expression' => do_syntax).as 'do_expression'
     rule 'derived_expression' => 'quasiquotation'
     rule('cond_clause_plus' => 'cond_clause_plus cond_clause').as 'multiple_cond_clauses'
     rule('cond_clause_plus' => 'cond_clause').as 'last_cond_clauses'
@@ -120,6 +126,14 @@ module Skeem
     rule('binding_spec_star' => 'binding_spec_star binding_spec').as 'multiple_binding_specs'
     rule('binding_spec_star' => []).as 'no_binding_spec_yet'
     rule('binding_spec' => 'LPAREN IDENTIFIER expression RPAREN').as 'binding_spec'
+    rule('iteration_spec_star' => 'iteration_spec_star iteration_spec').as 'multiple_iter_specs'
+    rule('iteration_spec_star' => []).as 'no_iter_spec_yet'
+    rule('iteration_spec' => 'LPAREN IDENTIFIER init step RPAREN').as 'iteration_spec_long'
+    rule('iteration_spec' => 'LPAREN IDENTIFIER init RPAREN').as 'iteration_spec_short'
+    rule('init' => 'expression')
+    rule('step' => 'expression')
+    rule 'do_result' => 'sequence'
+    rule('do_result' => []).as 'empty_do_result'
     rule 'qq_template' => 'simple_datum'
     rule 'qq_template' => 'list_qq_template'
     rule 'qq_template' => 'vector_qq_template'

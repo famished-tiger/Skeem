@@ -88,7 +88,7 @@ module Skeem
     # rule('expression' =>  'IDENTIFIER').as 'variable_reference'
     def reduce_variable_reference(_production, aRange, _tokens, theChildren)
       SkmVariableReference.new(aRange, theChildren[0])
-    end    
+    end
 
     # rule('quotation' => 'APOSTROPHE datum').as 'quotation_short'
     def reduce_quotation_short(_production, _range, _tokens, theChildren)
@@ -300,6 +300,21 @@ module Skeem
       SkmSequencingBlock.new(theChildren[2])
     end
 
+    # LPAREN DO LPAREN iteration_spec_star RPAREN
+      # LPAREN test do_result RPAREN
+      # command_star RPAREN
+    # rule('derived_expression' => do_syntax).as 'do_expression'
+    def reduce_do_expression(_production, _range, _tokens, theChildren)
+      # 3 => iteration_spec_star, 6 => test, 7 => do_result, 9 => command_star
+
+      # We reky on utility 'builder' object
+      worker = SkmDoExprBuilder.new(theChildren[3], theChildren[6],
+        theChildren[7], theChildren[9])
+      do_expression = worker.do_expression
+      body = { :defs => [], :sequence => do_expression }
+      SkmBindingBlock.new(:let_star, worker.bindings, body)
+    end
+
     # rule('cond_clause_plus' => 'cond_clause_plus cond_clause').as 'multiple_cond_clauses'
     def reduce_multiple_cond_clauses(_production, _range, _tokens, theChildren)
       theChildren[0] << theChildren[1]
@@ -324,7 +339,7 @@ module Skeem
     def reduce_cond_clause(_production, _range, _tokens, theChildren)
       [theChildren[1], SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))]
     end
-    
+
     # rule('cond_clause' => 'LPAREN test ARROW recipient RPAREN').as 'cond_arrow_clause'
     def reduce_cond_arrow_clause(_production, _range, _tokens, theChildren)
       [theChildren[1], theChildren[3]]
@@ -353,6 +368,31 @@ module Skeem
     # rule('binding_spec' => 'LPAREN IDENTIFIER expression RPAREN').as 'binding_spec'
     def reduce_binding_spec(production, _range, _tokens, theChildren)
       SkmBinding.new(theChildren[1], theChildren[2])
+    end
+
+    # rule('iteration_spec_star' => 'iteration_spec_star iteration_spec').as 'multiple_iter_specs'
+    def reduce_multiple_iter_specs(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('iteration_spec_star' => []).as 'no_iter_spec_yet'
+    def reduce_no_iter_spec_yet(_production, _range, _tokens, _children)
+      []
+    end
+
+    # rule('iteration_spec' => 'LPAREN IDENTIFIER init step RPAREN').as 'iteration_spec_long'
+    def reduce_iteration_spec_long(_production, _range, _tokens, theChildren)
+      SkmIterationSpec.new(theChildren[1], theChildren[2], theChildren[3])
+    end
+
+    # rule('iteration_spec' => 'LPAREN IDENTIFIER init RPAREN').as 'iteration_spec_short'
+    def reduce_iteration_spec_short(_production, _range, _tokens, theChildren)
+      SkmIterationSpec.new(theChildren[1], theChildren[2], nil)
+    end
+
+    # rule('do_result' => []).as 'empty_do_result'
+    def reduce_empty_do_result(_production, _range, _tokens, theChildren)
+      SkmEmptyList.instance
     end
 
     # rule('list_qq_template' => 'LPAREN qq_template_or_splice_star RPAREN').as 'list_qq'

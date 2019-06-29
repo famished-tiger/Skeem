@@ -718,7 +718,7 @@ SKEEM
           ["(not 'nil)", false]
         ]
         compare_to_predicted(checks)
-      end      
+      end
 
       it 'should implement the list procedure' do
         checks = [
@@ -872,6 +872,29 @@ SKEEM
 SKEEM
         result = subject.run(source)
         expect(result.last).to eq(80)
+      end
+    end # context
+
+    context 'Derived expressions' do
+      it 'should implement the do form' do
+        source = <<-SKEEM
+          (do ((vec (make-vector 5))
+                (i 0 (+ i 1)))
+              ((= i 5) vec)
+            (vector-set! vec i i)) ; => #(0 1 2 3 4)
+SKEEM
+        result = subject.run(source)
+        expect(result).to eq([0, 1, 2, 3, 4])
+        
+        source = <<-SKEEM
+          (let ((x '(1 3 5 7 9)))
+            (do (
+              (x x (cdr x))
+              (sum 0 (+ sum (car x))))
+              ((null? x) sum))) ; => 25
+SKEEM
+        result = subject.run(source)
+        expect(result).to eq(25)        
       end
     end # context
   end # describe

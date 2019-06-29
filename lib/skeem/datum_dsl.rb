@@ -153,6 +153,8 @@ module Skeem
         when SkmPair  # Special case: not a PORO literal
           # One assumes that a Skeem list contains only Skeem datum objects
           SkmPair.create_from_a(aLiteral.to_a)
+        when SkmUndefined
+          aLiteral
         else
           raise StandardError, aLiteral.inspect
         end

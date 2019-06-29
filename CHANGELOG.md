@@ -1,3 +1,20 @@
+## [0.2.14] - 2019-06-29
+- Added derived expression ´do´ as an imperative iteration form. 
+- Added procedures: `vector-set!`
+
+### Added
+- Class `DoExpression` for the representation of the do loop expression
+- Class `SkmDelayedUpdateBinding` for implementation delayed updates of bindings
+
+### Changed
+- File `tokenizer.rb` Added new keyword `do`
+- File `grammar.rb` Added rules for the `do` expression syntax
+- File `primitive_builder.rb` Implementation primitive procedure `vector-set!`
+- File `README.md` Updated to reflect additions.
+
+### Fixed
+- Method `DatumDSL#to_datum` now supports an `SkmUndefined` input argument.
+
 ## [0.2.13] - 2019-06-22
 - Skeem now accepts integers in hexadecimal notation
 - Added procedures: `char->integer`, `integer->char`, `char=?`, `char<?`, `char>?`, `char<=?`, `char>=?`

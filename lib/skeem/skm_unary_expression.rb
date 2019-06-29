@@ -111,7 +111,7 @@ module Skeem
     end
   end # class
 
-  # Used to represent local binding constructs (let, let*, letrec, letrec*)
+  # Used to represent local binding constructs (let, let\*, letrec, letrec\*)
   class SkmBindingBlock < SkmUnaryExpression
     alias body child
 

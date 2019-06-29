@@ -35,6 +35,7 @@ module Skeem
       BEGIN
       COND
       DEFINE
+      DO
       ELSE
       IF
       LAMBDA

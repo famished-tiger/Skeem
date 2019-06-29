@@ -135,7 +135,7 @@ module Skeem
             result = code.send(:call, aRuntime, *args)
           end
         else # Fixed arity...
-          if identifier == 'set-car!' || identifier == 'set-cdr!'
+          if identifier.value =~ /^set-[a-zA-Z]+!/ || identifier.value =~ /[a-zA-Z]+-set!/
             # Defer evaluation inside the primitive
             result = code.send(:call, aRuntime, *operands)
           else

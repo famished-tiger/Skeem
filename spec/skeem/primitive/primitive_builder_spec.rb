@@ -13,6 +13,10 @@ module Skeem
         Interpreter.new { |interp| interp.add_primitives(interp.runtime) }
       end
 
+      def array2list_ids(arr)
+        arr.map { |elem| SkmIdentifier.create(elem) }
+      end
+
       context 'Arithmetic operators:' do
         it 'should implement the set! form' do
           skeem1 = <<-SKEEM
@@ -631,10 +635,6 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        def array2list_ids(arr)
-          arr.map { |elem| SkmIdentifier.create(elem) }
-        end
-
         it 'should implement the append procedure' do
           checks = [
             ["(append '(a b c) '())", array2list_ids(['a', 'b', 'c'])],
@@ -896,6 +896,32 @@ SKEEM
           result = subject.run(source)
           expect(result).to be_kind_of(SkmInteger)
           expect(result).to eq(8)
+        end
+
+        it 'should implement the vector-set! procedure' do
+          source =<<-SKEEM
+  (let
+    ((vec (vector 0 '(2 2 2 2) "Anna")))
+    (vector-set! vec 1 '("Sue" "Sue"))
+  vec)
+SKEEM
+#(0 ("Sue" "Sue") "Anna")
+          result = subject.run(source)
+          expect(result).to be_kind_of(SkmVector)
+          expectation = [SkmInteger.create(0), 
+            SkmPair.new(SkmString.create("Sue"), SkmPair.new(SkmString.create("Sue"), SkmEmptyList.instance)),
+            SkmString.create("Anna") ]
+          expect(result).to eq(expectation)
+
+          source =<<-SKEEM
+  (let (
+    (v (vector 'a 'b 'c 'd 'e)))
+    (vector-set! v 2 'x)
+    v)
+SKEEM
+          result = subject.run(source)
+          expect(result).to be_kind_of(SkmVector)
+          expect(result).to eq(array2list_ids(['a', 'b', 'x', 'd', 'e']))
         end
 
         it 'should implement the vector->list procedure' do
