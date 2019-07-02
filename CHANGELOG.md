@@ -1,5 +1,22 @@
+## [0.2.15] - 2019-07-02
+- Added a basic command-line and console interface for Skeem interpreter.
+- Added procedures: `display!`, `newline`, `make-list`
+
+### Added
+- `bin/skeem` The CLI and REPL console implementation for Skeem 
+- `bin/cubic.skm`: A sample defining a procedure that computes the cube of a number.
+- `bin/hello-world.skm`: The initiatic programming example
+
+### Changed
+- File `primitive_builder.rb` Implementation of primitive procedures `newline`, `make-list`
+- File `base.skm` Added implementation of `newline` procedure.
+- File `README.md` vastly reorganized and introducing the new command line.
+
+### Removed
+- Bundler-generated files `bin/console`, `bin/setup`
+
 ## [0.2.14] - 2019-06-29
-- Added derived expression ´do´ as an imperative iteration form. 
+- Added derived expression `do` as an imperative iteration form. 
 - Added procedures: `vector-set!`
 
 ### Added

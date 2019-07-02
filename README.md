@@ -26,23 +26,71 @@ Or install it yourself as:
     $ gem install skeem
 
 
-The __Skeem__ project has started recently and at this stage, the gem supports  a small Scheme subset.
+The __Skeem__ project is WIP and currently the gem supports a subset of the __Scheme__ language.  
+If you're not familiar to Scheme, the section [About Scheme](#about-scheme) contains a number of interesting pointers.
 
-## About Scheme
-
-The Scheme programming language is a Lisp dialect that supports multiple paradigms, including functional programming and imperative programming.
-
-### Resources on Scheme  
-Here are a few pointers for the Scheme programming language:  
-- Wikipedia article on [Scheme](https://en.m.wikipedia.org/wiki/Scheme_\(programming_language\))
-- Latest official Scheme standard: [R7RS](https://bitbucket.org/cowan/r7rs-wg1-infra/src/default/R7RSHomePage.md)
-#### Online tutorials and books:
-- [The Scheme Programming Language, 4th Edition](https://www.scheme.com/tspl4/) by Kent Dybvig. A complete, introductory textbook on Scheme based on the older R5RS standard.
-- [Teach Yourself Scheme in Fixnum Days](http://ds26gte.github.io/tyscheme/index.html) by Dorai Sitaram
-- [Yet Another Scheme Tutorial](http://www.shido.info/lisp/idx_scm_e.html) by Shido Takafumi
-- [An Introduction to Scheme and its Implementation](http://www.cs.utexas.edu/ftp/garbage/cs345/schintro-v14/schintro_toc.html) by Paul R. Wilson
 
 ## Usage
+Once the gem is installed, the `skeem` executable can be used.
+It allows to run the interpreter from the command line.
+
+### Launching a REPL session
+To start a REPL (Read-Eval-Print-Loop) session, just type:
+```
+  skeem
+```
+
+Skeem displays a greeting, a prompt and then waits for your input:
+```
+Welcome to Skeem 0.2.15.
+>
+```
+
+Let's succumb to the ritual 'Hello world' example, by typing after the prompt:
+```
+(display "Hello, world")
+```
+
+Skeem then replies:
+```
+Hello, world
+Skeem::SkmUndefined
+```
+
+This works as expected except, maybe, for the last line. It can be easily explained if one knows
+that the return value of the `display` procedure is undefined in standard Scheme.  
+Internally Skeem, implements such undefined result as a `Skeem::Undefined`instance.
+
+Here is an excerpt from a REPL session:
+```
+> (+ 4 (* 5 6))
+34
+> (define x 6)
+6
+> (+ (* 5 x x) (* 4 x) 3)
+207
+> (/ 21 5)
+21/5
+> (/ 21.0 5)
+21/5
+```
+
+#### Terminating a REPL session
+To exit a REPL session, call the exit procedure as follows:
+```
+(exit)
+```
+
+### Running a Skeem file
+To run a Scheme file:
+
+```
+  skeem path/to/file.skm
+```
+
+
+## Embed Skeem in your Ruby app
+This is the third way for Rubyists to interact with Skeem by integrating it directly in their Ruby code.
 
 ### Example 1 (Variable definition)
 
@@ -195,6 +243,51 @@ Here are a few pointers for the Scheme programming language:
 - Iteration (`do`)
 - Control procedures
 
+### Standard library
+This section lists the procedures following closely the official [Revised7 Report on the Algorithmic Language](https://bitbucket.org/cowan/r7rs/src/draft-10/rnrs/r7rs.pdf) standard.
+
+#### Equivalence predicates
+* `eqv?`, `equal?`
+
+#### Boolean procedures
+* `boolean?`, `boolean=?`, `and`, `or`,  `not`
+
+#### Character procedures
+* `char?` `char->integer`, `char=?`, `char<?`, `char>?`,`char<=?`, `char>=?`
+
+#### Numerical operations
+* Number-level: `number?`, `complex?`, `real?`, `rational?`, `integer?`, `zero?`,  
+`exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`, `=`, `square`, `number->string`
+* Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `max`, `min`,  
+ `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,  
+`truncate-remainder`, `quotient`, `remainder`, `modulo`, `gcd`, `lcm`, `numerator`,  
+`denominator`, `floor`, `ceiling`, `truncate`, `round`
+* Integer-level: `even?`, `odd?`, `integer->char`
+
+#### List procedures
+* `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  
+`cons`,  `make-list`, `length`, `list`, `list-copy`, `list->vector`, `reverse`,  
+`set-car!`, `set-cdr!`, `assq`, `assv`
+
+#### String procedures
+* `string?`, `string=?`, `string`, `make-string`, `string-append`, `string-length`, `string->symbol`
+
+#### Symbol procedures
+* `symbol?`, `symbol=?`, `symbol->string`
+
+#### Vector procedures
+* `vector?`, `make-vector`, `vector`, `vector-length`, `vector-set!`, `vector->list`
+
+#### Control procedures
+* `procedure?`, `apply`, `map`
+
+#### Input/output procedures
+* `display`, `newline`
+
+#### Non-standard procedures
+* `assert`
+
+
 ### Standard syntactic forms
 #### define  
 __Purpose:__ Create a new variable and bind an expression/value to it.  
@@ -254,55 +347,28 @@ __Purpose:__ Define one or more variable local to the block.
 __Syntax:__   
 * (let* (<binding_spec\*\>) <body\>)
 
-### Standard library
-This section lists the implemented standard procedures
 
-#### Equivalence predicates
-* `eqv?`, `equal?`
-
-#### Boolean procedures
-* `boolean?`, `boolean=?`, `and`, `or`,  `not`
-
-#### Character procedures
-* `char?` `char->integer`, `char=?`, `char<?`, `char>?`,`char<=?`, `char>=?`
-
-#### Numerical operations
-* Number-level: `number?`, `complex?`, `real?`, `rational?`, `integer?`, `zero?`, `exact?`, `inexact?`, `exact-integer?` , `+`, `-`, `*`, `/`,
-`=`, `square`, `number->string`
-* Real-level: `positive?`, `negative?`, `<`, `>`, `<=`, `>=`, `abs`, `max`, `min`,  `floor/`, `floor-quotient`, `floor-remainder`, `truncate/`, `truncate-quotient`,
-  `truncate-remainder`, `quotient`, `remainder`, `modulo`, `gcd`, `lcm`, `numerator`, `denominator`, `floor`, `ceiling`, `truncate`, `round`
-* Integer-level: `even?`, `odd?`, `integer->char`
-
-#### List procedures
-* `list?`, `null?`, `pair?`, `append`, `car`, `cdr`, `caar`, `cadr`, `cdar`, `cddr`,  `cons`,  `length`, `list`, `list-copy`, `list->vector`, `reverse`,  `set-car!`, `set-cdr!`
- , `assq`, `assv`
-
-#### String procedures
-* `string?`, `string=?`, `string`, `make-string`, `string-append`, `string-length`, `string->symbol`
-
-#### Symbol procedures
-* `symbol?`, `symbol=?`, `symbol->string`
-
-#### Vector procedures
-* `vector?`, `make-vector`, `vector`, `vector-length`, `vector-set!`, `vector->list`
-
-#### Control procedures
-* `procedure?`, `apply`, `map`
-
-#### Input/output procedures
-* `newline`
-
-#### Special procedures
-* `assert`
-
-Roadmap:
-- Extend language support
-- Implement REPL
+## Roadmap
 - Implement an equivalent of [lis.py](http://www.norvig.com/lispy.html)
 - Implement an equivalent of [lispy](http://norvig.com/lispy2.html)
 - Make it pass the test suite
 - Extend the language in order to support [Minikanren](https://github.com/TheReasonedSchemer2ndEd/CodeFromTheReasonedSchemer2ndEd)
 - Make it pass all examples from the [Reasoned Schemer](https://mitpress.mit.edu/books/reasoned-schemer-second-edition) book.
+
+## About Scheme
+
+The Scheme programming language is a Lisp dialect that supports multiple paradigms, including functional programming and imperative programming.
+
+### Resources on Scheme  
+Here are a few pointers for the Scheme programming language:  
+- Wikipedia article on [Scheme](https://en.m.wikipedia.org/wiki/Scheme_\(programming_language\))
+- Latest official Scheme standard: [R7RS](https://bitbucket.org/cowan/r7rs-wg1-infra/src/default/R7RSHomePage.md)
+#### Online tutorials and books:
+- [The Scheme Programming Language, 4th Edition](https://www.scheme.com/tspl4/) by Kent Dybvig. A complete, introductory textbook on Scheme based on the older R5RS standard.
+- [Teach Yourself Scheme in Fixnum Days](http://ds26gte.github.io/tyscheme/index.html) by Dorai Sitaram
+- [Yet Another Scheme Tutorial](http://www.shido.info/lisp/idx_scm_e.html) by Shido Takafumi
+- [An Introduction to Scheme and its Implementation](http://www.cs.utexas.edu/ftp/garbage/cs345/schintro-v14/schintro_toc.html) by Paul R. Wilson
+
 
 ## Other Scheme implementations in Ruby
 __Skeem__ isn't the sole implementation of the Scheme language in Ruby.  

@@ -623,6 +623,14 @@ SKEEM
           example = "(cdr '())" # => error
           expect { subject.run(example) }.to raise_error(StandardError)
         end
+        
+        it 'should implement the length procedure' do
+          example = '(make-list 2 3)'
+          result = subject.run(example)
+          expect(result).to be_list
+          expect(result.length).to eq(2)
+          expect(result.to_a).to eq([3, 3])
+        end        
 
         it 'should implement the length procedure' do
           checks = [
@@ -908,7 +916,7 @@ SKEEM
 #(0 ("Sue" "Sue") "Anna")
           result = subject.run(source)
           expect(result).to be_kind_of(SkmVector)
-          expectation = [SkmInteger.create(0), 
+          expectation = [SkmInteger.create(0),
             SkmPair.new(SkmString.create("Sue"), SkmPair.new(SkmString.create("Sue"), SkmEmptyList.instance)),
             SkmString.create("Anna") ]
           expect(result).to eq(expectation)
@@ -965,11 +973,11 @@ SKEEM
       end # context
 
       context 'IO procedures:' do
-        it 'should implement the newline procedure' do
+        it 'should implement the display procedure' do
           default_stdout = $stdout
           $stdout = StringIO.new()
-          subject.run('(newline) (newline) (newline)')
-          expect($stdout.string).to match(/\n\n\n$/)
+          subject.run('(display "Hello")')
+          expect($stdout.string).to eq('Hello')
           $stdout = default_stdout
         end
       end # context

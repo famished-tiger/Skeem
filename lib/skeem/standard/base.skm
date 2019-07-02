@@ -140,6 +140,10 @@
 
 (define symbol=? string=?)
 
+(define newline 
+  (lambda ()
+    (display #\newline)))
+
 ;; Test the equivalence (with eqv? predicate) between an expected value and
 ;; an expression
 ;; (test-eqv expected test-expr)

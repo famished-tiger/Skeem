@@ -1,0 +1,4 @@
+(define cubic 
+  (lambda (x)
+    (* x x x)))
+(cubic 3) ; => 27

@@ -16,7 +16,7 @@ module PkgExtending
       'LICENSE.txt',
       'README.md',
       'skeem.gemspec',
-      'bin/*.rb',
+      'bin/*.*',
       'lib/*.*',
       'lib/**/*.rb',
       'lib/**/*.skm',
@@ -51,6 +51,7 @@ SUMMARY
   spec.license       = 'MIT'
 
   spec.bindir = 'bin'
+  spec.executables << 'skeem'
   spec.require_paths = ['lib']
   PkgExtending.pkg_files(spec)
   PkgExtending.pkg_documentation(spec)

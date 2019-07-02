@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+
+require 'skeem'
+
+class SkeemREPL
+  attr_reader :interpreter
+
+  def initialize()
+    @interpreter = Skeem::Interpreter.new
+  end
+
+  def run_session
+    puts "Welcome to Skeem #{Skeem::VERSION}."  
+    loop do
+      print '> '
+      input = gets.chomp.strip
+      break if input == '(quit)' || input == '(exit)'
+      process_input(input)
+    end
+  end
+
+  def run_file(aFilename)
+    if File.exist?(aFilename)
+      valid_fname = aFilename
+    else # Retry by adding extension...
+      if File.extname(aFilename).empty?
+        if File.exist?(aFilename + '.skm')
+          valid_fname = aFilename + '.skm'
+        elsif File.exist?(aFilename + '.scm')
+          valid_fname = aFilename + '.scm'
+        else
+          valid_fname = nil
+        end
+      end
+    end
+
+    raise ScriptError, "No such file -- #{aFilename}" unless valid_fname
+
+    source_code = File.read(valid_fname)
+    process_input(source_code)
+  end
+
+  def process_input(input)
+    begin
+      ptree = interpreter.parse(input)
+    rescue StandardError => exc
+      $stderr.puts exc.message
+      return
+    end
+
+    raw_result = ptree.root.evaluate(interpreter.runtime)
+    result = raw_result.kind_of?(Skeem::SkmPair) ? raw_result.last : raw_result
+    if result.kind_of?(Skeem::SkmUndefined)
+      puts "\n#{result.class}"
+    elsif result.respond_to?(:value)
+      puts result.value
+    else
+      puts result.inspect
+    end
+  end
+end # class
+
+########################################
+# Entry point
+########################################
+djinn = SkeemREPL.new
+
+if ARGV.empty?
+  djinn.run_session
+else
+  djinn.run_file(ARGV[0])
+end

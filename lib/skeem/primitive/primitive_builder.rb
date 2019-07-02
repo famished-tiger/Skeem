@@ -130,6 +130,7 @@ module Skeem
         create_cons(aRuntime)
         create_car(aRuntime)
         create_cdr(aRuntime)
+        create_make_list(aRuntime)
         create_length(aRuntime)
         create_list2vector(aRuntime)
         create_append(aRuntime)
@@ -158,7 +159,7 @@ module Skeem
       end
 
       def add_io_procedures(aRuntime)(aRuntime)
-        create_newline(aRuntime)
+        create_display(aRuntime)
       end
 
       def add_special_procedures(aRuntime)
@@ -670,12 +671,12 @@ module Skeem
       def create_make_string(aRuntime)
         primitive = ->(runtime, count_arg, arglist) do
           count = count_arg
-          check_argtype(count, SkmInteger, 'integer', 'make_string')
+          check_argtype(count, SkmInteger, 'integer', 'make-string')
           if arglist.empty?
             filler = SkmChar.create(rand(0xff).chr)
           else
             filler = arglist.first
-            check_argtype(filler, SkmChar, 'char', 'make_string')
+            check_argtype(filler, SkmChar, 'char', 'make-string')
           end
           string(filler.value.to_s * count.value)
         end
@@ -773,6 +774,22 @@ module Skeem
         end
 
         define_primitive_proc(aRuntime, 'cons', binary, primitive)
+      end
+      
+      def create_make_list(aRuntime)
+        primitive = ->(runtime, count_arg, arglist) do
+          count = count_arg
+          check_argtype(count, SkmInteger, 'integer', 'make-list')
+          if arglist.empty?
+            filler = SkmUndefined.instance
+          else
+            filler = arglist.first
+          end
+          arr = Array.new(count.value, filler)
+          SkmPair.create_from_a(arr)
+        end
+
+        define_primitive_proc(aRuntime, 'make-list', one_or_two, primitive)      
       end
 
       def create_length(aRuntime)
@@ -1093,14 +1110,15 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'map', one_or_more, primitive)
       end
-
-      def create_newline(aRuntime)
-        primitive = ->(runtime) do
+      
+      def create_display(aRuntime)
+        primitive = ->(runtime, arg_evaluated) do
           # @TODO: make output stream configurable
-          print "\n"
+          print arg_evaluated.value.to_s
+          SkmUndefined.instance
         end
-
-        define_primitive_proc(aRuntime, 'newline', nullary, primitive)
+        
+        define_primitive_proc(aRuntime, 'display', unary, primitive)      
       end
 
       def create_test_assert(aRuntime)

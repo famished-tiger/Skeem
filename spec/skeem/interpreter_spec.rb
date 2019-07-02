@@ -836,6 +836,16 @@ SKEEM
         compare_to_predicted(checks)
       end
     end # context
+    
+    context 'Input/output:' do
+      it 'should implement the newline procedure' do
+        default_stdout = $stdout
+        $stdout = StringIO.new()
+        subject.run('(newline) (newline) (newline)')
+        expect($stdout.string).to match(/\n\n\n$/)
+        $stdout = default_stdout
+      end
+    end # context
 
     context 'Second-order functions' do
       it 'should implement lambda that calls second-order function' do
