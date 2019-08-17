@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../../spec_helper' # Use the RSpec framework
 
 # Load the class under test
@@ -623,14 +625,14 @@ SKEEM
           example = "(cdr '())" # => error
           expect { subject.run(example) }.to raise_error(StandardError)
         end
-        
+
         it 'should implement the length procedure' do
           example = '(make-list 2 3)'
           result = subject.run(example)
           expect(result).to be_list
           expect(result.length).to eq(2)
           expect(result.to_a).to eq([3, 3])
-        end        
+        end
 
         it 'should implement the length procedure' do
           checks = [
@@ -983,6 +985,13 @@ SKEEM
       end # context
 
       context 'Miscellaneous procedures' do
+        it 'should raise an exception with given error message' do
+          source = '(error "This is an error message")'
+          err = SkmError
+          msg = 'This is an error message'
+          expect { subject.run(source) }.to raise_error(err, msg)
+        end
+
         it 'should return true when an assertion succeeds' do
           source = <<-SKEEM
   (define x 2)

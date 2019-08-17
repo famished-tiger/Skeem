@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'stringio'
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/datum_dsl'
@@ -90,6 +92,7 @@ module Skeem
       end
 
       it 'should evaluate vector of constants' do
+        require 'benchmark'
         source = '#(2018 10 20 "Sat")'
         result = subject.run(source)
         expect(result).to be_kind_of(SkmVector)
@@ -836,8 +839,18 @@ SKEEM
         compare_to_predicted(checks)
       end
     end # context
-    
+
     context 'Input/output:' do
+      it 'should implement the include expression' do
+        initial_dir = Dir.pwd
+        filedir = File.dirname(__FILE__)
+        Dir.chdir(filedir)
+        source = '(include "add4.skm")' # Path is assumed to be relative to pwd
+        result = subject.run(source)
+        expect(result.last).to eq(10)
+        Dir.chdir(initial_dir)
+      end
+
       it 'should implement the newline procedure' do
         default_stdout = $stdout
         $stdout = StringIO.new()
@@ -895,7 +908,7 @@ SKEEM
 SKEEM
         result = subject.run(source)
         expect(result).to eq([0, 1, 2, 3, 4])
-        
+
         source = <<-SKEEM
           (let ((x '(1 3 5 7 9)))
             (do (
@@ -904,8 +917,25 @@ SKEEM
               ((null? x) sum))) ; => 25
 SKEEM
         result = subject.run(source)
-        expect(result).to eq(25)        
+        expect(result).to eq(25)
       end
     end # context
+    
+    context 'Macro processing:' do
+      # it 'should parse macro expressions' do
+        # source = <<-SKEEM      
+          # (define-syntax while
+            # (syntax-rules ()
+              # ((while condition body ...)
+               # (let loop ()
+                 # (if condition
+                     # (begin
+                       # body ...
+                       # (loop))
+                     # #f)))))                     
+# SKEEM
+        # ptree = subject.parse(source)
+      # end
+    end
   end # describe
 end # module

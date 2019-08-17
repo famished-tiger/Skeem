@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'tokenizer'
 require_relative 'grammar'
 require_relative 's_expr_builder'

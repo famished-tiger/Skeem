@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'skeem/version'
@@ -21,6 +23,7 @@ module PkgExtending
       'lib/**/*.rb',
       'lib/**/*.skm',
       'spec/**/*.rb',
+      'spec/**/*.skm'
     ]
     aPackage.files = file_list
     aPackage.test_files = Dir['spec/**/*_spec.rb']
@@ -59,11 +62,7 @@ SUMMARY
   spec.add_dependency 'rley', '~> 0.7'
 
   # Development dependencies
-if RUBY_VERSION <= '2.2' 
-  spec.add_development_dependency 'bundler', '~> 1.16'
-else
   spec.add_development_dependency 'bundler', '~> 2.0'
-end
   spec.add_development_dependency 'rake', '~> 12.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
 end

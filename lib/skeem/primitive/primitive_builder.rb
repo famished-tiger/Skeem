@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require_relative 'primitive_procedure'
 require_relative '../datum_dsl'
+require_relative '../skm_exception'
 require_relative '../skm_pair'
 
 module Skeem
@@ -163,6 +166,7 @@ module Skeem
       end
 
       def add_special_procedures(aRuntime)
+        create_error(aRuntime)
         create_test_assert(aRuntime)
         create_debug(aRuntime)
         create_inspect(aRuntime)
@@ -689,7 +693,7 @@ module Skeem
           if arglist.empty?
             value = ''
           else
-            value = arglist.reduce('') do |interim, some_char|
+            value = arglist.reduce(+'') do |interim, some_char|
               check_argtype(some_char, SkmChar, 'character', 'string')
               interim << some_char.value
             end
@@ -714,7 +718,7 @@ module Skeem
           if arglist.empty?
             value = ''
           else
-            value = arglist.reduce('') { |interim, substr| interim << substr.value }
+            value = arglist.reduce(+'') { |interim, substr| interim << substr.value }
           end
 
           string(value)
@@ -1119,6 +1123,14 @@ module Skeem
         end
         
         define_primitive_proc(aRuntime, 'display', unary, primitive)      
+      end
+      
+      def create_error(aRuntime)
+        primitive = ->(runtime, arg_evaluated) do
+          raise SkmError, arg_evaluated.value
+        end
+
+        define_primitive_proc(aRuntime, 'error', unary, primitive)        
       end
 
       def create_test_assert(aRuntime)

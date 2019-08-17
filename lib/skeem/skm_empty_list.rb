@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'singleton'
 require_relative 'skm_element'
 
@@ -64,7 +66,7 @@ module Skeem
     protected
 
     def inspect_specific
-      '()'
+      +'()'
     end
 
     private

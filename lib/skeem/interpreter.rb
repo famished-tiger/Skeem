@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'parser'
 require_relative 'skm_frame'
 require_relative 'runtime'

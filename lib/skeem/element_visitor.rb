@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Skeem
   class SkmElementVisitor
     # Link to the root element to visit

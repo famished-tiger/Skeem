@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'skm_expression'
 
 module Skeem
@@ -193,11 +195,11 @@ module Skeem
           else
             result = cmd.evaluate(aRuntime)
           end
-        rescue NoMethodError => exc
+        rescue NoMethodError => e
           $stderr.puts self.inspect
           $stderr.puts sequence.inspect
           $stderr.puts cmd.inspect
-          raise exc
+          raise e
         end
       end
 
@@ -222,11 +224,11 @@ module Skeem
             else
               result = cmd.evaluate(aRuntime)
             end
-          rescue NoMethodError => exc
+          rescue NoMethodError => e
             $stderr.puts self.inspect
             $stderr.puts sequence[:sequence].inspect
             $stderr.puts cmd.inspect
-            raise exc
+            raise e
           end
         end
       elsif

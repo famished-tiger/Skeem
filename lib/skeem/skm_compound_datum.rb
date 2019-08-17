@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'forwardable'
 require_relative 'skm_element'
 
@@ -65,7 +67,7 @@ module Skeem
     protected
 
     def inspect_specific
-      result = ''
+      result = +''
       members.each { |elem| result << elem.inspect + ', ' }
       result.sub!(/, $/, '')
       result

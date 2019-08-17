@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/datum_dsl'
 require_relative '../../lib/skeem/runtime'
@@ -172,7 +174,7 @@ module Skeem
 
       it 'should support the each method' do
         my_list = SkmPair.new('w', SkmPair.new('o', SkmPair.new('w', SkmEmptyList.instance)))
-        text = ''
+        text = +''
         my_list.each { |ch| text << ch.upcase }
         expect(text).to eq('WOW')
       end

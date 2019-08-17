@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 's_expr_nodes'
 
 module Skeem

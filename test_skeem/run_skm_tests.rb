@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'skeem'
 
 def get_skm_filenames()

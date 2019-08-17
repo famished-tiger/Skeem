@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'stringio'
 require_relative 'skm_pair'
 require_relative 'skm_binding'
@@ -48,6 +50,18 @@ module Skeem
                 else
                   last_child
                 end
+    end
+    
+    # Default semantic action for rules of the form:
+    # rule 'some_symbol_star' => 'some_symbol_star some_symbol'
+    def reduce_star_default(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]      
+    end
+
+    # Default semantic action for rules of the form:
+    # rule 'some_symbol_star' => []
+    def reduce_star_base(_production, _range, _tokens, _children)
+      []
     end
 
     # rule('cmd_or_def_plus' => 'cmd_or_def_plus cmd_or_def').as 'multiple_cmd_def'
@@ -139,16 +153,6 @@ module Skeem
       SkmVector.new(theChildren[1])
     end
 
-    # rule('datum_star' => 'datum_star datum').as 'datum_star'
-    def reduce_datum_star(_production, aRange, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('datum_star' => []).as 'no_datum_yet'
-    def reduce_no_datum_yet(_production, aRange, _tokens, theChildren)
-      []
-    end
-
     # rule('procedure_call' => 'LPAREN operator RPAREN').as 'proc_call_nullary'
     def reduce_proc_call_nullary(_production, aRange, _tokens, theChildren)
       ProcedureCall.new(aRange, theChildren[1], [])
@@ -213,16 +217,6 @@ module Skeem
       SkmFormals.new(formals, :variadic)
     end
 
-    # rule('identifier_star' => 'identifier_star IDENTIFIER').as 'identifier_star'
-    def reduce_identifier_star(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('identifier_star' => []).as 'no_identifier_yet'
-    def reduce_no_identifier_yet(_production, _range, _tokens, theChildren)
-      []
-    end
-
     # rule('identifier_plus' => 'identifier_plus IDENTIFIER').as 'multiple_identifiers'
     def reduce_multiple_identifiers(_production, _range, _tokens, theChildren)
       theChildren[0] << theChildren[1]
@@ -239,30 +233,9 @@ module Skeem
       { defs: definitions, sequence: theChildren[1] }
     end
 
-    # rule('definition_star' => 'definition_star definition').as 'definition_star'
-    def reduce_definition_star(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-
-    # rule('definition_star' => []).as 'no_definition_yet'
-    def reduce_no_definition_yet(_production, _range, _tokens, theChildren)
-      []
-    end
-
     # rule('sequence' => 'command_star expression').as 'sequence'
     def reduce_sequence(_production, _range, _tokens, theChildren)
       SkmPair.create_from_a(theChildren[0] << theChildren[1])
-    end
-
-    # rule('command_star' => 'command_star command').as 'multiple_commands'
-    def reduce_multiple_commands(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('command_star' => []).as 'no_command_yet'
-    def reduce_no_command_yet(_production, _range, _tokens, theChildren)
-      []
     end
 
     # rule('conditional' => 'LPAREN IF test consequent alternate RPAREN').as 'conditional'
@@ -325,16 +298,6 @@ module Skeem
       [theChildren[0]]
     end
 
-    # rule('cond_clause_star' => 'cond_clause_star cond_clause').as 'cond_clauses_star'
-    def reduce_cond_clauses_star(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('cond_clause_star' => []).as 'last_cond_clauses_star'
-    def reduce_last_cond_clauses_star(_production, _range, _tokens, _children)
-      []
-    end
-
     # rule('cond_clause' => 'LPAREN test sequence RPAREN').as 'cond_clause'
     def reduce_cond_clause(_production, _range, _tokens, theChildren)
       [theChildren[1], SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))]
@@ -355,29 +318,9 @@ module Skeem
       SkmQuasiquotation.new(theChildren[1])
     end
 
-    # rule('binding_spec_star' => 'binding_spec_star binding_spec').as 'multiple_binding_specs'
-    def reduce_multiple_binding_specs(_production, aRange, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('binding_spec_star' => []).as 'no_binding_spec_yet'
-    def reduce_no_binding_spec_yet(_production, aRange, _tokens, _children)
-      []
-    end
-
     # rule('binding_spec' => 'LPAREN IDENTIFIER expression RPAREN').as 'binding_spec'
     def reduce_binding_spec(production, _range, _tokens, theChildren)
       SkmBinding.new(theChildren[1], theChildren[2])
-    end
-
-    # rule('iteration_spec_star' => 'iteration_spec_star iteration_spec').as 'multiple_iter_specs'
-    def reduce_multiple_iter_specs(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('iteration_spec_star' => []).as 'no_iter_spec_yet'
-    def reduce_no_iter_spec_yet(_production, _range, _tokens, _children)
-      []
     end
 
     # rule('iteration_spec' => 'LPAREN IDENTIFIER init step RPAREN').as 'iteration_spec_long'
@@ -395,6 +338,22 @@ module Skeem
       SkmEmptyList.instance
     end
 
+    # rule('includer' => 'LPAREN INCLUDE string_plus RPAREN').as 'include'
+    def reduce_include(_production, _range, _tokens, theChildren)
+      includer = SkmIncluder.new(theChildren[2])
+      includer.build
+    end
+
+    # rule('string_plus' => 'string_plus STRING_LIT').as 'multiple_string'
+    def reduce_multiple_string(_production, _range, _tokens, theChildren)
+      theChildren[0] << theChildren[1]
+    end
+
+    # rule('string_plus' => 'STRING_LIT').as 'last_single_string'
+    def reduce_last_single_string(_production, _range, _tokens, theChildren)
+      [theChildren[0]]
+    end
+
     # rule('list_qq_template' => 'LPAREN qq_template_or_splice_star RPAREN').as 'list_qq'
     def reduce_list_qq(_production, _range, _tokens, theChildren)
       SkmPair.create_from_a(theChildren[1])
@@ -409,17 +368,6 @@ module Skeem
     def reduce_unquotation_short(_production, aRange, _tokens, theChildren)
       SkmUnquotation.new(theChildren[1])
     end
-
-    # rule('qq_template_or_splice_star' => 'qq_template_or_splice_star qq_template_or_splice').as 'multiple_template_splice'
-    def reduce_multiple_template_splice(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('qq_template_or_splice_star' => []).as 'no_template_splice_yet'
-    def reduce_no_template_splice_yet(_production, _range, _tokens, theChildren)
-      []
-    end
-
 
   end # class
 end # module

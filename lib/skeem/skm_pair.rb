@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'skm_empty_list'
 
 module Skeem

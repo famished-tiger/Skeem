@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Classes that implement nodes of Abstract Syntax Trees (AST) representing
 # Skeem parse results.
 require 'singleton'
@@ -476,6 +478,32 @@ end # class
     end
   end # class
 
+  class SkmIncluder
+    attr_reader :filenames
+
+    def initialize(theFilenames)
+      @filenames = theFilenames
+    end
+    
+    def build()
+      parser = Skeem::Parser.new
+      parse_results = filenames.map do |fname|
+        f_source = File.read(fname.value)
+        ptree = parser.parse(f_source)
+        ptree.root
+      end
+      
+      if parse_results.size == 1
+        result = parse_results[0]
+      else
+        sequence = SkmPair.create_from_a(parse_results)
+        result = SkmSequencingBlock.new(sequence)
+      end
+      result
+    end
+
+  end # class
+
   class SkmFormals
     attr_reader :formals
     attr_reader :arity
@@ -667,7 +695,7 @@ end # class
     end
 
     def inspect_specific
-      result = ''
+      result = +''
       result << '@formals ' + formals.inspect + ', '
       result << '@definitions ' + definitions.inspect + ', '
       result << '@sequence ' + sequence.inspect + inspect_suffix
@@ -887,7 +915,7 @@ require_relative 'skm_procedure_exec'
 
     def inspect_specific
       #result = "@environment #{environment.object_id.to_s(16)}, "
-      result = ''
+      result = +''
       if environment && environment.parent
         result << "Parent environment #{environment.parent.object_id.to_s(16)}, "
         result << environment.inspect

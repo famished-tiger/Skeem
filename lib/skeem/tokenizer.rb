@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # File: tokenizer.rb
 # Tokenizer for Skeem language (a small subset of Scheme)
 require 'strscan'
@@ -25,9 +27,11 @@ module Skeem
       '(' => 'LPAREN',
       ')' => 'RPAREN',
       '.' => 'PERIOD',
+      '...' => 'ELLIPSIS',
       ',' => 'COMMA',
       ',@' =>  'COMMA_AT_SIGN',
-      '#(' => 'VECTOR_BEGIN'
+      '#(' => 'VECTOR_BEGIN',
+      '_' => 'UNDERSCORE'
     }.freeze
 
     # Here are all the implemented Scheme keywords (in uppercase)
@@ -35,15 +39,18 @@ module Skeem
       BEGIN
       COND
       DEFINE
+      DEFINE-SYNTAX
       DO
       ELSE
       IF
+      INCLUDE
       LAMBDA
       LET
       LET*
       QUASIQUOTE
       QUOTE
       SET!
+      SYNTAX-RULES
       UNQUOTE
       UNQUOTE-SPLICING
     ].map { |x| [x, x] } .to_h
@@ -88,9 +95,9 @@ module Skeem
       if "()'`".include? curr_ch
         # Delimiters, separators => single character token
         token = build_token(@@lexeme2name[curr_ch], scanner.getch)
-      elsif (lexeme = scanner.scan(/(?:\.)(?=\s)/)) # Single char occurring alone
-        token = build_token('PERIOD', lexeme)
-      elsif (lexeme = scanner.scan(/(?:,@?)|(?:=>)/))
+      elsif (lexeme = scanner.scan(/(?:\.|_)(?=\s|\()/)) # Single char occurring alone
+        token = build_token(@@lexeme2name[curr_ch], scanner.getch)
+      elsif (lexeme = scanner.scan(/(?:,@?)|(?:=>)|(?:\.\.\.)/))
         token = build_token(@@lexeme2name[lexeme], lexeme)
       elsif (token = recognize_char_token)
         # Do nothing

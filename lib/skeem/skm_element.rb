@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Skeem
   # Abstract class. Generalization of any S-expr element.
   SkmElement = Struct.new(:position) do
@@ -118,7 +120,7 @@ module Skeem
     end
 
    def inspect
-      result = inspect_prefix
+      result = inspect_prefix.dup
       result << inspect_specific
       result << inspect_suffix
 

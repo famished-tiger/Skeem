@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'skm_simple_datum'
 require_relative 'skm_compound_datum'
 require_relative 'skm_pair'

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bundler/setup'
 require 'rspec' # Use the RSpec framework
 require_relative '../lib/skeem'
@@ -31,9 +33,9 @@ module InterpreterSpec
         else
           expect(result).to eq(predicted)
         end
-      rescue Exception => exc
+      rescue Exception => e
         $stderr.puts "Row #{index + 1} failed."
-        throw exc
+        throw e
       end
     end
   end

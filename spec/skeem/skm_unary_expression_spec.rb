@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/datum_dsl'
 require_relative '../../lib/skeem/s_expr_nodes'

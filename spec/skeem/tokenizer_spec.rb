@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/tokenizer' # Load the class under test
 
@@ -201,10 +203,10 @@ module Skeem
 # "\x03B1; is named GREEK SMALL LETTER ALPHA."
 
     context 'Identifier recognition:' do
-      it 'should tokenize identifier' do
+      it 'should tokenize identifiers' do
         examples = [
           # Examples taken from R7RS document
-          '...', '+', '+soup+', '<=?',
+          '+', '+soup+', '<=?',
           '->string', 'a34kTMNs', 'lambda',
           'list->vector', 'q', 'V17a',
           '|two words|', '|two\x20;words|',
@@ -221,6 +223,14 @@ module Skeem
           end
           expect(token.lexeme).to eq(input)
         end
+      end
+      
+      it 'should recognize ellipsis' do
+        input = '...'
+        subject.reinitialize(input)
+        token = subject.tokens.first
+        expect(token.terminal).to eq('ELLIPSIS')
+        expect(token.lexeme).to eq(input)          
       end
     end # context
 
