@@ -141,6 +141,5 @@ module Skeem
       # Notify the value that it is bound to a variable from this frame.
       anExpression.bound!(self)
     end
-
   end # class
 end # module

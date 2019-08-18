@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../spec_helper' # Use the RSpec framework
-require_relative '../../lib/skeem/datum_dsl' 
+require_relative '../../lib/skeem/datum_dsl'
 require_relative '../../lib/skeem/skm_frame' # Load the class under test
 
 module Skeem
@@ -11,7 +11,7 @@ module Skeem
     let(:sample_env) { SkmFrame.new }
     context 'Initialization:' do
       it 'could be initialized without argument' do
-        expect { SkmFrame.new() }.not_to raise_error
+        expect { SkmFrame.new }.not_to raise_error
       end
 
       it 'could be initialized with optional argument' do
@@ -116,6 +116,5 @@ module Skeem
         expect(nested.size).to eq(1)
       end
     end # context
-
   end # describe
 end # module

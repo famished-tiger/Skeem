@@ -20,13 +20,15 @@ module Skeem
     end
 
     def ==(other)
-      return true if self.equal?(other)
+      return true if equal?(other)
+
       result = case other
         when SkmCompoundDatum
-          self.class == other.class && self.members == other.members
+          self.class == other.class && members == other.members
         when Array
           members == other
       end
+      result
     end
 
     alias eqv? equal?

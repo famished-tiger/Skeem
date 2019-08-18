@@ -7,10 +7,10 @@ require_relative 's_expr_builder'
 module Skeem
   class Parser
     attr_reader(:engine)
-    
-    def initialize()
+
+    def initialize
       # Create a Rley facade object
-      @engine = Rley::Engine.new do |cfg| 
+      @engine = Rley::Engine.new do |cfg|
         cfg.diagnose = true
         cfg.repr_builder = SkmBuilder
       end
@@ -18,7 +18,7 @@ module Skeem
       # Step 1. Load Skeem grammar
       @engine.use_grammar(Skeem::Grammar)
     end
-      
+
     # Parse the given Skeem expression into a parse tree.
     # @param source [String] Skeem expression to parse
     # @return [ParseTree] A regexp object equivalent to the Skeem expression.

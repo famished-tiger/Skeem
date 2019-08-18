@@ -19,7 +19,7 @@ module Skeem
       def callable?
         true
       end
-      
+
       def procedure?
         true
       end
@@ -78,10 +78,8 @@ module Skeem
           if (anArity.low + 2) != count_param
             discrepancy_arity_argument_count(anArity.low, count_param, 2)
           end
-        else # fixed arity...
-          if (anArity.high + 1) != count_param
-            discrepancy_arity_argument_count(anArity.high, count_param, 1)
-          end
+        elsif (anArity.high + 1) != count_param # fixed arity...
+          discrepancy_arity_argument_count(anArity.high, count_param, 1)
         end
 
         anArity
@@ -104,10 +102,8 @@ module Skeem
           if count_actuals > arity.high
             wrong_number_arguments(arity.high, count_actuals)
           end
-        else # fixed non-zero arity...
-          if count_actuals != arity.high
-            wrong_number_arguments(arity.high, count_actuals)
-          end
+        elsif count_actuals != arity.high # fixed non-zero arity...
+          wrong_number_arguments(arity.high, count_actuals)
         end
       end
 
@@ -116,11 +112,11 @@ module Skeem
           result = code.call(aRuntime)
         elsif arity.variadic? || (arity.low < arity.high)
           if arity.low.zero?
-            if ['and', 'or', 'append'].include? identifier
+            if %w[and or append].include? identifier
               # Defer the evaluation of arguments to the primitive
               result = code.call(aRuntime, operands)
             else
-              evaluated_args = operands.map {|opernd| opernd.evaluate(aRuntime) }
+              evaluated_args = operands.map { |opernd| opernd.evaluate(aRuntime) }
               result = code.call(aRuntime, evaluated_args)
             end
           else
@@ -136,14 +132,13 @@ module Skeem
             # p args.inspect
             result = code.send(:call, aRuntime, *args)
           end
-        else # Fixed arity...
-          if identifier.value =~ /^set-[a-zA-Z]+!/ || identifier.value =~ /[a-zA-Z]+-set!/
-            # Defer evaluation inside the primitive
-            result = code.send(:call, aRuntime, *operands)
-          else
-            evaluated_args = operands.map {|opernd| opernd.evaluate(aRuntime) }
-            result = code.send(:call, aRuntime, *evaluated_args)          
-          end
+        elsif identifier.value =~ /^set-[a-zA-Z]+!/ || identifier.value =~ /[a-zA-Z]+-set!/
+          # Fixed arity...
+          # Defer evaluation inside the primitive
+          result = code.send(:call, aRuntime, *operands)
+        else
+          evaluated_args = operands.map { |opernd| opernd.evaluate(aRuntime) }
+          result = code.send(:call, aRuntime, *evaluated_args)
         end
 
         result

@@ -37,15 +37,15 @@ module Skeem
         ['+456', 456]
       ]
     end
-    
+
     let(:rational_tests) do
       [
-        [-Rational(2,3), -Rational(2, 3)],
+        [-Rational(2, 3), -Rational(2, 3)],
         [Rational(22, 7), Rational(22, 7)],
         ['-2/3', -Rational(2, 3)],
         ['+22/7', Rational(22, 7)]
       ]
-    end    
+    end
 
     let(:real_tests) do
       [
@@ -62,13 +62,13 @@ module Skeem
 
     let(:string_tests) do
       [
-        ['hello', 'hello']
+        %w[hello hello]
       ]
     end
 
     let(:identifier_tests) do
       [
-        ['define', 'define'],
+        %w[define define],
         [SkmString.create('positive?'), 'positive?']
       ]
     end
@@ -78,7 +78,7 @@ module Skeem
         ['#t', SkmBoolean.create(true)],
         [-1, SkmInteger.create(-1)],
         [1.41, 1.41],
-        ['foo', 'foo']
+        %w[foo foo]
       ]
     end
 
@@ -94,12 +94,12 @@ module Skeem
           expect(subject.integer(literal)).to eq(predicted)
         end
       end
-      
+
       it 'should convert rational literals' do
         rational_tests.each do |(literal, predicted)|
           expect(subject.rational(literal)).to eq(predicted)
         end
-      end      
+      end
 
       it 'should convert real number literals' do
         real_tests.each do |(literal, predicted)|
@@ -180,12 +180,12 @@ module Skeem
           expect(subject.to_datum(literal)).to eq(predicted)
         end
       end
-      
+
       it 'should recognize & convert rational literals' do
         rational_tests.each do |(literal, predicted)|
           expect(subject.to_datum(literal)).to eq(predicted)
         end
-      end      
+      end
 
       it 'should recognize & convert real number literals' do
         real_tests.each do |(literal, predicted)|
@@ -221,6 +221,5 @@ module Skeem
       # $stderr.puts duplicate.inspect
       expect(duplicate.to_a).to eq([f, g])
     end
-
   end # describe
 end # module

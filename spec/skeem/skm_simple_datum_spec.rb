@@ -49,7 +49,7 @@ module Skeem
         expect(subject).to eq(subject)
       end
 
-     it 'should assert the equality by value' do
+      it 'should assert the equality by value' do
         # Comparison with other instances
         expect(instance).to eq(SkmSimpleDatum.create(3))
         expect(instance).not_to eq(SkmSimpleDatum.create('foo'))
@@ -58,24 +58,24 @@ module Skeem
         expect(instance).to eq(3)
         expect(instance).not_to eq('foo')
       end
-      
+
       it 'should be equivalent to itself' do
         expect(subject).to be_eqv(subject)
       end
-      
+
       it 'should be equivalent by value' do
         same = SkmSimpleDatum.create(3)
         expect(instance).to be_eqv(same)
-      end  
+      end
 
       it 'should be Skeem equal to itself' do
         expect(subject).to be_skm_equal(subject)
-      end      
-      
+      end
+
       it 'should be Skeem equal by value' do
         same = SkmSimpleDatum.create(3)
         expect(instance).to be_skm_equal(same)
-      end       
+      end
 
       it 'should be self-evaluating' do
         expect(subject.evaluate(runtime)).to be_equal(subject)
@@ -86,7 +86,7 @@ module Skeem
       end
 
       it 'should return its text representation' do
-        expect(subject.inspect).to eq("<Skeem::SkmSimpleDatum: sample-value>")
+        expect(subject.inspect).to eq('<Skeem::SkmSimpleDatum: sample-value>')
       end
 
       it 'should respond to visitor' do
@@ -175,7 +175,7 @@ module Skeem
       it 'should react positively to real? predicate' do
         expect(subject).to be_real
       end
-      
+
       it 'should react negatively to exact? predicate' do
         expect(subject).not_to be_exact
       end
@@ -183,11 +183,11 @@ module Skeem
       it 'should implement the eqv? predicate' do
         same = SkmReal.create(0.51)
         different = SkmReal.create(1.21)
-        
+
         expect(subject).to be_eqv(subject)
         expect(subject).to be_eqv(same)
         expect(subject).not_to be_eqv(different)
-      end      
+      end
     end # context
   end # describe
 
@@ -215,24 +215,24 @@ module Skeem
       it 'should react positively to integer? predicate' do
         expect(subject).to be_real
       end
-      
+
       it 'should react positively to exact? predicate' do
         expect(subject).to be_exact
       end
 
       it 'should implement the eqv? predicate' do
         three = SkmInteger.create(3)
-        real_3 = SkmReal.create(3.0)
+        real3 = SkmReal.create(3.0)
         four = SkmInteger.create(4)
-        
+
         expect(subject).to be_eqv(three)
-        expect(subject).not_to be_eqv(real_3)
+        expect(subject).not_to be_eqv(real3)
         expect(subject).not_to be_eqv(four)
       end
     end # context
   end # describe
 
-describe SkmString do
+  describe SkmString do
     let(:pos) { double('fake-position') }
     let(:dummy_symbol) { double('dummy') }
     let(:sample_value) { 'Hello' }
@@ -274,24 +274,24 @@ describe SkmString do
 
       it 'could be initialized with a token, a position and a flag' do
         expect { SkmIdentifier.new(dummy_token, pos, true) }.not_to raise_error
-      end       
+      end
 
       it 'should know whether it is used as a variable name' do
         expect(subject.is_var_name).to eq(false)
-        
+
         instance = SkmIdentifier.new(dummy_token, pos, true)
         expect(instance.is_var_name).to eq(true)
       end
-    
+
       it 'should react positively to symbol? predicate' do
         expect(subject).to be_symbol
       end
-      
+
       it 'should react to verbatim? predicate' do
         expect(subject).to be_verbatim
         instance = SkmIdentifier.new(dummy_token, pos, true)
         expect(instance).not_to be_verbatim
-      end      
+      end
 
       it 'should return its text representation' do
         expect(subject.inspect).to eq('<Skeem::SkmIdentifier: this-is-it!>')

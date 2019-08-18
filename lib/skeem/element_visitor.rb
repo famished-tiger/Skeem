@@ -14,6 +14,7 @@ module Skeem
     # @param aRoot [SkmElement] the parse tree to visit.
     def initialize(aRoot)
       raise StandardError if aRoot.nil?
+
       @root = aRoot
       @subscribers = []
     end
@@ -58,7 +59,6 @@ module Skeem
       broadcast(:before_empty_list, anEmptyList)
       broadcast(:after_empty_list, anEmptyList)
     end
-
 
     def visit_pair(aPair)
       broadcast(:before_pair, aPair)
@@ -112,6 +112,7 @@ module Skeem
     def broadcast(msg, *args)
       subscribers.each do |subscr|
         next unless subscr.respond_to?(msg) || subscr.respond_to?(:accept_all)
+
         subscr.send(msg, runtime, *args)
       end
     end

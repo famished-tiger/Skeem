@@ -37,7 +37,7 @@ module Skeem
       def binary
         SkmArity.new(2, 2)
       end
-      
+
       def ternary
         SkmArity.new(3, 3)
       end
@@ -161,7 +161,7 @@ module Skeem
         create_map(aRuntime)
       end
 
-      def add_io_procedures(aRuntime)(aRuntime)
+      def add_io_procedures(aRuntime)
         create_display(aRuntime)
       end
 
@@ -174,7 +174,7 @@ module Skeem
 
       def create_plus(aRuntime)
         # arglist should be a Ruby Array
-        primitive = ->(_runtime, arglist) do
+        primitive = lambda do |_runtime, arglist|
           if arglist.empty?
             integer(0)
           else
@@ -188,7 +188,7 @@ module Skeem
       end
 
       def create_minus(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           raw_result = first_operand.value
           if arglist.empty?
             raw_result = -raw_result
@@ -202,7 +202,7 @@ module Skeem
       end
 
       def create_multiply(aRuntime)
-        primitive = ->(_runtime, arglist) do
+        primitive = lambda do |_runtime, arglist|
           if arglist.empty?
             integer(1)
           else
@@ -216,7 +216,6 @@ module Skeem
       end
 
       def reciprocal(aLiteral)
-
         case aLiteral
           when Integer
             result = Rational(1, aLiteral)
@@ -230,29 +229,29 @@ module Skeem
       end
 
       def create_divide(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           raw_result = first_operand.value
           if arglist.empty?
             raw_result = reciprocal(raw_result)
           else
             # Ugly: Ruby version dependency: Rubies older than 2.4 have class Fixnum instead of Integer
-            int_class = (RUBY_VERSION[0..2] < "2.4") ? Fixnum : Integer
+            int_class = (RUBY_VERSION[0..2] < '2.4') ? Fixnum : Integer
 
             arglist.each do |elem|
               elem_value = elem.value
               case [raw_result.class, elem_value.class]
                 when [int_class, int_class]
                   if raw_result.modulo(elem_value).zero?
-                    raw_result = raw_result / elem_value
+                    raw_result /= elem_value
                   else
                     raw_result = Rational(raw_result, elem_value)
                   end
 
                 when [int_class, Rational]
-                  raw_result = raw_result * reciprocal(elem_value)
+                  raw_result *= reciprocal(elem_value)
 
                 when [Rational, Rational]
-                  raw_result = raw_result * reciprocal(elem_value)
+                  raw_result *= reciprocal(elem_value)
                 else
                   raw_result = raw_result.to_f
                   raw_result /= elem_value
@@ -266,8 +265,8 @@ module Skeem
       end
 
       def create_floor_slash(aRuntime)
-        primitive = ->(_runtime, operand_1, operand_2) do
-          (quotient, modulus) = operand_1.value.divmod(operand_2.value)
+        primitive = lambda do |_runtime, operand1, operand2|
+          (quotient, modulus) = operand1.value.divmod(operand2.value)
           SkmPair.new(to_datum(quotient), to_datum(modulus)) # improper list!
         end
 
@@ -275,10 +274,10 @@ module Skeem
       end
 
       def create_truncate_slash(aRuntime)
-        primitive = ->(_runtime, operand_1, operand_2) do
-          modulo_ = operand_1.value / operand_2.value
-          modulo_ += 1 if modulo_ < 0
-          remainder_ = operand_1.value.remainder(operand_2.value)
+        primitive = lambda do |_runtime, operand1, operand2|
+          modulo_ = operand1.value / operand2.value
+          modulo_ += 1 if modulo_.negative?
+          remainder_ = operand1.value.remainder(operand2.value)
           SkmPair.new(to_datum(modulo_), to_datum(remainder_)) # improper list!
         end
 
@@ -286,7 +285,7 @@ module Skeem
       end
 
       def create_gcd(aRuntime)
-        primitive = ->(_runtime, arglist) do
+        primitive = lambda do |_runtime, arglist|
           if arglist.empty?
             integer(0)
           else
@@ -305,7 +304,7 @@ module Skeem
       end
 
       def create_lcm(aRuntime)
-        primitive = ->(_runtime, arglist) do
+        primitive = lambda do |_runtime, arglist|
           if arglist.empty?
             integer(1)
           else
@@ -319,7 +318,7 @@ module Skeem
       end
 
       def create_numerator(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           case arg_evaluated
             when SkmInteger
               result = arg_evaluated
@@ -333,7 +332,7 @@ module Skeem
       end
 
       def create_denominator(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           case arg_evaluated
             when SkmInteger
               result = 1
@@ -347,7 +346,7 @@ module Skeem
       end
 
       def create_floor(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           result = arg_evaluated.value.floor
           integer(result)
         end
@@ -356,7 +355,7 @@ module Skeem
       end
 
       def create_ceiling(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           result = arg_evaluated.value.ceil
           integer(result)
         end
@@ -365,7 +364,7 @@ module Skeem
       end
 
       def create_round(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           result = arg_evaluated.value.round
           integer(result)
         end
@@ -379,8 +378,8 @@ module Skeem
       end
 
       def create_eqv?(aRuntime)
-        primitive = ->(runtime, operand_1, operand_2) do
-          core_eqv?(operand_1, operand_2)
+        primitive = lambda do |_runtime, operand1, operand2|
+          core_eqv?(operand1, operand2)
         end
 
         define_primitive_proc(aRuntime, 'eqv?', binary, primitive)
@@ -392,7 +391,7 @@ module Skeem
       end
 
       def create_eq?(aRuntime)
-        primitive = ->(_runtime, operand_1, operand_2) do
+        primitive = lambda do |_runtime, operand1, operand2|
           core_eq?(operand1, operand2)
         end
 
@@ -400,8 +399,8 @@ module Skeem
       end
 
       def create_equal?(aRuntime)
-        primitive = ->(_runtime, operand_1, operand_2) do
-          raw_result = operand_1.skm_equal?(operand_2)
+        primitive = lambda do |_runtime, operand1, operand2|
+          raw_result = operand1.skm_equal?(operand2)
           boolean(raw_result)
         end
 
@@ -409,7 +408,7 @@ module Skeem
       end
 
       def create_equal(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           if arglist.empty?
             boolean(true)
           else
@@ -423,11 +422,11 @@ module Skeem
       end
 
       def create_lt(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |runtime, first_operand, arglist|
           if arglist.empty?
             result = false
           else
-            result = primitive_comparison(:<, _runtime, first_operand, arglist)
+            result = primitive_comparison(:<, runtime, first_operand, arglist)
           end
           boolean(result)
         end
@@ -436,11 +435,11 @@ module Skeem
       end
 
       def create_gt(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |runtime, first_operand, arglist|
           if arglist.empty?
             result = false
           else
-            result = primitive_comparison(:>, _runtime, first_operand, arglist)
+            result = primitive_comparison(:>, runtime, first_operand, arglist)
           end
           boolean(result)
         end
@@ -449,11 +448,11 @@ module Skeem
       end
 
       def create_lte(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |runtime, first_operand, arglist|
           if arglist.empty?
             result = true
           else
-            result = primitive_comparison(:<=, _runtime, first_operand, arglist)
+            result = primitive_comparison(:<=, runtime, first_operand, arglist)
           end
           boolean(result)
         end
@@ -462,11 +461,11 @@ module Skeem
       end
 
       def create_gte(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |runtime, first_operand, arglist|
           if arglist.empty?
             result = true
           else
-            result = primitive_comparison(:>=, _runtime, first_operand, arglist)
+            result = primitive_comparison(:>=, runtime, first_operand, arglist)
           end
           boolean(result)
         end
@@ -485,7 +484,7 @@ module Skeem
       end
 
       def create_max(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           if arglist.empty?
             result = first_operand
           else
@@ -503,7 +502,7 @@ module Skeem
       end
 
       def create_min(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           if arglist.empty?
             result = first_operand
           else
@@ -522,7 +521,7 @@ module Skeem
 
       def create_number2string(aRuntime)
         # TODO: add support for radix argument
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmNumber, 'number', 'number->string')
           string(arg_evaluated.value)
         end
@@ -533,7 +532,7 @@ module Skeem
       def create_and(aRuntime)
         # arglist should be a Ruby Array
         # Arguments aren't evaluated yet!...
-        primitive = ->(runtime, arglist) do
+        primitive = lambda do |runtime, arglist|
           if arglist.empty?
             boolean(true) # in conformance with 4.2.1
           else
@@ -541,7 +540,7 @@ module Skeem
             last_result = nil
             # $stderr.puts arglist.inspect
             arglist.each do |raw_arg|
-              argument = raw_arg.evaluate(aRuntime)
+              argument = raw_arg.evaluate(runtime)
               last_result = argument
               raw_result &&= !(argument.boolean? && !argument.value)
               break unless raw_result # stop here, a false was found...
@@ -559,14 +558,14 @@ module Skeem
       def create_or(aRuntime)
         # arglist should be a Ruby Array
         # Arguments aren't evaluated yet!...
-        primitive = ->(runtime, arglist) do
+        primitive = lambda do |runtime, arglist|
           if arglist.empty?
             boolean(false) # in conformance with 4.2.1
           else
             raw_result = false
             last_result = nil
             arglist.each do |raw_arg|
-              argument = raw_arg.evaluate(aRuntime)
+              argument = raw_arg.evaluate(runtime)
               last_result = argument
               raw_result ||= (!argument.boolean? || argument.value)
               break if raw_result # stop here, a true was found...
@@ -606,7 +605,7 @@ module Skeem
       end
 
       def create_boolean_equal(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           compare_all(first_operand, arglist, :==)
         end
 
@@ -614,7 +613,7 @@ module Skeem
       end
 
       def create_char2int(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmChar, 'character', 'char->integer')
           integer(arg_evaluated.value.ord)
         end
@@ -623,7 +622,7 @@ module Skeem
       end
 
       def create_int2char(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmInteger, 'integer', 'integer->char')
           char(arg_evaluated.value.ord)
         end
@@ -632,7 +631,7 @@ module Skeem
       end
 
       def create_char_equal(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           compare_all(first_operand, arglist, :==)
         end
 
@@ -640,7 +639,7 @@ module Skeem
       end
 
       def create_char_lt(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           compare_all(first_operand, arglist, :<)
         end
 
@@ -648,7 +647,7 @@ module Skeem
       end
 
       def create_char_gt(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           compare_all(first_operand, arglist, :>)
         end
 
@@ -656,7 +655,7 @@ module Skeem
       end
 
       def create_char_lte(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           compare_all(first_operand, arglist, :<=)
         end
 
@@ -664,16 +663,15 @@ module Skeem
       end
 
       def create_char_gte(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           compare_all(first_operand, arglist, :>=)
         end
 
         define_primitive_proc(aRuntime, 'char>=?', one_or_more, primitive)
       end
 
-
       def create_make_string(aRuntime)
-        primitive = ->(runtime, count_arg, arglist) do
+        primitive = lambda do |_runtime, count_arg, arglist|
           count = count_arg
           check_argtype(count, SkmInteger, 'integer', 'make-string')
           if arglist.empty?
@@ -689,7 +687,7 @@ module Skeem
       end
 
       def create_string_string(aRuntime)
-        primitive = ->(_runtime, arglist) do
+        primitive = lambda do |_runtime, arglist|
           if arglist.empty?
             value = ''
           else
@@ -706,7 +704,7 @@ module Skeem
       end
 
       def create_string_equal(aRuntime)
-        primitive = ->(_runtime, first_operand, arglist) do
+        primitive = lambda do |_runtime, first_operand, arglist|
           all_same?(first_operand, arglist)
         end
 
@@ -714,7 +712,7 @@ module Skeem
       end
 
       def create_string_append(aRuntime)
-        primitive = ->(_runtime, arglist) do
+        primitive = lambda do |_runtime, arglist|
           if arglist.empty?
             value = ''
           else
@@ -728,7 +726,7 @@ module Skeem
       end
 
       def create_string_length(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmString, 'string', 'string-length')
           integer(arg_evaluated.length)
         end
@@ -737,7 +735,7 @@ module Skeem
       end
 
       def create_string2symbol(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmString, 'string', 'string->symbol')
           identifier(arg_evaluated)
         end
@@ -746,7 +744,7 @@ module Skeem
       end
 
       def create_symbol2string(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmIdentifier, 'symbol', 'symbol->string')
           string(arg_evaluated)
         end
@@ -755,7 +753,7 @@ module Skeem
       end
 
       def create_car(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmPair, 'pair', 'car')
           arg_evaluated.car
         end
@@ -764,7 +762,7 @@ module Skeem
       end
 
       def create_cdr(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmPair, 'pair', 'cdr')
           arg_evaluated.cdr
         end
@@ -773,15 +771,15 @@ module Skeem
       end
 
       def create_cons(aRuntime)
-        primitive = ->(_runtime, obj1, obj2) do
+        primitive = lambda do |_runtime, obj1, obj2|
           SkmPair.new(obj1, obj2)
         end
 
         define_primitive_proc(aRuntime, 'cons', binary, primitive)
       end
-      
+
       def create_make_list(aRuntime)
-        primitive = ->(runtime, count_arg, arglist) do
+        primitive = lambda do |_runtime, count_arg, arglist|
           count = count_arg
           check_argtype(count, SkmInteger, 'integer', 'make-list')
           if arglist.empty?
@@ -793,11 +791,11 @@ module Skeem
           SkmPair.create_from_a(arr)
         end
 
-        define_primitive_proc(aRuntime, 'make-list', one_or_two, primitive)      
+        define_primitive_proc(aRuntime, 'make-list', one_or_two, primitive)
       end
 
       def create_length(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'length')
           integer(arg_evaluated.length)
         end
@@ -806,7 +804,7 @@ module Skeem
       end
 
       def create_list2vector(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'list->vector')
           vector(arg_evaluated.to_a)
         end
@@ -822,19 +820,17 @@ module Skeem
         else
           but_last = arglist.take(arglist.length - 1)
           check_arguments(but_last, [SkmPair, SkmEmptyList], 'list', 'append')
-          result = arglist.shift.klone  # First list is taken
+          result = arglist.shift.klone # First list is taken
           arglist.each do |arg|
             case arg
               when SkmPair
                 cloned = arg.klone
                 if result.kind_of?(SkmEmptyList)
                   result = cloned
+                elsif result.kind_of?(SkmEmptyList)
+                  result = SkmPair.new(arg, SkmEmptyList.instance)
                 else
-                  if result.kind_of?(SkmEmptyList)
-                    result = SkmPair.new(arg, SkmEmptyList.instance)
-                  else
-                    result.append_list(cloned)
-                  end
+                  result.append_list(cloned)
                 end
               when SkmEmptyList
                 # Do nothing
@@ -853,9 +849,9 @@ module Skeem
 
       def create_append(aRuntime)
         # Arguments aren't evaluated yet!...
-        primitive = ->(runtime, arglist) do
+        primitive = lambda do |runtime, arglist|
           if arglist.size > 1
-            arguments = evaluate_arguments(arglist, aRuntime)
+            arguments = evaluate_arguments(arglist, runtime)
           else
             arguments = arglist
           end
@@ -867,13 +863,14 @@ module Skeem
       end
 
       def create_reverse(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'reverse')
           if arg_evaluated == SkmEmptyList.instance
             result = arg_evaluated
           else
             err_msg = 'reverse procedure requires a proper list as argument'
-            raise StandardError, err_msg  unless arg_evaluated.proper?
+            raise StandardError, err_msg unless arg_evaluated.proper?
+
             elems_reversed = arg_evaluated.to_a.reverse
             result = SkmPair.create_from_a(elems_reversed)
           end
@@ -885,7 +882,7 @@ module Skeem
 
       def create_setcar(aRuntime)
         # Arguments aren't evaluated yet!...
-        primitive = ->(runtime, pair_arg, obj_arg) do
+        primitive = lambda do |runtime, pair_arg, obj_arg|
           case pair_arg
             when SkmPair
               pair = pair_arg
@@ -910,7 +907,7 @@ module Skeem
 
       def create_setcdr(aRuntime)
         # Arguments aren't evaluated yet!...
-        primitive = ->(runtime, pair_arg, obj_arg) do
+        primitive = lambda do |runtime, pair_arg, obj_arg|
           case pair_arg
             when SkmPair
               pair = pair_arg
@@ -934,21 +931,22 @@ module Skeem
       end
 
       def create_assq(aRuntime)
-        primitive = ->(runtime, obj_arg, alist_arg) do
+        primitive = lambda do |runtime, obj_arg, alist_arg|
           assoc_list = alist_arg.evaluate(runtime)
           check_assoc_list(assoc_list, 'assq')
           obj = obj_arg.evaluate(runtime)
           result = boolean(false)
           unless assoc_list.empty?
             pair = assoc_list
-            begin
+            loop do
               are_equal = core_eq?(pair.car.car, obj)
               if are_equal.value
                 result = pair.car
                 break
               end
               pair = pair.cdr
-            end while (pair && (pair.kind_of?(SkmPair)))
+              break unless pair&.kind_of?(SkmPair)
+            end
           end
 
           result
@@ -957,19 +955,20 @@ module Skeem
       end
 
       def create_assv(aRuntime)
-        primitive = ->(runtime, obj, assoc_list) do
+        primitive = lambda do |_runtime, obj, assoc_list|
           check_assoc_list(assoc_list, 'assq')
           result = boolean(false)
           unless assoc_list.empty?
             pair = assoc_list
-            begin
+            loop do
               are_equal = core_eqv?(pair.car.car, obj)
               if are_equal.value
                 result = pair.car
                 break
               end
               pair = pair.cdr
-            end while (pair && (pair.kind_of?(SkmPair)))
+              break unless pair&.kind_of?(SkmPair)
+            end
           end
 
           result
@@ -982,15 +981,16 @@ module Skeem
 
         unless alist.empty?
           cell = SkmPair.new(integer(1), alist)
-          begin
+          loop do
             cell = cell.cdr
             check_argtype(cell, SkmPair, 'association list', proc_name)
-          end while cell.cdr.kind_of?(SkmPair)
+            break unless cell.cdr.kind_of?(SkmPair)
+          end
         end
       end
 
       def create_list_copy(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, [SkmPair, SkmEmptyList], 'list', 'list-copy')
           arg_evaluated.klone # Previously: arg.klone
         end
@@ -999,7 +999,7 @@ module Skeem
       end
 
       def create_vector(aRuntime)
-        primitive = ->(_runtime, elements) do
+        primitive = lambda do |_runtime, elements|
           vector(elements)
         end
 
@@ -1007,7 +1007,7 @@ module Skeem
       end
 
       def create_vector_length(aRuntime)
-        primitive = ->(_runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmVector, 'vector', 'vector-length')
           integer(arg_evaluated.length)
         end
@@ -1016,7 +1016,7 @@ module Skeem
       end
 
       def create_make_vector(aRuntime)
-        primitive = ->(runtime, count_arg, arglist) do
+        primitive = lambda do |runtime, count_arg, arglist|
           count = count_arg.evaluate(runtime)
           check_argtype(count, SkmInteger, 'integer', 'make_vector')
           if arglist.empty?
@@ -1032,8 +1032,8 @@ module Skeem
       end
 
       def create_vector_ref(aRuntime)
-          # argument 1: a vector, argument 2: an index(integer)
-          primitive = ->(runtime, vector, index) do
+        # argument 1: a vector, argument 2: an index(integer)
+        primitive = lambda do |_runtime, vector, index|
           check_argtype(vector, SkmVector, 'vector', 'vector-ref')
           check_argtype(index, SkmInteger, 'integer', 'vector-ref')
           # TODO: index checking
@@ -1043,10 +1043,10 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'vector-ref', binary, primitive)
       end
-      
+
       def create_vector_set(aRuntime)
-          # Arguments aren't evaluated yet!...
-          primitive = ->(runtime, vector, k, object) do
+        # Arguments aren't evaluated yet!...
+        primitive = lambda do |runtime, vector, k, object|
           index = k.evaluate(runtime)
           check_argtype(vector, SkmVector, 'vector', 'vector-set!')
           check_argtype(index, SkmInteger, 'integer', 'vector-set!')
@@ -1054,12 +1054,12 @@ module Skeem
           vector.members[index.value] = object
           vector
         end
-        
+
         define_primitive_proc(aRuntime, 'vector-set!', ternary, primitive)
       end
 
       def create_vector2list(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           check_argtype(arg_evaluated, SkmVector, 'vector', 'vector->list')
           SkmPair.create_from_a(arg_evaluated.members)
         end
@@ -1068,7 +1068,7 @@ module Skeem
       end
 
       def create_apply(aRuntime)
-        primitive = ->(runtime, proc_arg, arglist) do
+        primitive = lambda do |runtime, proc_arg, arglist|
           if arglist.empty?
             result = SkmEmptyList.instance
           else
@@ -1076,18 +1076,19 @@ module Skeem
             invoke = ProcedureCall.new(nil, proc_arg, single_list.to_a)
             result = invoke.evaluate(runtime)
           end
+          result
         end
 
         define_primitive_proc(aRuntime, 'apply', one_or_more, primitive)
       end
 
       def create_map(aRuntime)
-        primitive = ->(runtime, proc_arg, arglist) do
+        primitive = lambda do |runtime, proc_arg, arglist|
           if arglist.empty?
             result = SkmEmptyList.instance
           else
             curr_cells = arglist
-            arity = curr_cells.size
+            # arity = curr_cells.size
             initial_result = nil
             curr_result = nil
             loop do
@@ -1103,7 +1104,7 @@ module Skeem
               curr_result = new_result
 
               curr_cells.map!(&:cdr)
-              break if curr_cells.find { |cdr_entry| ! cdr_entry.kind_of?(SkmPair) }
+              break if curr_cells.find { |cdr_entry| !cdr_entry.kind_of?(SkmPair) }
             end
 
             result = initial_result
@@ -1114,27 +1115,27 @@ module Skeem
 
         define_primitive_proc(aRuntime, 'map', one_or_more, primitive)
       end
-      
+
       def create_display(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           # @TODO: make output stream configurable
           print arg_evaluated.value.to_s
           SkmUndefined.instance
         end
-        
-        define_primitive_proc(aRuntime, 'display', unary, primitive)      
+
+        define_primitive_proc(aRuntime, 'display', unary, primitive)
       end
-      
+
       def create_error(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           raise SkmError, arg_evaluated.value
         end
 
-        define_primitive_proc(aRuntime, 'error', unary, primitive)        
+        define_primitive_proc(aRuntime, 'error', unary, primitive)
       end
 
       def create_test_assert(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           if arg_evaluated.boolean? && arg_evaluated.value == false
             assert_call = aRuntime.caller
             pos = assert_call.call_site
@@ -1153,7 +1154,7 @@ module Skeem
       # DON'T USE IT
       # Non-standard procedure reserved for internal testing/debugging purposes.
       def create_debug(aRuntime)
-        primitive = ->(runtime) do
+        primitive = lambda do |_runtime|
           require 'debug'
         end
 
@@ -1163,7 +1164,7 @@ module Skeem
       # DON'T USE IT
       # Non-standard procedure reserved for internal testing/debugging purposes.
       def create_inspect(aRuntime)
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           $stderr.puts 'INSPECT>' + arg_evaluated.inspect
           Skeem::SkmUndefined.instance
         end
@@ -1172,7 +1173,7 @@ module Skeem
 
       def create_object_predicate(aRuntime, predicate_name, msg_name = nil)
         msg_name = predicate_name if msg_name.nil?
-        primitive = ->(runtime, arg_evaluated) do
+        primitive = lambda do |_runtime, arg_evaluated|
           to_datum(arg_evaluated.send(msg_name))
         end
 

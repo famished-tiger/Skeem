@@ -3,7 +3,6 @@
 require_relative 'skm_element'
 
 module Skeem
-
   # An identifier that is not a syntactic keyword can be used as a variable.
   # A variable may give a name to value that is bound (i.e. associated)
   # to that variable.
@@ -58,26 +57,24 @@ module Skeem
 
       result
     end
-
   end # class
 
 
   class SkmUpdateBinding < SkmBinding
-
     protected
 
     def binding_action(aRuntime, anIdentifier, anExpression)
       aRuntime.update_binding(anIdentifier, anExpression)
     end
   end # class
-  
+
   class SkmDelayedUpdateBinding < SkmBinding
     attr_reader :new_val
-    
+
     def initialize(anIdentifier, aValue)
       super(anIdentifier, aValue)
     end
-    
+
     def do_it!(aRuntime)
       aRuntime.update_binding(variable, new_val)
     end
@@ -87,5 +84,5 @@ module Skeem
     def binding_action(_runtime, _identifier, anExpression)
       @new_val = anExpression
     end
-  end # class  
+  end # class
 end # module

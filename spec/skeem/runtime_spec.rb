@@ -10,7 +10,7 @@ require_relative '../../lib/skeem/runtime' # Load the class under test
 module Skeem
   describe Runtime do
     include DatumDSL
-    
+
     let(:some_env) { SkmFrame.new }
     subject { Runtime.new(some_env) }
 
@@ -22,7 +22,7 @@ module Skeem
       it 'should know the environment' do
         expect(subject.environment).to eq(some_env)
       end
-      
+
       it 'should have an empty call stack' do
         expect(subject.call_stack).to be_empty
       end
@@ -44,10 +44,10 @@ module Skeem
         expect(subject.include?('dummy')).to be_truthy
       end
     end # context
-      
+
     context 'Evaluation:' do
       include Primitive::PrimitiveBuilder
-      
+
       # it 'should evaluate a given entry' do
         # entry = integer(3)
         # result = double('fake-procedure')
@@ -56,21 +56,21 @@ module Skeem
         # subject.define('three', entry)
         # expect(subject.evaluate('three')).to eq(3)
       # end
-      
+
       it 'should evaluate a given list' do
         add_primitives(subject)
         sum = list([identifier('+'), 3, 4])
-        
+
         expect(subject.evaluate_form(sum)).to eq(7)
       end
     end # context
-      
+
     context 'Environment nesting:' do
       it 'should add nested environment' do
         expect(subject.depth).to eq(1)
         env_before = subject.environment
         subject.nest
-        
+
         expect(subject.environment).not_to eq(env_before)
         expect(subject.environment.parent).to eq(env_before)
         expect(subject.depth).to eq(2)
@@ -81,24 +81,24 @@ module Skeem
         subject.nest
         parent_before = subject.environment.parent
         expect(subject.depth).to eq(2)
-        
+
         subject.unnest
         expect(subject.environment).to eq(parent_before)
         expect(subject.depth).to eq(1)
       end
     end # context
-    
+
     context 'Call stack operations:' do
       let(:sample_call) do
         pos = double('fake-position')
-        ProcedureCall.new(pos, identifier('boolean?'), [integer(42)])      
+        ProcedureCall.new(pos, identifier('boolean?'), [integer(42)])
       end
-      
+
       it 'should push a call to the stack call' do
         expect { subject.push_call(sample_call) }.not_to raise_error
         expect(subject.call_stack.size). to eq(1)
         expect(subject.caller).to eq(sample_call)
-        
+
         subject.push_call(sample_call.clone)
         expect(subject.call_stack.size). to eq(2)
       end
@@ -107,11 +107,11 @@ module Skeem
         subject.push_call(sample_call)
         expect { subject.pop_call }.not_to raise_error
         expect(subject.call_stack).to be_empty
-        
+
         err = StandardError
         msg = 'Skeem call stack empty!'
         expect { subject.pop_call }.to raise_error(err, msg)
       end
-    end # context    
+    end # context
   end # describe
 end # module

@@ -2,10 +2,12 @@
 
 # Classes that implement nodes of Abstract Syntax Trees (AST) representing
 # Skeem parse results.
+require 'forwardable'
 require 'singleton'
 
 require_relative 'datum_dsl'
 require_relative 'skm_unary_expression'
+require_relative 'skm_procedure_exec'
 
 module Skeem
   class SkmUndefined
@@ -22,7 +24,7 @@ module Skeem
     private
 
     def initialize
-      self.freeze
+      freeze
     end
   end # class
 
@@ -65,11 +67,11 @@ module Skeem
     end
 
     def evaluate(aRuntime)
-      frame_change = false
       aRuntime.push_call(self)
+      # frame_change = false
       # $stderr.puts "\n Start of ProcedureCall#evaluate #{object_id.to_s(16)}"
       # $stderr.puts "  environment: #{aRuntime.environment.object_id.to_s(16)}, "
-      if aRuntime.environment && aRuntime.environment.parent
+      if aRuntime.environment&.parent
         # $stderr.puts "Parent environment #{aRuntime.environment.parent.object_id.to_s(16)}, "
         # $stderr.puts aRuntime.environment.inspect
       end
@@ -86,7 +88,6 @@ module Skeem
         # end
         # $stderr.puts '  callee: ' + callee.inspect
         result = callee.call(aRuntime, actuals)
-        operands_consumed = true
         # aRuntime.pop if frame_change
       end
       aRuntime.pop_call
@@ -96,9 +97,9 @@ module Skeem
 
     def quasiquote(aRuntime)
       quasi_operator = operator.quasiquote(aRuntime)
-      quasi_operands = operands.map { |oper | oper.quasiquote(aRuntime) }
+      quasi_operands = operands.map { |oper| oper.quasiquote(aRuntime) }
 
-       self.class.new(position, quasi_operator, quasi_operands)
+      self.class.new(position, quasi_operator, quasi_operands)
     end
 
     def inspect
@@ -108,7 +109,7 @@ module Skeem
     end
 
     def associations
-      [:operator, :operands]
+      %i[operator operands]
     end
 
     alias children operands
@@ -123,6 +124,7 @@ module Skeem
           result = operator.evaluate(aRuntime)
           # If child proc call consumes the parent's operand, then we're done
           return [:result, result] unless result.callable? # if operands_consumed
+
           callee = result
           # callee = fetch_callee(aRuntime, result)
         when Primitive::PrimitiveProcedure
@@ -146,14 +148,14 @@ module Skeem
     def fetch_callee(aRuntime, var_key)
       begin
         aRuntime.include?(var_key.value)
-      rescue NoMethodError => exc
+      rescue NoMethodError => e
         # $stderr.puts "VVVVVVVVVVVVVVV"
         # $stderr.puts 'var_key: ' + var_key.inspect
         # $stderr.puts 'operator: ' + operator.inspect
         # $stderr.puts 'operands: ' + operands.inspect
         # $stderr.puts 'operands_consumed: ' + operands_consumed.inspect
         # $stderr.puts "^^^^^^^^^^^^^^^"
-        raise exc
+        raise e
       end
       unless aRuntime.include?(var_key.value)
         err = StandardError
@@ -174,6 +176,7 @@ module Skeem
 
     def transform_operands(aRuntime)
       return [] if operands == SkmEmptyList.instance
+
       actuals = operands.to_a
 
       result = actuals.map do |actual|
@@ -187,9 +190,6 @@ module Skeem
 
       result.nil? ? [] : result
     end
-
-
-
   end # class
 
   class SkmCondition < SkmMultiExpression
@@ -213,6 +213,7 @@ module Skeem
       else
         condition_result = consequent.evaluate(aRuntime)
       end
+      condition_result
     end
 
     def quasiquote(aRuntime)
@@ -220,7 +221,7 @@ module Skeem
       quasi_consequent = consequent.quasiquote(aRuntime)
       quasi_alternate = alternate.quasiquote(aRuntime)
 
-       self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)
+      self.class.new(position, quasi_test, quasi_consequent, quasi_alternate)
     end
 
     def inspect
@@ -231,7 +232,7 @@ module Skeem
     end
 
     def associations
-      [:test, :consequent, :alternate]
+      %i[test consequent alternate]
     end
   end # class
 
@@ -268,7 +269,7 @@ module Skeem
     end
 
     def quasiquote(aRuntime)
-        quasi_clauses = clauses.map do |(test, consequent)|
+      quasi_clauses = clauses.map do |(test, consequent)|
           test_qq = test.quasiquote(aRuntime)
           consequent_qq = consequent.quasiquote(aRuntime)
           [test_qq, consequent_qq]
@@ -282,7 +283,7 @@ module Skeem
       result = inspect_prefix + '@test ' + test.inspect + ', '
       result << "@clauses \n"
       clauses.each do |(test, consequent)|
-        result << '  '  << test.inspect << ' ' << consequent.inspect << "\n"
+        result << '  ' << test.inspect << ' ' << consequent.inspect << "\n"
       end
       result << '@alternate ' + alternate.inspect + inspect_suffix
       result
@@ -299,7 +300,8 @@ module Skeem
     end
 
     def ==(other)
-      return true if self.object_id == other.object_id
+      return true if object_id == other.object_id
+
       result = false
 
       case other
@@ -327,61 +329,61 @@ module Skeem
     end
   end # class
 
-class SkmDoExprBuilder
-  attr_reader :bindings
-  attr_reader :update_steps
-  attr_reader :test
-  attr_reader :do_result
-  attr_reader :commands
+  class SkmDoExprBuilder
+    attr_reader :bindings
+    attr_reader :update_steps
+    attr_reader :test
+    attr_reader :do_result
+    attr_reader :commands
 
-  # 3 => iteration_spec_star, 6 => test, 7 => do_result, 9 => command_star
+    # 3 => iteration_spec_star, 6 => test, 7 => do_result, 9 => command_star
 
-  def initialize(iterSpecs, aTest, doResult, theCommands)
-    iteration_specs_set(iterSpecs)
-    @test = aTest
-    @do_result = doResult
-    commands_set(theCommands)
-  end
+    def initialize(iterSpecs, aTest, doResult, theCommands)
+      iteration_specs_set(iterSpecs)
+      @test = aTest
+      @do_result = doResult
+      commands_set(theCommands)
+    end
 
-  def do_expression
-    DoExpression.new(test, do_result, commands, update_steps)
-  end
+    def do_expression
+      DoExpression.new(test, do_result, commands, update_steps)
+    end
 
-  private
+    private
 
-  def iteration_specs_set(iterSpecs)
-    @bindings = iterSpecs.map do |iter_spec|
+    def iteration_specs_set(iterSpecs)
+      @bindings = iterSpecs.map do |iter_spec|
         var = iter_spec.variable
         val = iter_spec.init_expr
         SkmBinding.new(var, val)
       end
 
-    to_update = iterSpecs.select { |iter_spec| iter_spec.step_expr }
-    if to_update
-      steps = to_update.map do |iter_spec|
-        SkmDelayedUpdateBinding.new(iter_spec.variable, iter_spec.step_expr)
-      end
-      if steps.size == 1
-        @update_steps = steps[0]
+      to_update = iterSpecs.select(&:step_expr)
+      if to_update
+        steps = to_update.map do |iter_spec|
+          SkmDelayedUpdateBinding.new(iter_spec.variable, iter_spec.step_expr)
+        end
+        if steps.size == 1
+          @update_steps = steps[0]
+        else
+          @update_steps = SkmPair.create_from_a(steps)
+        end
       else
-        @update_steps = SkmPair.create_from_a(steps)
+        @update_steps = SkmEmptyList.instance
       end
-    else
-      @update_steps = SkmEmptyList.instance
     end
-  end
 
-  def commands_set(theCommands)
-    case theCommands.size
-      when 0
-        @commands = SkmEmptyList.instance
-      when 1
-        @commands = theCommands[0]
-      else
-        @commands = SkmSequencingBlock.new(SkmPair.create_from_a(theCommands))
+    def commands_set(theCommands)
+      case theCommands.size
+        when 0
+          @commands = SkmEmptyList.instance
+        when 1
+          @commands = theCommands[0]
+        else
+          @commands = SkmSequencingBlock.new(SkmPair.create_from_a(theCommands))
+      end
     end
-  end
-end # class
+  end # class
 
   # Syntax outline:
   #  LPAREN DO LPAREN iteration_spec_star RPAREN
@@ -456,12 +458,12 @@ end # class
         test_result = test.evaluate(aRuntime)
         if test_result.boolean? && test_result.value == false
           # Only #f is considered as false, everything else is true
-          commands.evaluate(aRuntime) if commands
+          commands&.evaluate(aRuntime)
           if update_steps
             update_steps.evaluate(aRuntime)
             case update_steps
               when SkmEmptyList.instance
-                ; Do nothing
+                # Do nothing
               when SkmPair
                 arr = update_steps.to_a
                 arr.each { |delayed_binding| delayed_binding.do_it!(aRuntime) }
@@ -484,15 +486,15 @@ end # class
     def initialize(theFilenames)
       @filenames = theFilenames
     end
-    
-    def build()
+
+    def build
       parser = Skeem::Parser.new
       parse_results = filenames.map do |fname|
         f_source = File.read(fname.value)
         ptree = parser.parse(f_source)
         ptree.root
       end
-      
+
       if parse_results.size == 1
         result = parse_results[0]
       else
@@ -501,7 +503,6 @@ end # class
       end
       result
     end
-
   end # class
 
   class SkmFormals
@@ -537,12 +538,10 @@ end # class
 
       if arityKind == :fixed
         @arity = SkmArity.new(fixed_arity, fixed_arity)
-      else # :variadic
-        if formals.empty?
-          raise StandardError, 'Internal error: inconsistent arity'
-        else
-          @arity = SkmArity.new(fixed_arity - 1, '*')
-        end
+      elsif formals.empty? # :variadic
+        raise StandardError, 'Internal error: inconsistent arity'
+      else
+        @arity = SkmArity.new(fixed_arity - 1, '*')
       end
     end
   end # class
@@ -609,7 +608,7 @@ end # class
     end
 
     def associations
-      [:formals, :definitions, :sequence]
+      %i[formals definitions sequence]
     end
 
     def bind_locals(aRuntime, theActuals)
@@ -617,12 +616,14 @@ end # class
       count_actuals = actuals.size
 
       if (count_actuals < required_arity) ||
-        ((count_actuals > required_arity) && !formals.variadic?)
+         ((count_actuals > required_arity) &&
+         !formals.variadic?)
         # $stderr.puts "Error"
         # $stderr.puts self.inspect
         raise StandardError, msg_arity_mismatch(theActuals)
       end
       return if count_actuals.zero? && !formals.variadic?
+
       bind_required_locals(aRuntime, theActuals)
       if formals.variadic?
         variadic_part_raw = actuals.drop(required_arity)
@@ -647,7 +648,7 @@ end # class
         # $stderr.puts "Tef #{aProcedureCall.inspect}"
         # a_def.evaluate(aRuntime)
       end
-      #aProcedureCall.operands_consumed = true
+      # aProcedureCall.operands_consumed = true
     end
 
     private
@@ -688,7 +689,7 @@ end # class
 
     def msg_arity_mismatch(actuals)
       # *** ERROR: wrong number of arguments for #<closure morph> (required 2, got 1)
-      msg1 = "Wrong number of arguments for procedure "
+      msg1 = 'Wrong number of arguments for procedure '
       count_actuals = actuals.size
       msg2 = "(required #{required_arity}, got #{count_actuals})"
       msg1 + msg2
@@ -704,12 +705,6 @@ end # class
     end
   end # class
 
-
-
-
-require 'forwardable'
-require_relative 'skm_procedure_exec'
-
   class SkmLambda < SkmMultiExpression
     include DatumDSL
     extend Forwardable
@@ -724,7 +719,7 @@ require_relative 'skm_procedure_exec'
       @environment = aRuntime.environment
     end
 
-    def evaluate(aRuntime)
+    def evaluate(_runtime)
       self
     end
 
@@ -774,7 +769,7 @@ require_relative 'skm_procedure_exec'
     end
 
     def associations
-      [:formals, :definitions, :sequence]
+      %i[formals definitions sequence]
     end
 
     def bind_locals(aRuntime, theActuals)
@@ -782,12 +777,14 @@ require_relative 'skm_procedure_exec'
       count_actuals = actuals.size
 
       if (count_actuals < required_arity) ||
-        ((count_actuals > required_arity) && !formals.variadic?)
+         ((count_actuals > required_arity) &&
+         !formals.variadic?)
         # $stderr.puts "Error"
         # $stderr.puts self.inspect
         raise StandardError, msg_arity_mismatch(theActuals)
       end
       return if count_actuals.zero? && !formals.variadic?
+
       bind_required_locals(aRuntime, theActuals)
       if formals.variadic?
         variadic_part_raw = actuals.drop(required_arity)
@@ -812,7 +809,7 @@ require_relative 'skm_procedure_exec'
         # $stderr.puts "Tef #{aProcedureCall.inspect}"
         # a_def.evaluate(aRuntime)
       end
-      #aProcedureCall.operands_consumed = true
+      # aProcedureCall.operands_consumed = true
     end
 
     def evaluate_sequence(aRuntime)
@@ -825,11 +822,11 @@ require_relative 'skm_procedure_exec'
             else
               result = cmd.evaluate(aRuntime)
             end
-          rescue NoMethodError => exc
-            $stderr.puts self.inspect
+          rescue NoMethodError => e
+            $stderr.puts inspect
             $stderr.puts sequence.inspect
             $stderr.puts cmd.inspect
-            raise exc
+            raise e
           end
         end
       end
@@ -841,7 +838,7 @@ require_relative 'skm_procedure_exec'
       if environment
         result = self
       else
-        twin = self.dup
+        twin = dup
         twin.set_cond_environment(aRuntime.environment)
         result = twin
       end
@@ -850,7 +847,7 @@ require_relative 'skm_procedure_exec'
     end
 
     def doppelganger(aRuntime)
-      twin = self.dup
+      twin = dup
       twin.set_cond_environment(aRuntime.environment.dup)
       result = twin
 
@@ -862,9 +859,10 @@ require_relative 'skm_procedure_exec'
       # $stderr.puts "  Runtime environment: #{theFrame.object_id.to_s(16)}"
       # $stderr.puts "  Called from #{caller(1, 1)}"
       raise StandardError unless theFrame.kind_of?(SkmFrame)
+
       unless environment
         @environment = theFrame
-        self.freeze
+        freeze
         # $stderr.puts "  Lambda's environment updated!"
       end
     end
@@ -907,16 +905,16 @@ require_relative 'skm_procedure_exec'
 
     def msg_arity_mismatch(actuals)
       # *** ERROR: wrong number of arguments for #<closure morph> (required 2, got 1)
-      msg1 = "Wrong number of arguments for procedure "
+      msg1 = 'Wrong number of arguments for procedure '
       count_actuals = actuals.size
       msg2 = "(required #{required_arity}, got #{count_actuals})"
       msg1 + msg2
     end
 
     def inspect_specific
-      #result = "@environment #{environment.object_id.to_s(16)}, "
+      # result = "@environment #{environment.object_id.to_s(16)}, "
       result = +''
-      if environment && environment.parent
+      if environment&.parent
         result << "Parent environment #{environment.parent.object_id.to_s(16)}, "
         result << environment.inspect
       end

@@ -43,11 +43,12 @@ module Skeem
     def self.create_from_a(anArray)
       current = nil
       return SkmEmptyList.instance if anArray.empty?
+
       anArray.reverse_each do |elem|
         if current.nil?
-          current = self.new(elem, SkmEmptyList.instance)
+          current = new(elem, SkmEmptyList.instance)
         else
-          current = self.new(elem, current)
+          current = new(elem, current)
         end
       end
 
@@ -56,6 +57,7 @@ module Skeem
 
     def empty?
       return false if car
+
       if [SkmPair, SkmEmptyList].include? cdr.class
         cdr.empty?
       else
@@ -94,20 +96,20 @@ module Skeem
     end
 
     def last_pair
-      if cdr.nil? || (cdr == SkmEmptyList.instance) || (!cdr.kind_of?(SkmPair))
+      if cdr.nil? || (cdr == SkmEmptyList.instance) || !cdr.kind_of?(SkmPair)
         self
       else
         cdr.last_pair
       end
     end
-    
+
     def proper?
-      last_node = self.last_pair
+      last_node = last_pair
       last_node.cdr.nil? || (last_node.cdr == SkmEmptyList.instance)
     end
 
     def last
-      self.to_a.last
+      to_a.last
     end
 
     def eqv?(_other)
@@ -140,7 +142,7 @@ module Skeem
     end
 
     def append(anElement)
-      last_one = self.last_pair
+      last_one = last_pair
       if last_one.cdr.nil? || last_one.cdr.kind_of?(SkmEmptyList)
         last_one.cdr = SkmPair.new(anElement, SkmEmptyList.instance)
       else
@@ -149,7 +151,7 @@ module Skeem
     end
 
     def append_list(aList)
-      last_one = self.last_pair
+      last_one = last_pair
       if last_one.cdr.nil? || last_one.cdr.kind_of?(SkmEmptyList)
         last_one.cdr = aList
       else
@@ -159,22 +161,23 @@ module Skeem
 
     def evaluate(aRuntime)
       return SkmEmptyList.instance if empty?
+
       if car.kind_of?(SkmIdentifier) && car.is_var_name
         result = aRuntime.evaluate_form(self)
       else
         begin
           result = clone_evaluate(aRuntime)
-        rescue NoMethodError => exc
-          $stderr.puts 'SkmPair#evaluate:   ' + self.inspect
-          $stderr.puts 'SkmPair as Array:   ' + self.to_a.inspect
-          raise exc
+        rescue NoMethodError => e
+          $stderr.puts 'SkmPair#evaluate:   ' + inspect
+          $stderr.puts 'SkmPair as Array:   ' + to_a.inspect
+          raise e
         end
       end
       result
     end
 
     def quasiquote(aRuntime)
-      members_eval = self.to_a.map { |elem| elem.quasiquote(aRuntime) }
+      members_eval = to_a.map { |elem| elem.quasiquote(aRuntime) }
       self.class.create_from_a(members_eval)
     end
 
@@ -186,16 +189,17 @@ module Skeem
 
     def quoted!
       car.quoted!
-      cdr.quoted! if cdr
+      cdr&.quoted!
     end
 
     def unquoted!
       car.unquoted!
-      cdr.unquoted! if cdr
+      cdr&.unquoted!
     end
 
-    def verbatim?()
+    def verbatim?
       return false unless car.verbatim?
+
       if cdr.nil?
         true
       else
@@ -213,6 +217,5 @@ module Skeem
 
       result
     end
-
   end # class
 end # module

@@ -29,18 +29,18 @@ module Skeem
       result = definition.evaluate_sequence(runtime)
       runtime.pop
       # $stderr.puts "Lambda result: #{result.object_id.to_s(16)}" if result.kind_of?(SkmLambda)
-      
+
       result
     end
-    
+
     private
-    
+
     def evaluate_defs(aRuntime)
       definition.definitions.each do |bndng|
-        val = bndng.value.evaluate(aRuntime)      
+        val = bndng.value.evaluate(aRuntime)
         var = bndng.variable.evaluate(aRuntime)
         frame.add_binding(var, val)
-      end    
+      end
     end
   end # class
 end # module

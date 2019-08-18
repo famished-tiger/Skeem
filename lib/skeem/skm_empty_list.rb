@@ -44,7 +44,7 @@ module Skeem
     def klone
       self
     end
-    
+
     def append_list(aList)
       aList
     end
@@ -71,9 +71,9 @@ module Skeem
 
     private
 
-    def initialize()
+    def initialize
       super(0)
-      self.freeze
+      freeze
     end
   end # class
 end # module

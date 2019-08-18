@@ -8,7 +8,7 @@ require_relative '../../lib/skeem/s_expr_nodes' # Load the classes under test
 
 module Skeem
   describe ProcedureCall do
-     let(:pos) { double('fake-position') }
+    let(:pos) { double('fake-position') }
     let(:operator) { SkmIdentifier.create('+') }
     let(:operands) { [1, 2, 3] }
 
@@ -16,7 +16,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with an operator symbol and its operands' do
-        expect{ ProcedureCall.new(pos, operator, operands) }.not_to raise_error
+        expect { ProcedureCall.new(pos, operator, operands) }.not_to raise_error
       end
 
       it 'should know its operator' do
@@ -47,7 +47,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with a pos and 3 expressions' do
-        expect{ SkmCondition.new(pos, s_test, s_consequent, s_alt) }.not_to raise_error
+        expect { SkmCondition.new(pos, s_test, s_consequent, s_alt) }.not_to raise_error
       end
 
       it 'should know its test' do
@@ -78,13 +78,13 @@ module Skeem
     let(:s_formals) { double('fake-formals') }
     let(:s_defs) { double('fake-definitions') }
     let(:s_sequence) { double('fake-sequence') }
-    let(:s_body) do { defs: s_defs, sequence: s_sequence } end
+    let(:s_body) { { defs: s_defs, sequence: s_sequence } }
 
     subject { SkmLambdaRep.new(pos, s_formals, s_body) }
 
     context 'Initialization:' do
       it 'should be initialized with a pos and 3 expressions' do
-        expect{ SkmLambdaRep.new(pos, s_formals, s_body) }.not_to raise_error
+        expect { SkmLambdaRep.new(pos, s_formals, s_body) }.not_to raise_error
       end
 
       it 'should know its formals' do
@@ -108,7 +108,7 @@ module Skeem
         # Remove "unpredictable" part of actual text
         expectation = subject.inspect.gsub(/@object_id=[0-9a-z]+, /, '')
         expect(expectation).to eq(txt1 + txt2 + txt3)
-      end  
+      end
     end # context
   end # describe
 end # module

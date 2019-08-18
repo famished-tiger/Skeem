@@ -14,7 +14,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with a position and a child element' do
-        expect{ SkmUnaryExpression.new(pos, sample_child) }.not_to raise_error
+        expect { SkmUnaryExpression.new(pos, sample_child) }.not_to raise_error
       end
 
       it 'should know its child' do
@@ -40,7 +40,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with a Skeem element' do
-        expect{ SkmQuotation.new(sample_literal) }.not_to raise_error
+        expect { SkmQuotation.new(sample_literal) }.not_to raise_error
       end
 
       it 'should know its datum' do
@@ -86,7 +86,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with a Skeem element' do
-        expect{ SkmQuasiquotation.new(sample_literal) }.not_to raise_error
+        expect { SkmQuasiquotation.new(sample_literal) }.not_to raise_error
       end
     end # context
 
@@ -118,7 +118,7 @@ module Skeem
   end # describe
 
 
- describe SkmUnquotation do
+  describe SkmUnquotation do
     include DatumDSL
 
     let(:sample_literal) { string('foo') }
@@ -127,7 +127,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with a Skeem element' do
-        expect{ SkmUnquotation.new(sample_literal) }.not_to raise_error
+        expect { SkmUnquotation.new(sample_literal) }.not_to raise_error
       end
     end # context
 
@@ -158,7 +158,7 @@ module Skeem
       end
     end # context
   end # describe
-  
+
   describe SkmVariableReference do
     include DatumDSL
 
@@ -169,7 +169,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with a position and a symbol' do
-        expect{ SkmVariableReference.new(pos, sample_var) }.not_to raise_error
+        expect { SkmVariableReference.new(pos, sample_var) }.not_to raise_error
       end
 
       it 'should know its variable' do
@@ -189,7 +189,7 @@ module Skeem
         expect(subject.evaluate(runtime)).to eq(3)
       end
 
-      it "should return itself at quasiquotation" do
+      it 'should return itself at quasiquotation' do
         expect(subject.quasiquote(runtime)).to be_equal(subject)
       end
 

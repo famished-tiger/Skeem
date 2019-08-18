@@ -16,7 +16,7 @@ module Skeem
       end
 
       it 'could be initialized with a block argument' do
-        expect { Interpreter.new { |interp| }  }.not_to raise_error
+        expect { Interpreter.new { |interp| } }.not_to raise_error
       end
 
       it 'should have a parser' do
@@ -111,7 +111,7 @@ module Skeem
 
     context 'Built-in primitives' do
       it 'should implement variable definition' do
-        result = subject.run('(define x 28)')
+        subject.run('(define x 28)')
         expect(subject.fetch('x')).to eq(28)
       end
 
@@ -128,7 +128,7 @@ SKEEM
       end
 
       it 'should implement the simple conditional form' do
-         checks = [
+        checks = [
           ['(if (> 3 2) "yes")', 'yes'],
           ['(if (> 2 3) "yes")', SkmUndefined.instance]
         ]
@@ -160,7 +160,7 @@ SKEEM
       ((< x 0) -1)
     )))
 SKEEM
-        result = subject.run(source)
+        subject.run(source)
         checks = [
           ['(signum 3)', 1],
           ['(signum 0)', 0],
@@ -178,7 +178,7 @@ SKEEM
       ((< x 0) => -1)
     )))
 SKEEM
-        result = subject.run(source)
+        subject.run(source)
         checks = [
           ['(signum 3)', 1],
           ['(signum 0)', 0],
@@ -196,7 +196,7 @@ SKEEM
       (else -1)
     )))
 SKEEM
-        result = subject.run(source)
+        subject.run(source)
         checks = [
           ['(signum 3)', 1],
           ['(signum 0)', 0],
@@ -214,7 +214,7 @@ SKEEM
       end
 
       it 'should implement the quotation of constant literals' do
-         checks = [
+        checks = [
           ['(quote a)', 'a'],
           ['(quote 145932)', 145932],
           ['(quote "abc")', 'abc'],
@@ -370,8 +370,6 @@ SKEEM
         result = subject.run(source)
         expect(result.last.value).to eq(20)
       end
-
-
     end # context
 
     context 'Binding constructs:' do
@@ -409,7 +407,7 @@ SKEEM
       end
 
       it 'should support the nesting of a lambda in a let expression' do
-        source =<<-SKEEM
+        source = <<-SKEEM
   (define make-counter
     (lambda ()
        (let ((count 0))
@@ -480,7 +478,7 @@ SKEEM
 
     context 'Quasiquotation:' do
       it 'should implement the quasiquotation of constant literals' do
-         checks = [
+        checks = [
           ['(quasiquote a)', 'a'],
           ['(quasiquote 145932)', 145932],
           ['(quasiquote "abc")', 'abc'],
@@ -521,7 +519,7 @@ SKEEM
           expect(result.members[index]).to eq(value)
         end
 
-        source = "`#()"
+        source = '`#()'
         result = subject.run(source)
         expect(result).to be_kind_of(SkmVector)
         expect(result).to be_empty
@@ -558,7 +556,7 @@ SKEEM
           result = result.cdr
         end
 
-        source = "`()"
+        source = '`()'
         result = subject.run(source)
         expect(result).to be_kind_of(SkmEmptyList)
         expect(result).to be_null
@@ -579,7 +577,7 @@ SKEEM
           result = result.cdr
         end
 
-        source = "`()"
+        source = '`()'
         result = subject.run(source)
         expect(result).to be_kind_of(SkmEmptyList)
         expect(result).to be_null
@@ -804,37 +802,37 @@ SKEEM
         compare_to_predicted(checks)
       end
 
-        it 'should implement the truncate-quotient procedure' do
-          checks = [
-            ['(truncate-quotient 5 2)', 2],
-            ['(truncate-quotient -5 2)', -2],
-            ['(truncate-quotient 5 -2)', -2],
-            ['(truncate-quotient -5 -2)', 2],
-            ['(quotient 5 2)', 2],
-            ['(quotient -5 2)', -2],
-            ['(quotient 5 -2)', -2],
-            ['(quotient -5 -2)', 2]
-          ]
-          compare_to_predicted(checks)
-        end
+      it 'should implement the truncate-quotient procedure' do
+        checks = [
+          ['(truncate-quotient 5 2)', 2],
+          ['(truncate-quotient -5 2)', -2],
+          ['(truncate-quotient 5 -2)', -2],
+          ['(truncate-quotient -5 -2)', 2],
+          ['(quotient 5 2)', 2],
+          ['(quotient -5 2)', -2],
+          ['(quotient 5 -2)', -2],
+          ['(quotient -5 -2)', 2]
+        ]
+        compare_to_predicted(checks)
+      end
 
-        it 'should implement the truncate-remainder procedure' do
-          checks = [
-            ['(truncate-remainder 5 2)', 1],
-            ['(truncate-remainder -5 2)', -1],
-            ['(truncate-remainder 5 -2)', 1],
-            ['(truncate-remainder -5 -2)', -1],
-            ['(remainder 5 2)', 1],
-            ['(remainder -5 2)', -1],
-            ['(remainder 5 -2)', 1],
-            ['(remainder -5 -2)', -1]
-          ]
-          compare_to_predicted(checks)
-        end
+      it 'should implement the truncate-remainder procedure' do
+        checks = [
+          ['(truncate-remainder 5 2)', 1],
+          ['(truncate-remainder -5 2)', -1],
+          ['(truncate-remainder 5 -2)', 1],
+          ['(truncate-remainder -5 -2)', -1],
+          ['(remainder 5 2)', 1],
+          ['(remainder -5 2)', -1],
+          ['(remainder 5 -2)', 1],
+          ['(remainder -5 -2)', -1]
+        ]
+        compare_to_predicted(checks)
+      end
 
       it 'should implement the test-equal procedure' do
         checks = [
-          ["(test-equal (cons 1 2) (cons 1 2))", true]
+          ['(test-equal (cons 1 2) (cons 1 2))', true]
         ]
         compare_to_predicted(checks)
       end
@@ -853,7 +851,7 @@ SKEEM
 
       it 'should implement the newline procedure' do
         default_stdout = $stdout
-        $stdout = StringIO.new()
+        $stdout = StringIO.new
         subject.run('(newline) (newline) (newline)')
         expect($stdout.string).to match(/\n\n\n$/)
         $stdout = default_stdout
@@ -920,10 +918,10 @@ SKEEM
         expect(result).to eq(25)
       end
     end # context
-    
+
     context 'Macro processing:' do
       # it 'should parse macro expressions' do
-        # source = <<-SKEEM      
+        # source = <<-SKEEM
           # (define-syntax while
             # (syntax-rules ()
               # ((while condition body ...)
@@ -932,7 +930,7 @@ SKEEM
                      # (begin
                        # body ...
                        # (loop))
-                     # #f)))))                     
+                     # #f)))))
 # SKEEM
         # ptree = subject.parse(source)
       # end

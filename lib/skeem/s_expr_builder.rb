@@ -45,17 +45,17 @@ module Skeem
     def reduce_main(_production, _range, _tokens, theChildren)
       last_child = theChildren.last
       # $stderr.puts last_child.inspect
-      result = if last_child.length == 1
-                  last_child.car
-                else
-                  last_child
-                end
+      if last_child.length == 1
+        last_child.car
+      else
+        last_child
+      end
     end
-    
+
     # Default semantic action for rules of the form:
     # rule 'some_symbol_star' => 'some_symbol_star some_symbol'
     def reduce_star_default(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]      
+      theChildren[0] << theChildren[1]
     end
 
     # Default semantic action for rules of the form:
@@ -95,7 +95,7 @@ module Skeem
     end
 
     # rule('definition' => 'LPAREN BEGIN definition_star RPAREN').as 'definitions_within_begin'
-    def reduce_definitions_within_begin(_production, aRange, _tokens, theChildren)
+    def reduce_definitions_within_begin(_production, _range, _tokens, theChildren)
       SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))
     end
 
@@ -149,7 +149,7 @@ module Skeem
     end
 
     # rule('vector' => 'VECTOR_BEGIN datum_star RPAREN').as 'vector'
-    def reduce_vector(_production, aRange, _tokens, theChildren)
+    def reduce_vector(_production, _range, _tokens, theChildren)
       SkmVector.new(theChildren[1])
     end
 
@@ -171,11 +171,6 @@ module Skeem
     # rule('operand_plus' => 'operand_plus operand').as 'multiple_operands'
     def reduce_multiple_operands(_production, _range, _tokens, theChildren)
       theChildren[0] << theChildren[1]
-    end
-
-    # rule('operand_plus' => 'operand').as 'last_operand'
-    def reduce_last_operand(_production, _range, _tokens, theChildren)
-      [theChildren.last]
     end
 
     # rule('operand_plus' => 'operand').as 'last_operand'
@@ -259,7 +254,7 @@ module Skeem
     end
 
     # rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
-    def reduce_short_let_form(_production, aRange, _tokens, theChildren)
+    def reduce_short_let_form(_production, _range, _tokens, theChildren)
       SkmBindingBlock.new(:let, theChildren[3], theChildren[5])
     end
 
@@ -282,9 +277,9 @@ module Skeem
 
       # We reky on utility 'builder' object
       worker = SkmDoExprBuilder.new(theChildren[3], theChildren[6],
-        theChildren[7], theChildren[9])
+                                    theChildren[7], theChildren[9])
       do_expression = worker.do_expression
-      body = { :defs => [], :sequence => do_expression }
+      body = { defs: [], sequence: do_expression }
       SkmBindingBlock.new(:let_star, worker.bindings, body)
     end
 
@@ -309,17 +304,17 @@ module Skeem
     end
 
     # rule('quasiquotation' => 'LPAREN QUASIQUOTE qq_template RPAREN').as 'quasiquotation'
-    def reduce_quasiquotation(_production, aRange, _tokens, theChildren)
+    def reduce_quasiquotation(_production, _range, _tokens, theChildren)
       SkmQuasiquotation.new(theChildren[2])
     end
 
     # rule('quasiquotation' => 'GRAVE_ACCENT qq_template').as 'quasiquotation_short'
-    def reduce_quasiquotation_short(_production, aRange, _tokens, theChildren)
+    def reduce_quasiquotation_short(_production, _range, _tokens, theChildren)
       SkmQuasiquotation.new(theChildren[1])
     end
 
     # rule('binding_spec' => 'LPAREN IDENTIFIER expression RPAREN').as 'binding_spec'
-    def reduce_binding_spec(production, _range, _tokens, theChildren)
+    def reduce_binding_spec(_production, _range, _tokens, theChildren)
       SkmBinding.new(theChildren[1], theChildren[2])
     end
 
@@ -334,7 +329,7 @@ module Skeem
     end
 
     # rule('do_result' => []).as 'empty_do_result'
-    def reduce_empty_do_result(_production, _range, _tokens, theChildren)
+    def reduce_empty_do_result(_production, _range, _tokens, _children)
       SkmEmptyList.instance
     end
 
@@ -365,10 +360,9 @@ module Skeem
     end
 
     # rule('unquotation' => 'COMMA qq_template').as 'unquotation_short'
-    def reduce_unquotation_short(_production, aRange, _tokens, theChildren)
+    def reduce_unquotation_short(_production, _range, _tokens, theChildren)
       SkmUnquotation.new(theChildren[1])
     end
-
   end # class
 end # module
 # End of file

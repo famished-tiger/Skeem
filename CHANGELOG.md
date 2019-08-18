@@ -1,3 +1,8 @@
+## [0.2.16] - 2019-08-18
+- Code refactoring to use string frozen magic comments (as a consequence, srl_ruby runs only on Rubies 2.3 or newer).  
+- Code restyling to please rubocop 0.7.40. 
+
+
 ## [0.2.15] - 2019-07-02
 - Added a basic command-line and console interface for Skeem interpreter.
 - Added procedures: `display!`, `newline`, `make-list`

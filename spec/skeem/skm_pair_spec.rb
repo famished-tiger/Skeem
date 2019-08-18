@@ -230,6 +230,5 @@ module Skeem
         expect(list_length_2.inspect).to eq(predicted)
       end
     end # context
-
   end # describe
 end # module

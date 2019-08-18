@@ -21,6 +21,7 @@ module Skeem
         else
           raise StandardError, aBoolean.inspect
       end
+      result
     end
 
     def integer(aLiteral)
@@ -34,6 +35,7 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
+      result
     end
 
     def rational(aLiteral)
@@ -47,6 +49,7 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
+      result
     end
 
     def real(aLiteral)
@@ -60,6 +63,7 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
+      result
     end
 
     def char(aLiteral)
@@ -77,6 +81,7 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
+      result
     end
 
     def string(aLiteral)
@@ -90,6 +95,7 @@ module Skeem
         else
           SkmString.create(aLiteral.to_s)
       end
+      result
     end
 
     def identifier(aLiteral)
@@ -103,6 +109,7 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
+      result
     end
 
     alias symbol identifier
@@ -152,7 +159,7 @@ module Skeem
           SkmBoolean.create(aLiteral)
         when String
           parse_literal(aLiteral)
-        when SkmPair  # Special case: not a PORO literal
+        when SkmPair # Special case: not a PORO literal
           # One assumes that a Skeem list contains only Skeem datum objects
           SkmPair.create_from_a(aLiteral.to_a)
         when SkmUndefined
@@ -160,6 +167,7 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
         end
+      result
     end
 
     private
@@ -179,6 +187,5 @@ module Skeem
         string(aLiteral)
       end
     end
-
   end # module
 end # module

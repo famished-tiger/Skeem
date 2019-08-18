@@ -31,7 +31,7 @@ module Skeem
       super(nil, aDatum)
     end
 
-    def evaluate(aRuntime)
+    def evaluate(_runtime)
       datum
     end
 
@@ -49,7 +49,6 @@ module Skeem
     def inspect_specific
       datum.inspect
     end
-
   end # class
 
   class SkmQuasiquotation < SkmQuotation
@@ -62,7 +61,6 @@ module Skeem
     def quasiquote(aRuntime)
       child.quasiquote(aRuntime)
     end
-
   end # class
 
   class SkmUnquotation < SkmUnaryExpression
@@ -89,7 +87,7 @@ module Skeem
     end
   end # class
 
-  class SkmVariableReference  < SkmUnaryExpression
+  class SkmVariableReference < SkmUnaryExpression
     alias variable child
 
     def eqv?(other)
@@ -102,13 +100,13 @@ module Skeem
       aRuntime.evaluate(var_key)
     end
 
-    def quasiquote(aRuntime)
+    def quasiquote(_runtime)
       self
     end
 
     # Confusing!
     # Value, here, means the value of the identifier (the variable's name).
-    def value()
+    def value
       variable.value
     end
   end # class
@@ -157,7 +155,6 @@ module Skeem
       # $stderr.puts "Result SkmBindingBlock#evaluate: " + result.inspect
       result
     end
-
   end # class
 
   # Sequencing construct
@@ -196,7 +193,7 @@ module Skeem
             result = cmd.evaluate(aRuntime)
           end
         rescue NoMethodError => e
-          $stderr.puts self.inspect
+          $stderr.puts inspect
           $stderr.puts sequence.inspect
           $stderr.puts cmd.inspect
           raise e
@@ -225,20 +222,19 @@ module Skeem
               result = cmd.evaluate(aRuntime)
             end
           rescue NoMethodError => e
-            $stderr.puts self.inspect
+            $stderr.puts inspect
             $stderr.puts sequence[:sequence].inspect
             $stderr.puts cmd.inspect
             raise e
           end
         end
-      elsif
+      else
         result = sequence.evaluate(aRuntime)
       end
 
       aRuntime.pop
-      
+
       result
     end
   end # class
-
 end # module

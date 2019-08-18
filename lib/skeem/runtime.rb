@@ -43,13 +43,12 @@ module Skeem
         result = nil
         begin
           result = entry.evaluate(self)
-
-        rescue NoMethodError => exc
+        rescue NoMethodError => e
           # $stderr.puts 'In rescue block'
           # $stderr.puts key_value.inspect
           # $stderr.puts entry.inspect
           # $stderr.puts entry.expression.inspect
-          raise exc
+          raise e
         end
         result
       else
@@ -68,13 +67,14 @@ module Skeem
       invokation.evaluate(self)
     end
 
-    def nest()
+    def nest
       nested = SkmFrame.new(environment)
       push(nested)
     end
 
     def unnest
       raise StandardError, 'Cannot unnest environment' unless environment.parent
+
       environment.bindings.clear
       pop
     end
@@ -92,6 +92,7 @@ module Skeem
       if env_stack.empty?
         raise StandardError, 'Skeem environment stack empty!'
       end
+
       env_stack.pop
     end
 
@@ -112,6 +113,7 @@ module Skeem
       if call_stack.empty?
         raise StandardError, 'Skeem call stack empty!'
       end
+
       call_stack.pop
     end
 

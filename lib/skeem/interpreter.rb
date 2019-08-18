@@ -11,7 +11,7 @@ module Skeem
     attr_reader(:parser)
     attr_reader(:runtime)
 
-    def initialize(&aBlock)
+    def initialize
       @runtime = Runtime.new(SkmFrame.new)
       @parser = Parser.new
 
@@ -22,7 +22,7 @@ module Skeem
       end
     end
 
-    def add_default_procedures()
+    def add_default_procedures
       add_primitives(runtime)
       add_standard(runtime)
     end

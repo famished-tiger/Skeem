@@ -14,14 +14,14 @@ module Skeem
     end
 
     # Assumption: subject is a Skeem::Tokenizer
-		def check_tokens(tokenTests, tokType)
-		  tokenTests.each do |(input, prediction)|
+    def check_tokens(tokenTests, tokType)
+      tokenTests.each do |(input, prediction)|
         subject.reinitialize(input)
         token = subject.tokens.first
         expect(token.terminal).to eq(tokType)
         expect(token.lexeme).to eq(prediction)
-		  end
-		end
+      end
+    end
 
     def unquoted(aString)
       aString.gsub(/(^")|("$)/, '')
@@ -47,9 +47,8 @@ module Skeem
         tokens.each { |token| expect(token).to be_kind_of(Rley::Lexical::Token) }
         terminals = tokens.map(&:terminal)
         prediction = %w[LPAREN RPAREN APOSTROPHE
-          GRAVE_ACCENT PERIOD
-          COMMA COMMA_AT_SIGN
-        ]
+                        GRAVE_ACCENT PERIOD
+                        COMMA COMMA_AT_SIGN ]
         expect(terminals).to eq(prediction)
       end
     end # context
@@ -82,7 +81,7 @@ module Skeem
 
         check_tokens(tests, 'INTEGER')
       end
-      
+
       it 'should tokenize integers with explicit radix 10' do
         tests = [
           # couple [raw input, expected]
@@ -108,7 +107,7 @@ module Skeem
         ]
 
         check_tokens(tests, 'INTEGER')
-      end      
+      end
     end # context
 
     context 'Rational literals recognition:' do
@@ -116,7 +115,7 @@ module Skeem
         tests = [
           # couple [raw input, expected]
           ['1/2', Rational(1, 2)],
-          ['-22/7', -Rational(22, 7)],
+          ['-22/7', -Rational(22, 7)]
         ]
 
         check_tokens(tests, 'RATIONAL')
@@ -147,9 +146,9 @@ module Skeem
       it 'should tokenize named characters' do
         tests = [
           # couple [raw input, expected]
-          ["#\\alarm", ?\a],
-          ["#\\newline", ?\n],
-          ["#\\return", ?\r]
+          ['#\alarm', ?\a],
+          ['#\newline', ?\n],
+          ['#\return', ?\r]
         ]
 
         check_tokens(tests, 'CHAR')
@@ -158,10 +157,10 @@ module Skeem
       it 'should tokenize escaped characters' do
         tests = [
           # couple [raw input, expected]
-          ["#\\a", ?a],
-          ["#\\A", ?A],
-          ["#\\(", ?(],
-          ["#\\ ", ?\s]
+          ['#\a', ?a],
+          ['#\A', ?A],
+          ['#\(', ?(],
+          ['#\ ', ?\s]
         ]
 
         check_tokens(tests, 'CHAR')
@@ -170,9 +169,9 @@ module Skeem
       it 'should tokenize hex-coded characters' do
         tests = [
           # couple [raw input, expected]
-          ["#\\x07", ?\a],
-          ["#\\x1B", ?\e],
-          ["#\\x3BB", ?\u03bb]
+          ['#\x07', ?\a],
+          ['#\x1B', ?\e],
+          ['#\x3BB', ?\u03bb]
         ]
 
         check_tokens(tests, 'CHAR')
@@ -224,13 +223,13 @@ module Skeem
           expect(token.lexeme).to eq(input)
         end
       end
-      
+
       it 'should recognize ellipsis' do
         input = '...'
         subject.reinitialize(input)
         token = subject.tokens.first
         expect(token.terminal).to eq('ELLIPSIS')
-        expect(token.lexeme).to eq(input)          
+        expect(token.lexeme).to eq(input)
       end
     end # context
 
@@ -243,7 +242,7 @@ module Skeem
           ['INTEGER', 0, 3],
           ['INTEGER', -2, 5],
           ['STRING_LIT', 'Sue', 8],
-          ['RPAREN', ')', 13],
+          ['RPAREN', ')', 13]
         ]
         tokens = subject.tokens
         predictions.each_with_index do |(pr_terminal, pr_lexeme, pr_position), i|
@@ -265,7 +264,7 @@ module Skeem
       end
 
       it 'should skip trailing comments' do
-        input = "\"Some text\"; Trailing comment"
+        input = '"Some text"; Trailing comment'
         subject.reinitialize(input)
         token = subject.tokens.first
         expect(token.terminal).to eq('STRING_LIT')
@@ -315,28 +314,28 @@ module Skeem
     context 'Scanning Scheme sample code' do
       it 'should produce a sequence of token objects' do
         # Deeper tokenizer testing
-        source = "(define circle-area (lambda (r) (* pi (* r r))))"
+        source = '(define circle-area (lambda (r) (* pi (* r r))))'
         subject.reinitialize(source)
         predicted = [
-          ['LPAREN', '('],
-          ['DEFINE', 'define'],
-          ['IDENTIFIER', 'circle-area'],
-          ['LPAREN', '('],
-          ['LAMBDA', 'lambda'],
-          ['LPAREN', '('],
-          ['IDENTIFIER', 'r'],
-          ['RPAREN', ')'],
-          ['LPAREN', '('],
-          ['IDENTIFIER', '*'],
-          ['IDENTIFIER', 'pi'],
-          ['LPAREN', '('],
-          ['IDENTIFIER', '*'],
-          ['IDENTIFIER', 'r'],
-          ['IDENTIFIER', 'r'],
-          ['RPAREN', ')'],
-          ['RPAREN', ')'],
-          ['RPAREN', ')'],
-          ['RPAREN', ')']
+          %w[LPAREN (],
+          %w[DEFINE define],
+          %w[IDENTIFIER circle-area],
+          %w[LPAREN (],
+          %w[LAMBDA lambda],
+          %w[LPAREN (],
+          %w[IDENTIFIER r],
+          %w[RPAREN )],
+          %w[LPAREN (],
+          %w[IDENTIFIER *],
+          %w[IDENTIFIER pi],
+          %w[LPAREN (],
+          %w[IDENTIFIER *],
+          %w[IDENTIFIER r],
+          %w[IDENTIFIER r],
+          %w[RPAREN )],
+          %w[RPAREN )],
+          %w[RPAREN )],
+          %w[RPAREN )]
         ]
         match_expectations(subject, predicted)
       end

@@ -16,7 +16,7 @@ module Skeem
     end
 
     def self.create(aValue)
-      lightweight = self.allocate
+      lightweight = allocate
       lightweight.init_value(aValue)
       return lightweight
     end
@@ -35,12 +35,12 @@ module Skeem
     # @param other [SkmSimpleDatum, Object] object to compare with.
     # @return [TrueClass, FalseClass]
     def ==(other)
-      return true if self.equal?(other)
+      return true if equal?(other)
 
       result = if other.kind_of?(SkmSimpleDatum)
-          self.value == other.value
+          value == other.value
         else
-          self.value == other
+          value == other
         end
 
       result
@@ -53,7 +53,7 @@ module Skeem
       true
     end
 
-    def done!()
+    def done!
       # Do nothing
     end
 
@@ -105,16 +105,16 @@ module Skeem
     end
 
     def eqv?(other)
-      return true if self.equal?(other)
+      return true if equal?(other)
 
       result = if other.kind_of?(SkmNumber)
-        if self.exact? != other.exact?
+        if exact? != other.exact?
           false
         else
-          self.value == other.value
+          value == other.value
         end
       else
-        self.value == other
+        value == other
       end
 
       result
@@ -161,7 +161,6 @@ module Skeem
       char_value = int_value < 0xff ? int_value.chr : [int_value].pack('U')
       create(char_value)
     end
-
   end # class
 
   class SkmString < SkmSimpleDatum
@@ -201,7 +200,7 @@ module Skeem
     end
 
     def verbatim?
-      not is_var_name
+      !is_var_name
     end
 
     def quoted!

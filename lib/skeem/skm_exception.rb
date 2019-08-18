@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 module Skeem
-  class SkmException < Exception
+  class SkmException < RuntimeError
   end # class
-  
+
   class SkmError < SkmException
   end # class
 end # module

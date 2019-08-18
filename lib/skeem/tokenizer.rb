@@ -64,7 +64,6 @@ module Skeem
       reinitialize(source)
     end
 
-
     # @param source [String] Skeem text to tokenize.
     def reinitialize(source)
       @scanner.string = source
@@ -106,17 +105,17 @@ module Skeem
       elsif (lexeme = scanner.scan(/(?:#[dD])?[+-]?[0-9]+(?:.0+)?(?=\s|[|()";]|$)/))
         token = build_token('INTEGER', lexeme) # Decimal radix
       elsif (lexeme = scanner.scan(/#[xX][+-]?[0-9a-fA-F]+(?=\s|[|()";]|$)/))
-        token = build_token('INTEGER', lexeme) # Hexadecimal radix        
+        token = build_token('INTEGER', lexeme) # Hexadecimal radix
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]*)?(?:(?:e|E)[+-]?[0-9]+)?/))
         # Order dependency: must be tested after INTEGER case
         token = build_token('REAL', lexeme)
       elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
-        token = cardinal_token(lexeme)        
+        token = cardinal_token(lexeme)
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
         token = build_token('STRING_LIT', lexeme)
       elsif (lexeme = scanner.scan(/[a-zA-Z!$%&*\/:<=>?@^_~][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
         keyw = @@keywords[lexeme.upcase]
-        tok_type = keyw ? keyw : 'IDENTIFIER'
+        tok_type = keyw || 'IDENTIFIER'
         token = build_token(tok_type, lexeme)
       elsif (lexeme = scanner.scan(/\|(?:[^|])*\|/)) # Vertical bar delimited
         token = build_token('IDENTIFIER', lexeme)
@@ -158,17 +157,17 @@ other literal data (section 2.4).
       return token
     end
 
-    def recognize_char_token()
+    def recognize_char_token
       token = nil
-      if lexeme = scanner.scan(/#\\/)
-        if lexeme = scanner.scan(/(?:alarm|backspace|delete|escape|newline|null|return|space|tab)/)
+      if (lexeme = scanner.scan(/#\\/))
+        if (lexeme = scanner.scan(/(?:alarm|backspace|delete|escape|newline|null|return|space|tab)/))
           token = build_token('CHAR', lexeme, :name)
-        elsif lexeme = scanner.scan(/[^x]/)
+        elsif (lexeme = scanner.scan(/[^x]/))
           token = build_token('CHAR', lexeme, :escaped)
-        elsif lexeme = scanner.scan(/x[0-9a-fA-F]+/)
+        elsif (lexeme = scanner.scan(/x[0-9a-fA-F]+/))
           token = build_token('CHAR', lexeme, :hex_value)
-        elsif lexeme = scanner.scan(/x/)
-          token = build_token('CHAR', lexeme, :escaped)          
+        elsif (lexeme = scanner.scan(/x/))
+          token = build_token('CHAR', lexeme, :escaped)
         end
       end
 
@@ -181,9 +180,9 @@ other literal data (section 2.4).
         col = scanner.pos - aLexeme.size - @line_start + 1
         pos = Rley::Lexical::Position.new(@lineno, col)
         token = Rley::Lexical::Token.new(value, symb, pos)
-      rescue StandardError => exc
+      rescue StandardError => e
         puts "Failing with '#{aSymbolName}' and '#{aLexeme}'"
-        raise exc
+        raise e
       end
 
       return token
@@ -214,11 +213,11 @@ other literal data (section 2.4).
       return [value, symb]
     end
 
-    def to_boolean(aLexeme, aFormat)
-      result = (aLexeme =~ /^#t/) ? true : false
+    def to_boolean(aLexeme, _format)
+      (aLexeme =~ /^#t/) ? true : false
     end
 
-    def to_integer(aLexeme, aFormat)
+    def to_integer(aLexeme, _format)
       literal = aLexeme.downcase
       prefix_pattern = /^#[dx]/
       matching = literal.match(prefix_pattern)
@@ -233,7 +232,7 @@ other literal data (section 2.4).
       else
         format = :default
       end
-      
+
       case format
         when :default, :base10
           value = literal.to_i
@@ -310,11 +309,11 @@ other literal data (section 2.4).
 
       name2char[name]
     end
-    
+
     def escaped_char(aLexeme)
       aLexeme.chr
     end
-    
+
     def hex_value_char(aLexeme)
       hex_literal = aLexeme.sub(/^x/, '')
       hex_value = hex_literal.to_i(16)
@@ -345,14 +344,14 @@ other literal data (section 2.4).
           skip_block_comment
           next
         end
-        break unless ws_found or cmt_found
+        break unless ws_found || cmt_found
       end
 
       curr_pos = scanner.pos
       return if curr_pos == pre_pos
     end
 
-    def skip_block_comment()
+    def skip_block_comment
       # require 'debug'
       scanner.skip(/#\|/)
       nesting_level = 1
@@ -361,6 +360,7 @@ other literal data (section 2.4).
         unless comment_part
           raise ScanError, "Unterminated '#| ... |#' comment on line #{lineno}"
         end
+
         case scanner.matched
           when /(?:(?:\r\n)|\r|\n)/
             next_line

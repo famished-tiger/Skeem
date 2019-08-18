@@ -77,13 +77,13 @@ SKEEM
 
         expect(result.last).to eq(136)
       end
-      
+
       it 'should accept calls to anonymous procedures' do
         source = '((lambda (x) (+ x x)) 4)'
         result = subject.run(source)
         expect(result).to eq(8)
       end
-      
+
       it 'should accept unary second-order lambdas' do
         source = <<-SKEEM
   (define add-with
@@ -96,10 +96,10 @@ SKEEM
         expect(result).to eq(7)
       end
     end # context
-      
+
     context 'More advanced features:' do
       subject { Interpreter.new }
-    
+
       it 'should implement binary second-order functions' do
         source = <<-SKEEM
   (define compose
@@ -107,10 +107,10 @@ SKEEM
       (lambda (x)
         (f (g x)))))
 SKEEM
-        result = subject.run(source)
+        subject.run(source)
         result = subject.run('((compose list square) 5)')
         expect(result.last).to eq(25)
-      end       
+      end
     end # context
   end # describe
 end # module

@@ -11,8 +11,8 @@ module Skeem
       let(:nullary) { SkmArity.new(0, 0) }
       let(:unary) { SkmArity.new(1, 1) }
       let(:binary) { SkmArity.new(2, 2) }
-      let(:zero_or_more) {SkmArity.new(0, '*') }
-      let(:one_or_more) {SkmArity.new(1, '*') }
+      let(:zero_or_more) { SkmArity.new(0, '*') }
+      let(:one_or_more) { SkmArity.new(1, '*') }
       let(:newline_code) do
         ->(_runtime) { "\n" }
       end
@@ -51,7 +51,7 @@ module Skeem
         end
 
         it 'should complain if third argument is not a lambda' do
-          kode = Proc.new { puts '' }
+          kode = proc { puts '' }
 
           err = StandardError
           err_msg = "Primitive procedure 'newline' must be implemented with a Ruby lambda."
@@ -59,7 +59,7 @@ module Skeem
         end
 
         it 'should complain if third argument is a nullary lambda' do
-          kode = ->() { puts '' } # Missing slot for Runtime object
+          kode = -> { puts '' } # Missing slot for Runtime object
 
           err = StandardError
           err_msg = "Primitive procedure 'newline' lambda takes no parameter."
@@ -70,10 +70,10 @@ module Skeem
           err = StandardError
           msg1 = "Discrepancy in primitive procedure 'cube' "
 
-          msg2 = "between arity (0) + 1 and parameter count of lambda 2."
+          msg2 = 'between arity (0) + 1 and parameter count of lambda 2.'
           expect { PrimitiveProcedure.new('cube', nullary, cube) }.to raise_error(err, msg1 + msg2)
 
-          msg2 = "between arity (2) + 1 and parameter count of lambda 2."
+          msg2 = 'between arity (2) + 1 and parameter count of lambda 2.'
           expect { PrimitiveProcedure.new('cube', binary, cube) }.to raise_error(err, msg1 + msg2)
 
           # Nasty; this discrepancy isn't detected
@@ -81,7 +81,7 @@ module Skeem
 
           expect { PrimitiveProcedure.new('cube', unary, cube) }.not_to raise_error
 
-          msg2 = "between arity (1) + 2 and parameter count of lambda 2."
+          msg2 = 'between arity (1) + 2 and parameter count of lambda 2.'
           expect { PrimitiveProcedure.new('cube', one_or_more, cube) }.to raise_error(err, msg1 + msg2)
         end
       end # context
@@ -111,7 +111,7 @@ module Skeem
           ms2 = ' (required at least 1, got 0)'
           expect { pproc.call(rtime, []) }.to raise_error(err, ms1 + ms2)
 
-          too_much = ['foo', 'bar']
+          too_much = %w[foo bar]
           err = StandardError
           ms1 = 'Wrong number of arguments for #<Procedure cube>'
           ms2 = ' (required at least 1, got 2)'
@@ -131,7 +131,7 @@ module Skeem
           ms2 = ' (required at least 2, got 1)'
           expect { pproc.call(rtime, too_few) }.to raise_error(err, ms1 + ms2)
 
-          too_much = ['foo', 'bar', 'quux']
+          too_much = %w[foo bar quux]
           err = StandardError
           ms1 = 'Wrong number of arguments for #<Procedure sum>'
           ms2 = ' (required at least 2, got 3)'
@@ -148,9 +148,9 @@ module Skeem
           no_arg = []
           expect(pproc.call(rtime, no_arg)).to eq(0)
 
-          many = [SkmString.create('foo'), SkmString.create('bar'), 
-            SkmString.create('quux')]
-          expect( pproc.call(rtime, many)).to eq(3)
+          many = [SkmString.create('foo'), SkmString.create('bar'),
+                  SkmString.create('quux')]
+          expect(pproc.call(rtime, many)).to eq(3)
         end
       end # context
     end # describe

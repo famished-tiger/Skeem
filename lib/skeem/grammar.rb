@@ -35,7 +35,7 @@ module Skeem
     rule 'command' => 'expression'
     rule('definition' => 'LPAREN DEFINE IDENTIFIER expression RPAREN').as 'definition'
     rule('definition' => 'LPAREN DEFINE LPAREN IDENTIFIER def_formals RPAREN body RPAREN').as 'alt_definition'
-    rule('definition' => 'syntax_definition')    
+    rule('definition' => 'syntax_definition')
     rule('definition' => 'LPAREN BEGIN definition_star RPAREN').as 'definitions_within_begin'
     rule('expression' => 'IDENTIFIER').as 'variable_reference'
     rule 'expression' => 'literal'
@@ -46,7 +46,7 @@ module Skeem
     rule 'expression' => 'derived_expression'
     rule 'expression' => 'includer'
     rule 'literal' => 'quotation'
-    rule 'literal' => 'self-evaluating'   
+    rule 'literal' => 'self-evaluating'
     rule('quotation' => 'APOSTROPHE datum').as 'quotation_short'
     rule('quotation' => 'LPAREN QUOTE datum RPAREN').as 'quotation'
     rule 'self-evaluating' => 'BOOLEAN'
@@ -107,14 +107,14 @@ module Skeem
     rule('derived_expression' => 'LPAREN COND cond_clause_star LPAREN ELSE sequence RPAREN RPAREN').as 'cond_else_form'
     rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
     # TODO: implement "named let"
-    rule('derived_expression' => 'LPAREN LET IDENTIFIER LPAREN binding_spec_star RPAREN body RPAREN') # .as 'named_form'   
+    rule('derived_expression' => 'LPAREN LET IDENTIFIER LPAREN binding_spec_star RPAREN body RPAREN') # .as 'named_form'
     rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
 
-    # As the R7RS grammar is too restrictive, 
+    # As the R7RS grammar is too restrictive,
     # the next rule was made more general than its standard counterpart
     rule('derived_expression' => 'LPAREN BEGIN body RPAREN').as 'begin_expression'
     do_syntax = <<-END_SYNTAX
-    LPAREN DO LPAREN iteration_spec_star RPAREN 
+    LPAREN DO LPAREN iteration_spec_star RPAREN
       LPAREN test do_result RPAREN
       command_star RPAREN
 END_SYNTAX
@@ -180,7 +180,7 @@ END_SYNTAX
     rule('pattern_star' => 'pattern_star pattern').as 'star_default'
     rule('pattern_star' => []).as 'star_base'
     rule('pattern_plus' => 'pattern_plus pattern')
-    rule('pattern_plus' => 'pattern')    
+    rule('pattern_plus' => 'pattern')
     rule('pattern_datum' => 'STRING_LIT')
     rule('pattern_datum' => 'CHAR')
     rule('pattern_datum' => 'BOOLEAN')
@@ -194,7 +194,7 @@ END_SYNTAX
     rule('template_element_star' => 'template_element_star template_element').as 'star_default'
     rule('template_element_star' => []).as 'star_base'
     rule('template_element_plus' => 'template_element_plus template_element')
-    rule('template_element_plus' => 'template_element')    
+    rule('template_element_plus' => 'template_element')
     rule('template_element' =>  'template')
     rule('template_element' =>  'template ELLIPSIS')
     rule('template_datum' =>  'pattern_datum')

@@ -14,7 +14,7 @@ module Skeem
 
     context 'Initialization:' do
       it 'should be initialized with its members' do
-        expect{ SkmCompoundDatum.new(sample_members) }.not_to raise_error
+        expect { SkmCompoundDatum.new(sample_members) }.not_to raise_error
       end
 
       it 'should know its members' do
@@ -30,7 +30,7 @@ module Skeem
         expect(subject).to eq(subject)
       end
 
-     it 'should assert the equality by member values' do
+      it 'should assert the equality by member values' do
         # Comparison with other instances
         expect(subject).to eq(SkmCompoundDatum.new(sample_members))
         expect(subject).not_to eq(SkmCompoundDatum.new([]))
@@ -46,12 +46,12 @@ module Skeem
         expect(visitor).to receive(:visit_compound_datum).with(subject)
         expect { subject.accept(visitor) }.not_to raise_error
       end
-      
+
       it 'should return its text representation' do
         txt1 = '<Skeem::SkmCompoundDatum: <Skeem::SkmInteger: 1>,'
         txt2 = '<Skeem::SkmInteger: 2>, <Skeem::SkmInteger: 3>>'
         expect(subject.inspect).to eq(txt1 + ' ' + txt2)
-      end     
+      end
     end # context
 
     context 'Provided runtime services:' do
@@ -80,19 +80,19 @@ module Skeem
       end
     end # context
   end # describe
-  
+
   describe SkmVector do
     let(:sample_members) { [1, 2, 3] }
     subject { SkmVector.new(sample_members) }
 
     context 'Initialization:' do
       it 'should be initialized with its members' do
-        expect{ SkmVector.new(sample_members) }.not_to raise_error
+        expect { SkmVector.new(sample_members) }.not_to raise_error
       end
-      
+
       it 'should react positively to vector? predicate' do
         expect(subject).to be_vector
-      end      
+      end
     end # context
   end # describe
 end # module

@@ -9,12 +9,12 @@ require_relative '../../lib/skeem/element_visitor'
 module Skeem
   describe SkmElementVisitor do
     include DatumDSL
-  let(:simple_datum) { integer 42 }
-  let(:listener) do
-    fake = double('fake-subscriber')
-    fake.define_singleton_method(:accept_all) {}
-    fake
-  end
+    let(:simple_datum) { integer 42 }
+    let(:listener) do
+      fake = double('fake-subscriber')
+      fake.define_singleton_method(:accept_all) {}
+      fake
+    end
 
     # Default instantiation rule
     subject { SkmElementVisitor.new(simple_datum) }
@@ -124,7 +124,7 @@ module Skeem
       end
 
       it 'should allow the visit of a nested compound datum' do
-        nested_list = list ['uno', 'twei', 'three']
+        nested_list = list %w[uno twei three']
         vec = vector ['#false', 3, nested_list, 'foo']
         instance = SkmElementVisitor.new(vec)
         instance.subscribe(listener)
@@ -134,7 +134,7 @@ module Skeem
         expect(listener).to receive(:after_simple_datum).with(runtime, vec.members[0]).ordered
         expect(listener).to receive(:before_simple_datum).with(runtime, vec.members[1]).ordered
         expect(listener).to receive(:after_simple_datum).with(runtime, vec.members[1]).ordered
-        
+
         expect(listener).to receive(:before_pair).with(runtime, nested_list).ordered
         expect(listener).to receive(:before_car).with(runtime, nested_list, nested_list.car).ordered
         expect(nested_list.car).to eq('uno')
@@ -161,7 +161,7 @@ module Skeem
         expect(listener).to receive(:after_cdr).with(runtime, nested_list.cdr, nested_list.cdr.cdr).ordered
         expect(listener).to receive(:after_pair).with(runtime, nested_list.cdr).ordered
         expect(listener).to receive(:after_cdr).with(runtime, nested_list, nested_list.cdr).ordered
-        expect(listener).to receive(:after_pair).with(runtime, nested_list).ordered        
+        expect(listener).to receive(:after_pair).with(runtime, nested_list).ordered
         expect(listener).to receive(:before_simple_datum).with(runtime, vec.members[3]).ordered
         expect(listener).to receive(:after_simple_datum).with(runtime, vec.members[3]).ordered
         expect(listener).to receive(:after_children).with(runtime, vec, vec.members).ordered

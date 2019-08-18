@@ -1,20 +1,22 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'skeem'
 
 class SkeemREPL
   attr_reader :interpreter
 
-  def initialize()
+  def initialize
     @interpreter = Skeem::Interpreter.new
   end
 
   def run_session
-    puts "Welcome to Skeem #{Skeem::VERSION}."  
+    puts "Welcome to Skeem #{Skeem::VERSION}."
     loop do
       print '> '
       input = gets.chomp.strip
-      break if input == '(quit)' || input == '(exit)'
+      break if %w[(quit) (exit)].include?(input)
+
       process_input(input)
     end
   end
@@ -22,15 +24,13 @@ class SkeemREPL
   def run_file(aFilename)
     if File.exist?(aFilename)
       valid_fname = aFilename
-    else # Retry by adding extension...
-      if File.extname(aFilename).empty?
-        if File.exist?(aFilename + '.skm')
-          valid_fname = aFilename + '.skm'
-        elsif File.exist?(aFilename + '.scm')
-          valid_fname = aFilename + '.scm'
-        else
-          valid_fname = nil
-        end
+    elsif File.extname(aFilename).empty? # Retry by adding extension...
+      if File.exist?(aFilename + '.skm')
+        valid_fname = aFilename + '.skm'
+      elsif File.exist?(aFilename + '.scm')
+        valid_fname = aFilename + '.scm'
+      else
+        valid_fname = nil
       end
     end
 
@@ -43,8 +43,8 @@ class SkeemREPL
   def process_input(input)
     begin
       ptree = interpreter.parse(input)
-    rescue StandardError => exc
-      $stderr.puts exc.message
+    rescue StandardError => e
+      $stderr.puts e.message
       return
     end
 

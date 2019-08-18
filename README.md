@@ -32,7 +32,8 @@ If you're not familiar to Scheme, the section [About Scheme](#about-scheme) cont
 
 ## Usage
 Once the gem is installed, the `skeem` executable can be used.
-It allows to run the interpreter from the command line.
+It allows to run the interpreter from a REPL console or from the command line.
+Another way to interact with the Skeem interpreter is to embed it in your Ruby code.
 
 ### Launching a REPL session
 To start a REPL (Read-Eval-Print-Loop) session, just type:
@@ -42,11 +43,12 @@ To start a REPL (Read-Eval-Print-Loop) session, just type:
 
 Skeem displays a greeting, a prompt and then waits for your input:
 ```
-Welcome to Skeem 0.2.15.
+Welcome to Skeem 0.2.16.
 >
 ```
 
-Let's succumb to the ritual 'Hello world' example, by typing after the prompt:
+Now that we know that `Skeem` is well alive, let's kick it...
+We begin with the ritual 'Hello world' example, by typing after the __>__ prompt:
 ```
 (display "Hello, world")
 ```
@@ -61,7 +63,7 @@ This works as expected except, maybe, for the last line. It can be easily explai
 that the return value of the `display` procedure is undefined in standard Scheme.  
 Internally Skeem, implements such undefined result as a `Skeem::Undefined`instance.
 
-Here is an excerpt from a REPL session:
+To give some taste of things, here is an excerpt from a REPL session:
 ```
 > (+ 4 (* 5 6))
 34
@@ -76,7 +78,7 @@ Here is an excerpt from a REPL session:
 ```
 
 #### Terminating a REPL session
-To exit a REPL session, call the exit procedure as follows:
+To exit a REPL session, call the `exit` procedure as follows:
 ```
 (exit)
 ```
@@ -85,9 +87,10 @@ To exit a REPL session, call the exit procedure as follows:
 To run a Scheme file:
 
 ```
-  skeem path/to/file.skm
+  skeem path/to/some-file.skm
 ```
 
+By the way, the `/bin` folder of the `skeem` gem contains a couple of Skeem sample files.
 
 ## Embed Skeem in your Ruby app
 This is the third way for Rubyists to interact with Skeem by integrating it directly in their Ruby code.

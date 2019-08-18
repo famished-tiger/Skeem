@@ -7,7 +7,7 @@ module Skeem
   describe Parser do
     context 'Initialization:' do
       it 'should be initialized without argument' do
-        expect { Parser.new() }.not_to raise_error
+        expect { Parser.new }.not_to raise_error
       end
 
       it 'should have its parse engine initialized' do
@@ -18,11 +18,11 @@ module Skeem
     context 'Parsing literals:' do
       it 'should parse isolated booleans' do
         samples = [
-        ['#f', false],
+          ['#f', false]
 #        ['#false', false],
 #        ['#t', true],
 #        ['#true', true]
-      ]
+        ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SkmBoolean)
@@ -32,12 +32,12 @@ module Skeem
 
       it 'should parse isolated integers' do
         samples = [
-        ['0', 0],
-        ['3', 3],
-        ['-3', -3],
-        ['+12345', 12345],
-        ['-12345', -12345]
-      ]
+          ['0', 0],
+          ['3', 3],
+          ['-3', -3],
+          ['+12345', 12345],
+          ['-12345', -12345]
+        ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SkmInteger)
@@ -47,12 +47,12 @@ module Skeem
 
       it 'should parse isolated real numbers' do
         samples = [
-        ['0.0', 0.0],
-        ['3.14', 3.14],
-        ['-3.14', -3.14],
-        ['+123e+45', 123e+45],
-        ['-123e-45', -123e-45]
-      ]
+          ['0.0', 0.0],
+          ['3.14', 3.14],
+          ['-3.14', -3.14],
+          ['+123e+45', 123e+45],
+          ['-123e-45', -123e-45]
+        ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SkmReal)
@@ -62,8 +62,8 @@ module Skeem
 
       it 'should parse isolated strings' do
         samples = [
-        ['"Hello world!"', 'Hello world!']
-      ]
+          ['"Hello world!"', 'Hello world!']
+        ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SkmString)
@@ -73,8 +73,8 @@ module Skeem
 
       it 'should parse isolated identifiers' do
         samples = [
-        ['the-word-recursion-has-many-meanings', 'the-word-recursion-has-many-meanings']
-      ]
+          %w[the-word-recursion-has-many-meanings the-word-recursion-has-many-meanings]
+        ]
         samples.each do |source, predicted|
           ptree = subject.parse(source)
           expect(ptree.root).to be_kind_of(SkmVariableReference)

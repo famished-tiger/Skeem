@@ -6,7 +6,7 @@ module Skeem
     def initialize(aPosition)
       self.position = aPosition
     end
-    
+
     def callable?
       false
     end
@@ -14,15 +14,15 @@ module Skeem
     def number?
       false
     end
-    
+
     def complex?
       false
-    end    
+    end
 
     def real?
       false
     end
-    
+
     def rational?
       false
     end
@@ -34,7 +34,7 @@ module Skeem
     def boolean?
       false
     end
-    
+
     def char?
       false
     end
@@ -58,7 +58,7 @@ module Skeem
     def pair?
       false
     end
-    
+
     def procedure?
       false
     end
@@ -75,11 +75,11 @@ module Skeem
       msg = "Missing implementation of method #{self.class.name}##{__method__}"
       raise NotImplementedError, msg
     end
-    
+
     def skm_eq?(other)
       # Default implementation, to override when necessary
-      self.eqv?(other)
-    end    
+      eqv?(other)
+    end
 
     # @return [TrueClass, FalseClass] true if quoted element is identical to itself
     def verbatim?
@@ -119,7 +119,7 @@ module Skeem
       # Do nothing
     end
 
-   def inspect
+    def inspect
       result = inspect_prefix.dup
       result << inspect_specific
       result << inspect_suffix

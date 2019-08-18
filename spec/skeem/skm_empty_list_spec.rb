@@ -22,10 +22,10 @@ module Skeem
 
     context 'Provided services:' do
       let(:runtime) { double('fake-runtime') }
-      
+
       it 'should be equivalent to itself' do
         expect(subject).to be_eqv(SkmEmptyList.instance)
-        expect(subject).not_to be_eqv("()")
+        expect(subject).not_to be_eqv('()')
       end
 
       it "should return itself when receiving 'evaluate' message" do
@@ -38,10 +38,10 @@ module Skeem
 
       it "should reply to visitor's 'accept' message" do
         visitor = double('fake-visitor')
-        expect(visitor).to receive(:visit_empty_list).with(subject)      
+        expect(visitor).to receive(:visit_empty_list).with(subject)
         expect { subject.accept(visitor) }.not_to raise_error
       end
-      
+
       it 'should return its representation upon inspection' do
         predicted = '<Skeem::SkmEmptyList: ()>'
         expect(subject.inspect).to eq(predicted)
