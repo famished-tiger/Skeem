@@ -5,6 +5,9 @@ AllCops:
 Layout/CaseIndentation:
   Enabled: false
 
+Layout/ClosingHeredocIndentation:
+  Enabled: false
+
 Layout/CommentIndentation:
   Enabled: false
 
@@ -13,7 +16,7 @@ Layout/ElseAlignment:
 
 Layout/EmptyLines:
   Enabled: false
-  
+
 Layout/EndAlignment:
   Enabled: false
 
@@ -26,10 +29,10 @@ Layout/IndentationWidth:
 
 Layout/IndentationConsistency:
   Enabled: true
-  
-Layout/IndentHeredoc:
+
+Layout/HeredocIndentation:
   Enabled: false
-  
+
 Layout/MultilineHashBraceLayout:
   Enabled: true
 
@@ -38,11 +41,14 @@ Layout/SpaceAroundOperators:
 
 Layout/SpaceInsideParens:
   Enabled: true
-  
-Layout/Tab:
+
+Layout/IndentationStyle:
   Enabled: true
   
-Layout/TrailingBlankLines:
+Layout/SpaceAroundMethodCallOperator:
+  Enabled: true
+
+Layout/TrailingEmptyLines:
   Enabled: true
 
 Layout/TrailingWhitespace:
@@ -50,8 +56,14 @@ Layout/TrailingWhitespace:
 
 Lint/Loop:
   Enabled: true
+  
+Lint/RaiseException:
+  Enabled: true
 
 Lint/RescueException:
+  Enabled: true
+  
+Lint/StructNewOverride:
   Enabled: true
 
 Lint/UnusedMethodArgument:
@@ -80,13 +92,13 @@ Metrics/ClassLength:
 Metrics/CyclomaticComplexity:
   Enabled: false
 
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
   Max: 90
 
 Metrics/MethodLength:
   Enabled: true
-  Max: 40
+  Max: 45
 
 Metrics/ModuleLength:
   Enabled: true
@@ -100,11 +112,11 @@ Naming/ConstantName:
 
 Naming/ClassAndModuleCamelCase:
   Enabled: false
-  
-Naming/UncommunicativeBlockParamName:
+
+Naming/BlockParameterName:
   Enabled: true
-  
-Naming/UncommunicativeMethodParamName:
+
+Naming/MethodParameterName:
   Enabled: false
 
 Naming/VariableName:
@@ -113,7 +125,7 @@ Naming/VariableName:
 Style/Alias:
   Enabled: true
 
-Layout/AlignHash:
+Layout/HashAlignment:
   Enabled: false
 
 Style/AsciiComments:
@@ -154,9 +166,22 @@ Style/Documentation:
 
 Style/ExpandPathArguments:
   Enabled: false
+  
+Style/ExponentialNotation:
+  Enabled: true
 
 Style/GuardClause:
   Enabled: false
+  
+Style/HashEachMethods:
+  Enabled: true
+  
+Style/HashTransformKeys:
+  Enabled: true
+  
+Style/HashTransformValues:
+  Enabled: true
+
 
 Style/IfUnlessModifier:
   Enabled: false
@@ -167,12 +192,15 @@ Style/InverseMethods:
 Style/Next:
   Enabled: false
 
+Style/NumericLiterals:
+  Enabled: false
+
 Style/RaiseArgs:
   Enabled: true
 
 Style/RedundantReturn:
   Enabled: false
-  
+
 Style/RedundantSelf:
   Enabled: true
 
@@ -181,15 +209,15 @@ Style/RegexpLiteral:
 
 Style/PercentLiteralDelimiters:
   Enabled: false
-  
+
 Style/StderrPuts:
-  Enabled: false  
+  Enabled: false
 
 Style/StringLiterals:
   Enabled: true
 
 Style/TernaryParentheses:
   Enabled: false
-  
+
 Style/UnlessElse:
   Enabled: false

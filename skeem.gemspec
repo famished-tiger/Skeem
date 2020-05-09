@@ -10,6 +10,7 @@ module PkgExtending
     file_list = Dir[
       '.rubocop.yml',
       '.rspec',
+      '.travis.yml',
       '.yardopts',
       'appveyor.yml',
       'Gemfile',
@@ -52,7 +53,7 @@ DESCR
 SUMMARY
   spec.homepage      = 'https://github.com/famished-tiger/Skeem'
   spec.license       = 'MIT'
-  spec.required_ruby_version = '>= 2.3.0'  
+  spec.required_ruby_version = '>= 2.3.0'
 
   spec.bindir = 'bin'
   spec.executables << 'skeem'
@@ -66,6 +67,4 @@ SUMMARY
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'rake', '~> 12.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  
-
 end

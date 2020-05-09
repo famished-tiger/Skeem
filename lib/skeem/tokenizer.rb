@@ -53,7 +53,7 @@ module Skeem
       SYNTAX-RULES
       UNQUOTE
       UNQUOTE-SPLICING
-    ].map { |x| [x, x] } .to_h
+    ].map { |x| [x, x] }.to_h
 
     class ScanError < StandardError; end
 
@@ -352,7 +352,6 @@ other literal data (section 2.4).
     end
 
     def skip_block_comment
-      # require 'debug'
       scanner.skip(/#\|/)
       nesting_level = 1
       loop do

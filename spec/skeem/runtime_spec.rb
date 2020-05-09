@@ -96,11 +96,11 @@ module Skeem
 
       it 'should push a call to the stack call' do
         expect { subject.push_call(sample_call) }.not_to raise_error
-        expect(subject.call_stack.size). to eq(1)
+        expect(subject.call_stack.size).to eq(1)
         expect(subject.caller).to eq(sample_call)
 
         subject.push_call(sample_call.clone)
-        expect(subject.call_stack.size). to eq(2)
+        expect(subject.call_stack.size).to eq(2)
       end
 
       it 'should pop a call from the call stack' do

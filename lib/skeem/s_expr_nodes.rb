@@ -292,7 +292,7 @@ module Skeem
 
   SkmArity = Struct.new(:low, :high) do
     def nullary?
-      low.zero? && high == 0
+      low.zero? && high.zero?
     end
 
     def variadic?
@@ -814,8 +814,7 @@ module Skeem
 
     def evaluate_sequence(aRuntime)
       result = nil
-      if sequence
-        sequence.each do |cmd|
+      if sequence&.each do |cmd|
           begin
             if cmd.kind_of?(SkmLambda)
               result = cmd.dup_cond(aRuntime)

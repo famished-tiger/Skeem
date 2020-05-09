@@ -27,11 +27,11 @@ module Skeem
       add_standard(runtime)
     end
 
-    def parse(source, mode = nil)
+    def parse(source, _mode = nil)
       @parser ||= Parser.new
       @ptree = parser.parse(source)
-      # $stderr.puts @ptree.root.inspect if mode.nil?
-      # require 'debug' unless mode.nil?
+      # $stderr.puts @ptree.root.inspect if _mode.nil?
+      # require 'debug' unless _mode.nil?
     end
 
     def run(source, mode = nil)
