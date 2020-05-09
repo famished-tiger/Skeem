@@ -292,7 +292,7 @@ module Skeem
 
   SkmArity = Struct.new(:low, :high) do
     def nullary?
-      low.zero? && high.zero?
+      low.zero? && high == 0
     end
 
     def variadic?
