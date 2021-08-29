@@ -24,7 +24,8 @@ module PkgExtending
       'lib/**/*.rb',
       'lib/**/*.skm',
       'spec/**/*.rb',
-      'spec/**/*.skm'
+      'spec/**/*.skm',
+      'spec/**/*.yml'
     ]
     aPackage.files = file_list
     aPackage.test_files = Dir['spec/**/*_spec.rb']
@@ -53,7 +54,7 @@ DESCR
 SUMMARY
   spec.homepage      = 'https://github.com/famished-tiger/Skeem'
   spec.license       = 'MIT'
-  spec.required_ruby_version = '>= 2.3.0'
+  spec.required_ruby_version = '>= 2.5.0'
 
   spec.bindir = 'bin'
   spec.executables << 'skeem'
@@ -61,7 +62,7 @@ SUMMARY
   PkgExtending.pkg_files(spec)
   PkgExtending.pkg_documentation(spec)
   # Runtime dependencies
-  spec.add_dependency 'rley', '~> 0.7'
+  spec.add_dependency 'rley', '~> 0.8.03'
 
   # Development dependencies
   spec.add_development_dependency 'bundler', '~> 2.0'

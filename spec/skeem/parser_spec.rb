@@ -45,6 +45,7 @@ module Skeem
         end
       end
 
+      # rubocop: disable Style/ExponentialNotation
       it 'should parse isolated real numbers' do
         samples = [
           ['0.0', 0.0],
@@ -59,6 +60,7 @@ module Skeem
           expect(ptree.root.value).to eq(predicted)
         end
       end
+      # rubocop: enable Style/ExponentialNotation
 
       it 'should parse isolated strings' do
         samples = [

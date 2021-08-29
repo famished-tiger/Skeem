@@ -25,10 +25,10 @@ class SkeemREPL
     if File.exist?(aFilename)
       valid_fname = aFilename
     elsif File.extname(aFilename).empty? # Retry by adding extension...
-      if File.exist?(aFilename + '.skm')
-        valid_fname = aFilename + '.skm'
-      elsif File.exist?(aFilename + '.scm')
-        valid_fname = aFilename + '.scm'
+      if File.exist?("#{aFilename}.skm")
+        valid_fname = "#{aFilename}.skm"
+      elsif File.exist?("#{aFilename}.scm")
+        valid_fname = "#{aFilename}.scm"
       else
         valid_fname = nil
       end

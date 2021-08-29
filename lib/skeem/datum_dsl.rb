@@ -11,7 +11,7 @@ module Skeem
     def boolean(aBoolean)
       return aBoolean if aBoolean.kind_of?(SkmBoolean)
 
-      result = case aBoolean
+      case aBoolean
         when TrueClass, FalseClass
           SkmBoolean.create(aBoolean)
         when /^#t(?:rue)?|true$/
@@ -21,13 +21,12 @@ module Skeem
         else
           raise StandardError, aBoolean.inspect
       end
-      result
     end
 
     def integer(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmInteger)
 
-      result = case aLiteral
+      case aLiteral
         when Integer
           SkmInteger.create(aLiteral)
         when /^[+-]?\d+$/
@@ -35,13 +34,12 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
-      result
     end
 
     def rational(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmRational)
 
-      result = case aLiteral
+      case aLiteral
         when Rational
           SkmRational.create(aLiteral)
         when /^[+-]?\d+\/\d+$/
@@ -49,13 +47,12 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
-      result
     end
 
     def real(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmReal)
 
-      result = case aLiteral
+      case aLiteral
         when Numeric
           SkmReal.create(aLiteral)
         when /^[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?$/
@@ -63,13 +60,12 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
-      result
     end
 
     def char(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmChar)
 
-      result = case aLiteral
+      case aLiteral
         when Numeric
           SkmChar.create_from_int(aLiteral)
         when String
@@ -81,13 +77,12 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
-      result
     end
 
     def string(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmString)
 
-      result = case aLiteral
+      case aLiteral
         when String
           SkmString.create(aLiteral)
         when SkmIdentifier
@@ -95,13 +90,12 @@ module Skeem
         else
           SkmString.create(aLiteral.to_s)
       end
-      result
     end
 
     def identifier(aLiteral)
       return aLiteral if aLiteral.kind_of?(SkmIdentifier)
 
-      result = case aLiteral
+      case aLiteral
         when String
           SkmIdentifier.create(aLiteral)
         when SkmString
@@ -109,13 +103,12 @@ module Skeem
         else
           raise StandardError, aLiteral.inspect
       end
-      result
     end
 
     alias symbol identifier
 
     def list(aLiteral)
-      result = case aLiteral
+      case aLiteral
         when Array
           SkmPair.create_from_a(to_datum(aLiteral))
         when SkmPair
@@ -123,12 +116,10 @@ module Skeem
         else
           SkmPair.new(to_datum(aLiteral), SkmEmptyList.instance)
         end
-
-      result
     end
 
     def vector(aLiteral)
-      result = case aLiteral
+      case aLiteral
         when Array
           SkmVector.new(to_datum(aLiteral))
         when SkmVector
@@ -136,8 +127,6 @@ module Skeem
         else
           SkmVector.new([to_datum(aLiteral)])
         end
-
-      result
     end
 
     # Conversion from Ruby object value to Skeem datum
@@ -146,7 +135,7 @@ module Skeem
       return vector(aLiteral.members) if aLiteral.kind_of?(SkmVector)
       return aLiteral if aLiteral.kind_of?(Primitive::PrimitiveProcedure)
 
-      result = case aLiteral
+      case aLiteral
         when Array
           aLiteral.map { |elem| to_datum(elem) }
         when Integer
@@ -166,25 +155,37 @@ module Skeem
           aLiteral
         else
           raise StandardError, aLiteral.inspect
-        end
-      result
+      end
     end
 
     private
 
     def parse_literal(aLiteral)
-      if aLiteral =~ /^#t(?:rue)?|true$/
-        boolean(aLiteral)
-      elsif aLiteral =~ /^#f(?:alse)?|false$/
-        boolean(aLiteral)
-      elsif aLiteral =~ /^[+-]?\d+\/\d+$/
-        rational(aLiteral)
-      elsif aLiteral =~ /^[+-]?\d+$/
-        integer(aLiteral)
-      elsif aLiteral =~ /^[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?$/
-        real(aLiteral)
-      else
-        string(aLiteral)
+      # if aLiteral =~ /^#t(?:rue)?|true$/
+        # boolean(aLiteral)
+      # elsif aLiteral =~ /^#f(?:alse)?|false$/
+        # boolean(aLiteral)
+      # elsif aLiteral =~ /^[+-]?\d+\/\d+$/
+        # rational(aLiteral)
+      # elsif aLiteral =~ /^[+-]?\d+$/
+        # integer(aLiteral)
+      # elsif aLiteral =~ /^[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?$/
+        # real(aLiteral)
+      # else
+        # string(aLiteral)
+      # end
+
+      case aLiteral
+        when /^#t(?:rue)?|true$/, /^#f(?:alse)?|false$/
+          boolean(aLiteral)
+        when /^[+-]?\d+\/\d+$/
+          rational(aLiteral)
+        when /^[+-]?\d+$/
+          integer(aLiteral)
+        when /^[+-]?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?$/
+          real(aLiteral)
+        else
+          string(aLiteral)
       end
     end
   end # module

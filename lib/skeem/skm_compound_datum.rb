@@ -22,13 +22,12 @@ module Skeem
     def ==(other)
       return true if equal?(other)
 
-      result = case other
+      case other
         when SkmCompoundDatum
           self.class == other.class && members == other.members
         when Array
           members == other
       end
-      result
     end
 
     alias eqv? equal?
@@ -70,7 +69,7 @@ module Skeem
 
     def inspect_specific
       result = +''
-      members.each { |elem| result << elem.inspect + ', ' }
+      members.each { |elem| result << "#{elem.inspect}, " }
       result.sub!(/, $/, '')
       result
     end

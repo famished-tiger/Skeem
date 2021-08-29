@@ -4,7 +4,10 @@ require_relative 'runtime'
 
 module Skeem
   class SkmProcedureExec
+    # @return [SkmFrame]
     attr_reader :frame
+
+    # @return [SkmLambda]
     attr_reader :definition
 
     def initialize(aLambda)

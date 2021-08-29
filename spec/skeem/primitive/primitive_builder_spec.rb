@@ -654,8 +654,8 @@ SKEEM
             ["(append '(a b) '(c d))", array2list_ids(%w[a b c d])],
             ["(append '(a b) '(c) 'd)", array2list_ids(%w[a b c d])],
             ["(append '(a (b)) '((c)))", [SkmIdentifier.create('a'),
-                                          SkmPair.create_from_a(array2list_ids(['b'])),
-                                          SkmPair.create_from_a(array2list_ids(['c']))]],
+              SkmPair.create_from_a(array2list_ids(['b'])),
+              SkmPair.create_from_a(array2list_ids(['c']))]],
             ["(append '() 'a)", SkmIdentifier.create('a')]
           ]
           compare_to_predicted(checks) do |result, expectation|
@@ -919,8 +919,8 @@ SKEEM
           result = subject.run(source)
           expect(result).to be_kind_of(SkmVector)
           expectation = [SkmInteger.create(0),
-                         SkmPair.new(SkmString.create('Sue'), SkmPair.new(SkmString.create('Sue'), SkmEmptyList.instance)),
-                         SkmString.create('Anna')]
+            SkmPair.new(SkmString.create('Sue'), SkmPair.new(SkmString.create('Sue'), SkmEmptyList.instance)),
+            SkmString.create('Anna')]
           expect(result).to eq(expectation)
 
           source = <<-SKEEM
@@ -1010,7 +1010,7 @@ SKEEM
           err = StandardError
           msg1 = 'Error: assertion failed on line 3, column 4'
           msg2 = 'with <Skeem::SkmBoolean: false>'
-          expect { subject.run(source) }.to raise_error(err, msg1 + ', ' + msg2)
+          expect { subject.run(source) }.to raise_error(err, "#{msg1}, #{msg2}")
         end
       end # context
     end # describe

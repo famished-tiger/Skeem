@@ -103,8 +103,8 @@ module Skeem
     end
 
     def inspect
-      result = inspect_prefix + operator.inspect + ', '
-      result << '@operands ' + operands.inspect + inspect_suffix
+      result = +"#{inspect_prefix}#{operator.inspect}, "
+      result << "@operands #{operands.inspect}#{inspect_suffix}"
       result
     end
 
@@ -127,12 +127,10 @@ module Skeem
 
           callee = result
           # callee = fetch_callee(aRuntime, result)
-        when Primitive::PrimitiveProcedure
+        when Primitive::PrimitiveProcedure, SkmLambda
           callee = operator
         when SkmLambdaRep
           callee = operator.evaluate(aRuntime)
-        when SkmLambda
-          callee = operator
         else
           result = operator.evaluate(aRuntime)
           if result.kind_of?(Primitive::PrimitiveProcedure)
@@ -225,9 +223,9 @@ module Skeem
     end
 
     def inspect
-      result = inspect_prefix + '@test ' + test.inspect + ', '
-      result << '@consequent ' + consequent.inspect + ', '
-      result << '@alternate ' + alternate.inspect + inspect_suffix
+      result = +"#{inspect_prefix}@test #{test.inspect}, "
+      result << "@consequent #{consequent.inspect}, "
+      result << "@alternate #{alternate.inspect}#{inspect_suffix}"
       result
     end
 
@@ -235,7 +233,6 @@ module Skeem
       %i[test consequent alternate]
     end
   end # class
-
 
   class SkmConditional < SkmMultiExpression
     # An array of couples [test, sequence]
@@ -280,20 +277,23 @@ module Skeem
     end
 
     def inspect
-      result = inspect_prefix + '@test ' + test.inspect + ', '
+      result = "#{inspect_prefix}@test #{test.inspect} , "
       result << "@clauses \n"
       clauses.each do |(test, consequent)|
         result << '  ' << test.inspect << ' ' << consequent.inspect << "\n"
       end
-      result << '@alternate ' + alternate.inspect + inspect_suffix
+      result << "@alternate #{alternate.inspect}#{inspect_suffix}"
       result
     end
   end # class
 
   SkmArity = Struct.new(:low, :high) do
+    # rubocop: disable Style/NumericPredicate
+
     def nullary?
       low.zero? && high == 0
     end
+    # rubocop: enable Style/NumericPredicate
 
     def variadic?
       high == '*'
@@ -446,6 +446,7 @@ module Skeem
     attr_reader :update_steps
 
     def initialize(aTest, doResult, theCommands, theUpdates)
+      super(nil)
       @test = aTest
       @do_result = doResult
       @commands = theCommands
@@ -546,7 +547,6 @@ module Skeem
     end
   end # class
 
-
   # Parse tree representation of a Lambda
   # - Not bound to a frame (aka environment)
   # - Knows the parse representation of its embedded definitions
@@ -629,9 +629,7 @@ module Skeem
         variadic_part_raw = actuals.drop(required_arity)
         variadic_part = variadic_part_raw.map do |actual|
           case actual
-            when ProcedureCall
-              actual.evaluate(aRuntime)
-            when SkmQuotation
+            when ProcedureCall, SkmQuotation
               actual.evaluate(aRuntime)
             else
               to_datum(actual)
@@ -697,9 +695,9 @@ module Skeem
 
     def inspect_specific
       result = +''
-      result << '@formals ' + formals.inspect + ', '
-      result << '@definitions ' + definitions.inspect + ', '
-      result << '@sequence ' + sequence.inspect + inspect_suffix
+      result << "@formals #{formals.inspect}, "
+      result << "@definitions #{definitions.inspect}, "
+      result << "@sequence #{sequence.inspect}#{inspect_suffix}"
 
       result
     end
@@ -715,6 +713,7 @@ module Skeem
     def_delegators(:@representation, :formals, :definitions, :sequence)
 
     def initialize(aRepresentation, aRuntime)
+      super(nil)
       @representation = aRepresentation
       @environment = aRuntime.environment
     end
@@ -790,9 +789,7 @@ module Skeem
         variadic_part_raw = actuals.drop(required_arity)
         variadic_part = variadic_part_raw.map do |actual|
           case actual
-            when ProcedureCall
-              actual.evaluate(aRuntime)
-            when SkmQuotation
+            when ProcedureCall, SkmQuotation
               actual.evaluate(aRuntime)
             else
               to_datum(actual)
@@ -814,20 +811,17 @@ module Skeem
 
     def evaluate_sequence(aRuntime)
       result = nil
-      if sequence&.each do |cmd|
-          begin
-            if cmd.kind_of?(SkmLambda)
-              result = cmd.dup_cond(aRuntime)
-            else
-              result = cmd.evaluate(aRuntime)
-            end
-          rescue NoMethodError => e
-            $stderr.puts inspect
-            $stderr.puts sequence.inspect
-            $stderr.puts cmd.inspect
-            raise e
-          end
+      sequence&.each do |cmd|
+        if cmd.kind_of?(SkmLambda)
+          result = cmd.dup_cond(aRuntime)
+        else
+          result = cmd.evaluate(aRuntime)
         end
+        rescue NoMethodError => e
+          $stderr.puts inspect
+          $stderr.puts sequence.inspect
+          $stderr.puts cmd.inspect
+          raise e
       end
 
       result
@@ -835,22 +829,18 @@ module Skeem
 
     def dup_cond(aRuntime)
       if environment
-        result = self
+        self
       else
         twin = dup
         twin.set_cond_environment(aRuntime.environment)
-        result = twin
+        twin
       end
-
-      result
     end
 
     def doppelganger(aRuntime)
       twin = dup
       twin.set_cond_environment(aRuntime.environment.dup)
-      result = twin
-
-      result
+      twin
     end
 
     def set_cond_environment(theFrame)
@@ -917,9 +907,9 @@ module Skeem
         result << "Parent environment #{environment.parent.object_id.to_s(16)}, "
         result << environment.inspect
       end
-      result << '@formals ' + formals.inspect + ', '
-      result << '@definitions ' + definitions.inspect + ', '
-      result << '@sequence ' + sequence.inspect + inspect_suffix
+      result << "@formals #{formals.inspect}, "
+      result << "@definitions #{definitions.inspect}, "
+      result << "@sequence #{sequence.inspect}#{inspect_suffix}"
 
       result
     end

@@ -42,10 +42,11 @@ module Skeem
         check_actual_count(actuals)
         # TODO: check that next line became useless
         # aProcedureCall.operands_consumed = true
-        result = do_call(aRuntime, actuals)
+        # result = do_call(aRuntime, actuals)
         # $stderr.puts "  Result: #{result.inspect}"
         # $stderr.puts "--- End of procedure #{identifier}"
-        result
+        # result
+        do_call(aRuntime, actuals)
       end
 
       def skm_equal?(other)
@@ -146,20 +147,20 @@ module Skeem
 
       def error_lambda(message_suffix)
         msg1 = "Primitive procedure '#{identifier.value}'"
-        raise StandardError, msg1 + ' ' + message_suffix
+        raise StandardError, "#{msg1} #{message_suffix}"
       end
 
       def discrepancy_arity_argument_count(arity_required, count_param, delta)
         msg1 = "Discrepancy in primitive procedure '#{identifier.value}'"
         msg2 = "between arity (#{arity_required}) + #{delta}"
         msg3 = "and parameter count of lambda #{count_param}."
-        raise StandardError, msg1 + ' ' + msg2 + ' ' + msg3
+        raise StandardError, "#{msg1} #{msg2} #{msg3}"
       end
 
       def wrong_number_arguments(required, actual)
         msg1 = "Wrong number of arguments for #<Procedure #{identifier.value}>"
         msg2 = "(required at least #{required}, got #{actual})"
-        raise StandardError, msg1 + ' ' + msg2
+        raise StandardError, "#{msg1} #{msg2}"
       end
     end # class
   end # module

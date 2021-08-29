@@ -24,17 +24,6 @@ module Skeem
       'STRING_LIT' => SkmString
     }.freeze
 
-    # Create a new AST builder instance.
-    # @param theTokens [Array<Token>] The sequence of input tokens.
-    def initialize(theTokens)
-      super(theTokens)
-    end
-
-    # Notification that the parse tree construction is complete.
-    def done!
-      super
-    end
-
     protected
 
     def terminal2node
@@ -191,9 +180,10 @@ module Skeem
 
     # rule('lambda_expression' => 'LPAREN LAMBDA formals body RPAREN').as 'lambda_expression'
     def reduce_lambda_expression(_production, aRange, _tokens, theChildren)
-      lmbd = SkmLambdaRep.new(aRange, theChildren[2], theChildren[3])
+      # lmbd = SkmLambdaRep.new(aRange, theChildren[2], theChildren[3])
       # $stderr.puts lmbd.inspect
-      lmbd
+      # lmbd
+      SkmLambdaRep.new(aRange, theChildren[2], theChildren[3])
     end
 
     # rule('formals' => 'LPAREN identifier_star RPAREN').as 'fixed_arity_formals'

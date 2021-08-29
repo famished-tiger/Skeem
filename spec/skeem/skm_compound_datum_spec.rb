@@ -50,7 +50,7 @@ module Skeem
       it 'should return its text representation' do
         txt1 = '<Skeem::SkmCompoundDatum: <Skeem::SkmInteger: 1>,'
         txt2 = '<Skeem::SkmInteger: 2>, <Skeem::SkmInteger: 3>>'
-        expect(subject.inspect).to eq(txt1 + ' ' + txt2)
+        expect(subject.inspect).to eq("#{txt1} #{txt2}")
       end
     end # context
 

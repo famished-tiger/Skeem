@@ -17,9 +17,12 @@ module Skeem
     # @param anIdentifier [SkmIdentifier] The variable name
     # @param aValue [SkmElement] The value to bind to the variable.
     def initialize(anIdentifier, aValue)
+      super(nil)
       @variable = anIdentifier
       @value = aValue
     end
+
+    # rubocop: disable Style/NegatedIfElseCondition
 
     def evaluate(aRuntime)
       name = variable.evaluate(aRuntime)
@@ -42,6 +45,7 @@ module Skeem
       binding_action(aRuntime, name, result)
       result
     end
+    # rubocop: enable Style/NegatedIfElseCondition
 
     protected
 
@@ -59,7 +63,6 @@ module Skeem
     end
   end # class
 
-
   class SkmUpdateBinding < SkmBinding
     protected
 
@@ -70,10 +73,6 @@ module Skeem
 
   class SkmDelayedUpdateBinding < SkmBinding
     attr_reader :new_val
-
-    def initialize(anIdentifier, aValue)
-      super(anIdentifier, aValue)
-    end
 
     def do_it!(aRuntime)
       aRuntime.update_binding(variable, new_val)

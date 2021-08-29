@@ -9,7 +9,7 @@ module Skeem
   # Official Small Scheme grammar is available at:
   # https://bitbucket.org/cowan/r7rs/src/draft-10/rnrs/r7rs.pdf
   # Names of grammar elements are based on the R7RS documentation
-  builder = Rley::Syntax::GrammarBuilder.new do
+  builder = Rley::grammar_builder do
     # Delimiters, separators...
     add_terminals('APOSTROPHE', 'COMMA', 'COMMA_AT_SIGN')
     add_terminals('GRAVE_ACCENT', 'LPAREN', 'RPAREN')
@@ -22,7 +22,7 @@ module Skeem
 
     # Keywords...
     add_terminals('BEGIN', 'COND', 'DEFINE', 'DEFINE-SYNTAX', 'DO')
-    add_terminals('ELSE', 'IF', 'INCLUDE', 'LAMBDA', 'LET', 'LET*')
+    add_terminals('ELSE', 'IF', 'INCLUDE', 'LAMBDA', 'LET', 'LET_STAR')
     add_terminals('QUOTE', 'QUASIQUOTE', 'SET!', 'SYNTAX-RULES')
     add_terminals('UNQUOTE', 'UNQUOTE-SPLICING')
 
@@ -108,7 +108,7 @@ module Skeem
     rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'
     # TODO: implement "named let"
     rule('derived_expression' => 'LPAREN LET IDENTIFIER LPAREN binding_spec_star RPAREN body RPAREN') # .as 'named_form'
-    rule('derived_expression' => 'LPAREN LET* LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
+    rule('derived_expression' => 'LPAREN LET_STAR LPAREN binding_spec_star RPAREN body RPAREN').as 'let_star_form'
 
     # As the R7RS grammar is too restrictive,
     # the next rule was made more general than its standard counterpart

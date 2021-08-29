@@ -45,7 +45,7 @@ module Skeem
     end
 
     def add_standard(_runtime)
-      std_pathname = File.dirname(__FILE__) + '/standard/base.skm'
+      std_pathname = "#{File.dirname(__FILE__)}/standard/base.skm"
       load_lib(std_pathname)
     end
 

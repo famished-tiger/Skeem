@@ -4,7 +4,10 @@ require_relative 'skm_empty_list'
 
 module Skeem
   class SkmPair < SkmElement
+    # @return [SkmElement]
     attr_accessor :car
+
+    # @return [SkmElement]
     attr_accessor :cdr
 
     alias first car
@@ -168,8 +171,8 @@ module Skeem
         begin
           result = clone_evaluate(aRuntime)
         rescue NoMethodError => e
-          $stderr.puts 'SkmPair#evaluate:   ' + inspect
-          $stderr.puts 'SkmPair as Array:   ' + to_a.inspect
+          $stderr.puts "SkmPair#evaluate:   #{inspect}"
+          $stderr.puts "SkmPair as Array:   #{to_a.inspect}"
           raise e
         end
       end

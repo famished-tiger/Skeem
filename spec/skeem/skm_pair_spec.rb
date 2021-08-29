@@ -37,7 +37,7 @@ module Skeem
 
     context 'Provided services:' do
       let(:runtime) { Runtime.new(SkmFrame.new) }
-      let(:list_length_2) { SkmPair.new(integer(10), subject) }
+      let(:list_length2) { SkmPair.new(integer(10), subject) }
       let(:quirk_element) { double('three') }
       let(:quirk_members) { [integer(10), quirk_element] }
 
@@ -71,7 +71,7 @@ module Skeem
         expect(subject.length).to eq(1)
 
         # Use a list of length 2
-        expect(list_length_2.length).to eq(2)
+        expect(list_length2.length).to eq(2)
       end
 
       it 'should respond false to `eqv?` message' do
@@ -113,7 +113,7 @@ module Skeem
         expect(subject.to_a).to eq([sample_car])
 
         # Use a list of length 2
-        expect(list_length_2.to_a).to eq([integer(10), sample_car])
+        expect(list_length2.to_a).to eq([integer(10), sample_car])
       end
 
       it 'should return the last pair of a proper list' do
@@ -133,7 +133,7 @@ module Skeem
 
       it 'should return the last element of a list' do
          expect(subject.last).to eq(sample_car)
-         expect(list_length_2.last).to eq(sample_car)
+         expect(list_length2.last).to eq(sample_car)
       end
 
       it 'should append a new element to a list' do
@@ -227,7 +227,7 @@ module Skeem
         expect(subject.inspect).to eq(predicted)
 
         predicted = '<Skeem::SkmPair: <Skeem::SkmInteger: 10>, <Skeem::SkmInteger: 3>>'
-        expect(list_length_2.inspect).to eq(predicted)
+        expect(list_length2.inspect).to eq(predicted)
       end
     end # context
   end # describe

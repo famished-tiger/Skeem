@@ -6,7 +6,10 @@ module Skeem
   # Abstract class. Root of class hierarchy needed for Interpreter
   # design pattern
   class SkmSimpleDatum < SkmElement
+    # @return [Rley::Syntax::Token] token object corresponding to Skeem element
     attr_reader :token
+
+    # @return [Object]
     attr_reader :value
 
     def initialize(aToken, aPosition)
@@ -37,13 +40,11 @@ module Skeem
     def ==(other)
       return true if equal?(other)
 
-      result = if other.kind_of?(SkmSimpleDatum)
-          value == other.value
-        else
-          value == other
-        end
-
-      result
+      if other.kind_of?(SkmSimpleDatum)
+        value == other.value
+      else
+        value == other
+      end
     end
 
     alias eqv? ==
@@ -104,10 +105,12 @@ module Skeem
       false
     end
 
+    # rubocop: disable Style/NegatedIfElseCondition
+
     def eqv?(other)
       return true if equal?(other)
 
-      result = if other.kind_of?(SkmNumber)
+      if other.kind_of?(SkmNumber)
         if exact? != other.exact?
           false
         else
@@ -116,9 +119,8 @@ module Skeem
       else
         value == other
       end
-
-      result
     end
+    # rubocop: enable Style/NegatedIfElseCondition
   end # class
 
   class SkmReal < SkmNumber

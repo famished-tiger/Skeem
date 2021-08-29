@@ -1,3 +1,12 @@
+## [0.2.18] - 2021-08-29
+- Minor refactoring for Rley 0.8.03
+- Code restyling to please rubocop 1.19.1.
+
+### Changed
+- File `.rubocop.yml` updated with newer Rubocop cops
+- File `grammar.rb`: Calling `Rley::grammar_builder`, replace `LET*` token by `LET_STAR`
+- Other files changed to get rid of Rubocop offences
+
 ## [0.2.17] - 2020-05-09
 - Updated `.rubocop.yml` file. 
 - Code restyling to please rubocop 0.8.0. 

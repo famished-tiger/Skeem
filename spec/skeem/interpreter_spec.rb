@@ -16,7 +16,7 @@ module Skeem
       end
 
       it 'could be initialized with a block argument' do
-        expect { Interpreter.new { |interp| } }.not_to raise_error
+        expect { Interpreter.new(&:runtime) }.not_to raise_error
       end
 
       it 'should have a parser' do
@@ -67,6 +67,7 @@ module Skeem
         end
       end
 
+      # rubocop: disable Style/ExponentialNotation
       it 'should evaluate isolated real numbers' do
         samples = [
           ['0.0', 0.0],
@@ -80,6 +81,7 @@ module Skeem
           expect(result).to eq(predicted)
         end
       end
+      # rubocop: enable Style/ExponentialNotation
 
       it 'should evaluate isolated strings' do
         samples = [

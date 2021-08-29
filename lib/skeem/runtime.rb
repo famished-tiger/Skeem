@@ -124,16 +124,14 @@ module Skeem
     private
 
     def normalize_key(aKey)
-      result = case aKey
-                 when String
-                   aKey
-                 when SkmVariableReference
-                    aKey.child.value
-                 else
-                   aKey.evaluate(self).value
-               end
-
-      result
+      case aKey
+        when String
+          aKey
+        when SkmVariableReference
+          aKey.child.value
+        else
+          aKey.evaluate(self).value
+      end
     end
   end # class
 end # module

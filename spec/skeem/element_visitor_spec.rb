@@ -12,7 +12,9 @@ module Skeem
     let(:simple_datum) { integer 42 }
     let(:listener) do
       fake = double('fake-subscriber')
-      fake.define_singleton_method(:accept_all) {}
+      fake.define_singleton_method(:accept_all) do
+        # Dummy block
+      end
       fake
     end
 

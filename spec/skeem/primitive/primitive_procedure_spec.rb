@@ -149,7 +149,7 @@ module Skeem
           expect(pproc.call(rtime, no_arg)).to eq(0)
 
           many = [SkmString.create('foo'), SkmString.create('bar'),
-                  SkmString.create('quux')]
+            SkmString.create('quux')]
           expect(pproc.call(rtime, many)).to eq(3)
         end
       end # context

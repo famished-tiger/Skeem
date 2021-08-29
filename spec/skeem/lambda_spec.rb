@@ -31,7 +31,7 @@ SKEEM
 
     context 'Defining compound procedures:' do
       it 'should accept the definition of simple procedure with arity 1' do
-        source = definition_set + "\n" + 'square'
+        source = "#{definition_set}\nsquare"
         result = subject.run(source)
 
         square = result.last
@@ -41,7 +41,7 @@ SKEEM
       end
 
       it 'should accept the definition of simple procedure with arity 2' do
-        source = definition_set + "\n" + 'sum-of-squares'
+        source = "#{definition_set}\nsum-of-squares"
         result = subject.run(source)
 
         square = result.last
@@ -65,14 +65,14 @@ SKEEM
       end
 
       it 'should support the call to a simple procedure with arity 2' do
-        source = definition_set + "\n" + '(sum-of-squares 3 4)'
+        source = "#{definition_set}\n(sum-of-squares 3 4)"
         result = subject.run(source)
 
         expect(result.last).to eq(25)
       end
 
       it 'should support the call to a nested lambda procedure' do
-        source = definition_set + "\n" + '(f 5)'
+        source = "#{definition_set}\n(f 5)"
         result = subject.run(source)
 
         expect(result.last).to eq(136)

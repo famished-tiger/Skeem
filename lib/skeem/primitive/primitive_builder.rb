@@ -234,20 +234,17 @@ module Skeem
           if arglist.empty?
             raw_result = reciprocal(raw_result)
           else
-            # Ugly: Ruby version dependency: Rubies older than 2.4 have class Fixnum instead of Integer
-            int_class = (RUBY_VERSION[0..2] < '2.4') ? Fixnum : Integer
-
             arglist.each do |elem|
               elem_value = elem.value
               case [raw_result.class, elem_value.class]
-                when [int_class, int_class]
+                when [Integer, Integer]
                   if raw_result.modulo(elem_value).zero?
                     raw_result /= elem_value
                   else
                     raw_result = Rational(raw_result, elem_value)
                   end
 
-                when [int_class, Rational]
+                when [Integer, Rational]
                   raw_result *= reciprocal(elem_value)
 
                 when [Rational, Rational]
@@ -827,8 +824,6 @@ module Skeem
                 cloned = arg.klone
                 if result.kind_of?(SkmEmptyList)
                   result = cloned
-                elsif result.kind_of?(SkmEmptyList)
-                  result = SkmPair.new(arg, SkmEmptyList.instance)
                 else
                   result.append_list(cloned)
                 end
@@ -945,7 +940,7 @@ module Skeem
                 break
               end
               pair = pair.cdr
-              break unless pair&.kind_of?(SkmPair)
+              break unless pair.kind_of?(SkmPair)
             end
           end
 
@@ -967,7 +962,7 @@ module Skeem
                 break
               end
               pair = pair.cdr
-              break unless pair&.kind_of?(SkmPair)
+              break unless pair.kind_of?(SkmPair)
             end
           end
 
@@ -1142,7 +1137,7 @@ module Skeem
             # Error: assertion failed: (> 1 2)
             msg1 = "assertion failed on line #{pos.line}, column #{pos.column}"
             msg2 = ", with #{arg_evaluated.inspect}"
-            raise StandardError, 'Error: ' + msg1 + msg2
+            raise StandardError, "Error: #{msg1}#{msg2}"
           else
             boolean(true)
           end
@@ -1165,7 +1160,7 @@ module Skeem
       # Non-standard procedure reserved for internal testing/debugging purposes.
       def create_inspect(aRuntime)
         primitive = lambda do |_runtime, arg_evaluated|
-          $stderr.puts 'INSPECT>' + arg_evaluated.inspect
+          $stderr.puts "INSPECT>#{arg_evaluated.inspect}"
           Skeem::SkmUndefined.instance
         end
         define_primitive_proc(aRuntime, '_inspect', unary, primitive)
@@ -1233,7 +1228,7 @@ module Skeem
         else
           msg2 = "but got #{argument.class}"
         end
-        raise StandardError, msg1 + ' ' + msg2
+        raise StandardError, "#{msg1} #{msg2}"
       end
 
       def remaining_args(arglist, aRuntime)

@@ -16,8 +16,13 @@ module Skeem
   # Delimiters: parentheses '(',  ')'
   # Separators: comma
   class Tokenizer
+    # @return [StringScanner]
     attr_reader(:scanner)
+
+    # @return [Integer] Current line number
     attr_reader(:lineno)
+
+    # @return [Integer] Offset of start of current line
     attr_reader(:line_start)
 
     @@lexeme2name = {
@@ -53,7 +58,7 @@ module Skeem
       SYNTAX-RULES
       UNQUOTE
       UNQUOTE-SPLICING
-    ].map { |x| [x, x] }.to_h
+    ].map { |x| [x, x.sub(/\*$/, '_STAR')] }.to_h
 
     class ScanError < StandardError; end
 
@@ -162,11 +167,10 @@ other literal data (section 2.4).
       if (lexeme = scanner.scan(/#\\/))
         if (lexeme = scanner.scan(/(?:alarm|backspace|delete|escape|newline|null|return|space|tab)/))
           token = build_token('CHAR', lexeme, :name)
-        elsif (lexeme = scanner.scan(/[^x]/))
-          token = build_token('CHAR', lexeme, :escaped)
         elsif (lexeme = scanner.scan(/x[0-9a-fA-F]+/))
           token = build_token('CHAR', lexeme, :hex_value)
-        elsif (lexeme = scanner.scan(/x/))
+        else
+          lexeme = scanner.getch
           token = build_token('CHAR', lexeme, :escaped)
         end
       end

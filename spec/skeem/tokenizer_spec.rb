@@ -47,8 +47,8 @@ module Skeem
         tokens.each { |token| expect(token).to be_kind_of(Rley::Lexical::Token) }
         terminals = tokens.map(&:terminal)
         prediction = %w[LPAREN RPAREN APOSTROPHE
-                        GRAVE_ACCENT PERIOD
-                        COMMA COMMA_AT_SIGN ]
+          GRAVE_ACCENT PERIOD
+          COMMA COMMA_AT_SIGN ]
         expect(terminals).to eq(prediction)
       end
     end # context
@@ -129,6 +129,7 @@ module Skeem
     end # context
 
     context 'Real number recognition:' do
+      # rubocop: disable Style/ExponentialNotation
       it 'should tokenize real numbers' do
         tests = [
           # couple [raw input, expected]
@@ -140,6 +141,7 @@ module Skeem
 
         check_tokens(tests, 'REAL')
       end
+      # rubocop: enable Style/ExponentialNotation
     end # context
 
     context 'Character literal recognition:' do

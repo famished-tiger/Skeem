@@ -138,7 +138,7 @@ module Skeem
     end
 
     def inspect_specific
-      raise NotImplementedError, "Missing #{self.class.to_s + '#' + 'inspect_specific'}"
+      raise NotImplementedError, "Missing #{self.class}#inspect_specific"
     end
   end # struct
 end # module

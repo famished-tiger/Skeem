@@ -17,26 +17,29 @@ RSpec.configure do |config|
   config.full_backtrace = true
 end
 
+
 module InterpreterSpec
   def expect_expr(aSkeemExpr)
     result = subject.run(aSkeemExpr)
     expect(result)
   end
 
+  # rubocop: disable Lint/RescueException
+
   # This method assumes that 'subject' is a Skeem::Interpreter instance.
   def compare_to_predicted(arrActualsPredictions)
     arrActualsPredictions.each_with_index do |(source, predicted), index|
-      begin
-        result = subject.run(source)
-        if block_given?
-          yield result, predicted
-        else
-          expect(result).to eq(predicted)
-        end
-      rescue Exception => e
-        $stderr.puts "Row #{index + 1} failed."
-        throw e
+      result = subject.run(source)
+      if block_given?
+        yield result, predicted
+      else
+        expect(result).to eq(predicted)
       end
+
+    rescue Exception => e
+      $stderr.puts "Row #{index + 1} failed."
+      throw e
     end
   end
+  # rubocop: enable Lint/RescueException
 end

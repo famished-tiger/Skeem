@@ -76,8 +76,7 @@ module Skeem
     end
 
     def quasiquote(aRuntime)
-      result = evaluate(aRuntime)
-      result
+      evaluate(aRuntime)
     end
 
     protected
@@ -115,7 +114,10 @@ module Skeem
   class SkmBindingBlock < SkmUnaryExpression
     alias body child
 
+    # @return [Symbol] One of: :let, :let_star
     attr_reader :kind
+
+    # @return [Array<SkmBinding>]
     attr_reader :bindings
 
     def initialize(theKind, theBindings, aBody)
@@ -126,14 +128,15 @@ module Skeem
 
     def evaluate(aRuntime)
       aRuntime.push(SkmFrame.new(aRuntime.environment))
-      if kind == :let
+      case kind
+      when :let
         locals = bindings.map do |bnd|
           SkmBinding.new(bnd.variable, bnd.value.evaluate(aRuntime))
         end
         locals.each do |bnd|
           aRuntime.add_binding(bnd.variable.evaluate(aRuntime), bnd.value)
         end
-      elsif kind == :let_star
+      when :let_star
         bindings.each do |bnd|
           val = bnd.value.evaluate(aRuntime)
           aRuntime.add_binding(bnd.variable.evaluate(aRuntime), val)
@@ -186,18 +189,16 @@ module Skeem
     def eval_pair(aRuntime)
       result = nil
       sequence.to_a.each do |cmd|
-        begin
-          if cmd.kind_of?(SkmLambda)
-            result = cmd.dup_cond(aRuntime)
-          else
-            result = cmd.evaluate(aRuntime)
-          end
-        rescue NoMethodError => e
-          $stderr.puts inspect
-          $stderr.puts sequence.inspect
-          $stderr.puts cmd.inspect
-          raise e
+        if cmd.kind_of?(SkmLambda)
+          result = cmd.dup_cond(aRuntime)
+        else
+          result = cmd.evaluate(aRuntime)
         end
+      rescue NoMethodError => e
+        $stderr.puts inspect
+        $stderr.puts sequence.inspect
+        $stderr.puts cmd.inspect
+        raise e
       end
 
       result
@@ -215,18 +216,16 @@ module Skeem
 
       if sequence[:sequence].kind_of?(SkmPair)
         sequence[:sequence].to_a.each do |cmd|
-          begin
-            if cmd.kind_of?(SkmLambda)
-              result = cmd.dup_cond(aRuntime)
-            else
-              result = cmd.evaluate(aRuntime)
-            end
-          rescue NoMethodError => e
-            $stderr.puts inspect
-            $stderr.puts sequence[:sequence].inspect
-            $stderr.puts cmd.inspect
-            raise e
+          if cmd.kind_of?(SkmLambda)
+            result = cmd.dup_cond(aRuntime)
+          else
+            result = cmd.evaluate(aRuntime)
           end
+        rescue NoMethodError => e
+          $stderr.puts inspect
+          $stderr.puts sequence[:sequence].inspect
+          $stderr.puts cmd.inspect
+          raise e
         end
       else
         result = sequence.evaluate(aRuntime)
