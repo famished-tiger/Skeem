@@ -157,16 +157,6 @@ module Skeem
       pcall
     end
 
-    # rule('operand_plus' => 'operand_plus operand').as 'multiple_operands'
-    def reduce_multiple_operands(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('operand_plus' => 'operand').as 'last_operand'
-    def reduce_last_operand(_production, _range, _tokens, theChildren)
-      [theChildren.last]
-    end
-
     # rule('def_formals' => 'identifier_star').as 'def_formals'
     def reduce_def_formals(_production, _range, _tokens, theChildren)
       SkmFormals.new(theChildren[0], :fixed)
@@ -200,16 +190,6 @@ module Skeem
     def reduce_dotted_formals(_production, _range, _tokens, theChildren)
       formals = theChildren[1] << theChildren[3]
       SkmFormals.new(formals, :variadic)
-    end
-
-    # rule('identifier_plus' => 'identifier_plus IDENTIFIER').as 'multiple_identifiers'
-    def reduce_multiple_identifiers(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('identifier_plus' => 'IDENTIFIER').as 'last_identifier'
-    def reduce_last_identifier(_production, _range, _tokens, theChildren)
-      [theChildren[0]]
     end
 
     # rule('body' => 'definition_star sequence').as 'body'
@@ -273,16 +253,6 @@ module Skeem
       SkmBindingBlock.new(:let_star, worker.bindings, body)
     end
 
-    # rule('cond_clause_plus' => 'cond_clause_plus cond_clause').as 'multiple_cond_clauses'
-    def reduce_multiple_cond_clauses(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('cond_clause_plus' => 'cond_clause').as 'last_cond_clauses'
-    def reduce_last_cond_clauses(_production, _range, _tokens, theChildren)
-      [theChildren[0]]
-    end
-
     # rule('cond_clause' => 'LPAREN test sequence RPAREN').as 'cond_clause'
     def reduce_cond_clause(_production, _range, _tokens, theChildren)
       [theChildren[1], SkmSequencingBlock.new(SkmPair.create_from_a(theChildren[2]))]
@@ -327,16 +297,6 @@ module Skeem
     def reduce_include(_production, _range, _tokens, theChildren)
       includer = SkmIncluder.new(theChildren[2])
       includer.build
-    end
-
-    # rule('string_plus' => 'string_plus STRING_LIT').as 'multiple_string'
-    def reduce_multiple_string(_production, _range, _tokens, theChildren)
-      theChildren[0] << theChildren[1]
-    end
-
-    # rule('string_plus' => 'STRING_LIT').as 'last_single_string'
-    def reduce_last_single_string(_production, _range, _tokens, theChildren)
-      [theChildren[0]]
     end
 
     # rule('list_qq_template' => 'LPAREN qq_template_or_splice_star RPAREN').as 'list_qq'

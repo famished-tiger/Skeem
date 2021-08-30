@@ -114,7 +114,7 @@ module Skeem
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+(?:\.[0-9]*)?(?:(?:e|E)[+-]?[0-9]+)?/))
         # Order dependency: must be tested after INTEGER case
         token = build_token('REAL', lexeme)
-      elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\\(tfeiodx]|(?:\d+[=#]))/))
+      elsif (lexeme = scanner.scan(/#(?:(?:true)|(?:false)|(?:u8)|[\\(tfeiodx]|(?:\d+[=#]))/))
         token = cardinal_token(lexeme)
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
         token = build_token('STRING_LIT', lexeme)
@@ -124,7 +124,7 @@ module Skeem
         token = build_token(tok_type, lexeme)
       elsif (lexeme = scanner.scan(/\|(?:[^|])*\|/)) # Vertical bar delimited
         token = build_token('IDENTIFIER', lexeme)
-      elsif (lexeme = scanner.scan(/([\+\-])((?=\s|[|()";])|$)/))
+      elsif (lexeme = scanner.scan(/([+\-])((?=\s|[|()";])|$)/))
         #  # R7RS peculiar identifiers case 1: isolated plus and minus as identifiers
         token = build_token('IDENTIFIER', lexeme)
       elsif (lexeme = scanner.scan(/[+-][a-zA-Z!$%&*\/:<=>?@^_~+-@][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))

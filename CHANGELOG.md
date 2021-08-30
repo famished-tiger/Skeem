@@ -1,3 +1,12 @@
+## [0.2.19] - 2021-08-30
+- Grammar refactoring: use ?, * and + modifiers in Rley 0.8.03 rules
+
+### Changed
+- File `grammar.rb`: Remove redundant rules after introduction og ?, * and + modifiers
+- Class `SkmBuilder`: Removal of useless methods after removal of their rule counterpart
+
+
+
 ## [0.2.18] - 2021-08-29
 - Minor refactoring for Rley 0.8.03
 - Code restyling to please rubocop 1.19.1.
