@@ -4,7 +4,7 @@ require 'skeem'
 
 def skm_filenames
   names = Dir.entries('.')
-  names.select { |fname| fname =~ /\.s[ck]m$/ }
+  names.grep(/\.s[ck]m$/)
 end
 
 skm_filenames.each do |skm_file|

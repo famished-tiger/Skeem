@@ -89,6 +89,8 @@ module Skeem
 
     private
 
+    # rubocop: disable Lint/DuplicateBranch
+
     def _next_token
       skip_intertoken_spaces
       curr_ch = scanner.peek(1)
@@ -142,6 +144,8 @@ module Skeem
 
       return token
     end
+
+    # rubocop: enable Lint/DuplicateBranch
 
 =begin
 #u8( This introduces a bytevector constant (section 6.9).

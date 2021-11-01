@@ -1,8 +1,16 @@
+## [0.2.20] - 2021-11-01
+- Code update to cope with changes in `Rley` v. 0.8.08
+
+### Changed
+- File `grammar.rb`: Refactoring to cope with ? quantifier changes
+- File `s_expr_builder.rb`: Refactoring to cope with ? quantifier changes
+- File `skeem.gemspec` dependency updated for `Rley` v. 0.8.08
+
 ## [0.2.19] - 2021-08-30
 - Grammar refactoring: use ?, * and + modifiers in Rley 0.8.03 rules
 
 ### Changed
-- File `grammar.rb`: Remove redundant rules after introduction og ?, * and + modifiers
+- File `grammar.rb`: Remove redundant rules after introduction of ?, * and + modifiers
 - Class `SkmBuilder`: Removal of useless methods after removal of their rule counterpart
 
 

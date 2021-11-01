@@ -5,8 +5,13 @@ require_relative '../s_expr_nodes'
 module Skeem
   module Primitive
     class PrimitiveProcedure
+      # @return [Skeem::SkmIdentifier] 'name' of the procedure
       attr_reader(:identifier)
+
+      # @return [Skeem::Arity] number of arguments of the procedure
       attr_reader(:arity)
+
+      # @return [Proc] A Ruby lambda that implements the primitive procedure
       attr_reader(:code)
 
       # param [anArity] Arity of the lambda code (ignoring the runtime object)

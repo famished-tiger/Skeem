@@ -244,10 +244,7 @@ module Skeem
                     raw_result = Rational(raw_result, elem_value)
                   end
 
-                when [Integer, Rational]
-                  raw_result *= reciprocal(elem_value)
-
-                when [Rational, Rational]
+                when [Integer, Rational], [Rational, Rational]
                   raw_result *= reciprocal(elem_value)
                 else
                   raw_result = raw_result.to_f

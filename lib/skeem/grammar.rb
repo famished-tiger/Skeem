@@ -6,7 +6,7 @@ require 'rley' # Load the gem
 module Skeem
   ########################################
   # Define a grammar for Skeem
-  # Official Small Scheme grammar is available at:
+  # The official Small Scheme language grammar is available at:
   # https://bitbucket.org/cowan/r7rs/src/draft-10/rnrs/r7rs.pdf
   # Names of grammar elements are based on the R7RS documentation
   builder = Rley::grammar_builder do
@@ -102,7 +102,7 @@ module Skeem
     do_syntax = <<-END_SYNTAX
     LPAREN DO LPAREN iteration_spec* RPAREN
       LPAREN test do_result RPAREN
-      command_star RPAREN
+      rep_command_star RPAREN
 END_SYNTAX
     rule('derived_expression' => do_syntax).as 'do_expression'
     rule 'derived_expression' => 'quasiquotation'
@@ -117,7 +117,7 @@ END_SYNTAX
     rule('iteration_spec' => 'LPAREN IDENTIFIER init RPAREN').as 'iteration_spec_short'
     rule('init' => 'expression')
     rule('step' => 'expression')
-    rule 'do_result' => 'sequence?'
+    rule('do_result' => 'sequence?').tag 'do_result'
     rule('keyword' => 'IDENTIFIER')
     rule('includer' => 'LPAREN INCLUDE STRING_LIT+ RPAREN').as 'include'
     rule 'qq_template' => 'simple_datum'

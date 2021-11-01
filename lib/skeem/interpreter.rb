@@ -8,7 +8,11 @@ require_relative './primitive/primitive_builder'
 module Skeem
   class Interpreter
     include Primitive::PrimitiveBuilder
+
+    # @return [Skeem::Parser] Link to Skeem parser
     attr_reader(:parser)
+
+    # @return [Skeem::Runtime] Link to runtime object (holds call stack & frames)
     attr_reader(:runtime)
 
     def initialize

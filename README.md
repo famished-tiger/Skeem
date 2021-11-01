@@ -392,7 +392,7 @@ This project is intended to be a safe, welcoming space for collaboration, and co
 
 Copyright
 ---------
-Copyright (c) 2018-2019, Dimitri Geshef.  
+Copyright (c) 2018-2021, Dimitri Geshef.  
 __Skeem__ is released under the MIT License see [LICENSE.txt](https://github.com/famished-tiger/Skeem/blob/master/LICENSE.txt) for details.
 
 ## Code of Conduct

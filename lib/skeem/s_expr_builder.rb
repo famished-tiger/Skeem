@@ -205,7 +205,8 @@ module Skeem
 
     # rule('conditional' => 'LPAREN IF test consequent alternate RPAREN').as 'conditional'
     def reduce_conditional(_production, aRange, _tokens, theChildren)
-      SkmCondition.new(aRange, theChildren[2], theChildren[3], theChildren[4])
+      children = theChildren.flatten
+      SkmCondition.new(aRange, children[2], children[3], children[4])
     end
 
     # rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
@@ -288,10 +289,20 @@ module Skeem
       SkmIterationSpec.new(theChildren[1], theChildren[2], nil)
     end
 
-    # rule('do_result' => []).as 'empty_do_result'
-    def reduce_empty_do_result(_production, _range, _tokens, _children)
-      SkmEmptyList.instance
+    # rule('do_result' => 'sequence?')
+    def reduce_do_result(_production, _range, _tokens, theChildren)
+      children = theChildren.flatten
+      if children.empty?
+        SkmEmptyList.instance
+      else
+        children[0]
+      end
     end
+
+    # rule('do_result' => []).as 'empty_do_result'
+    # def reduce_empty_do_result(_production, _range, _tokens, _children)
+    #   SkmEmptyList.instance
+    # end
 
     # rule('includer' => 'LPAREN INCLUDE string_plus RPAREN').as 'include'
     def reduce_include(_production, _range, _tokens, theChildren)

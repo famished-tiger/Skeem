@@ -9,6 +9,8 @@ require_relative 'datum_dsl'
 require_relative 'skm_unary_expression'
 require_relative 'skm_procedure_exec'
 
+# rubocop: disable Style/AccessorGrouping
+
 module Skeem
   class SkmUndefined
     include Singleton
@@ -143,6 +145,8 @@ module Skeem
       [:callee, callee]
     end
 
+    # rubocop: disable Style/RedundantAssignment
+
     def fetch_callee(aRuntime, var_key)
       begin
         aRuntime.include?(var_key.value)
@@ -171,6 +175,8 @@ module Skeem
 
       callee
     end
+
+    # rubocop: enable Style/RedundantAssignment
 
     def transform_operands(aRuntime)
       return [] if operands == SkmEmptyList.instance
@@ -817,11 +823,11 @@ module Skeem
         else
           result = cmd.evaluate(aRuntime)
         end
-        rescue NoMethodError => e
-          $stderr.puts inspect
-          $stderr.puts sequence.inspect
-          $stderr.puts cmd.inspect
-          raise e
+      rescue NoMethodError => e
+        $stderr.puts inspect
+        $stderr.puts sequence.inspect
+        $stderr.puts cmd.inspect
+        raise e
       end
 
       result
@@ -843,6 +849,8 @@ module Skeem
       twin
     end
 
+    # rubocop: disable Naming/AccessorMethodName
+
     def set_cond_environment(theFrame)
       # $stderr.puts "Lambda #{object_id.to_s(16)}, env [#{environment.object_id.to_s(16)}]"
       # $stderr.puts "  Runtime environment: #{theFrame.object_id.to_s(16)}"
@@ -855,6 +863,8 @@ module Skeem
         # $stderr.puts "  Lambda's environment updated!"
       end
     end
+
+    # rubocop: enable Naming/AccessorMethodName
 
     private
 
@@ -915,4 +925,6 @@ module Skeem
     end
   end # class
 end # module
+
+# rubocop: enable Style/AccessorGrouping
 # End of file
