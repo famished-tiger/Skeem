@@ -1,9 +1,13 @@
 AllCops:
   Exclude:
     - 'exp/**/*'
+    - 'demo/**/*'
 
 Gemspec/DateAssignment:
   Enabled: true
+
+Gemspec/RequireMFA: # new in 1.23
+  Enabled: false
 
 Layout/ArgumentAlignment:
   Enabled: false
@@ -83,6 +87,9 @@ Layout/TrailingWhitespace:
 Lint/AmbiguousAssignment:
   Enabled: true
 
+Lint/AmbiguousOperatorPrecedence: # new in 1.21
+  Enabled: true
+
 Lint/AmbiguousRange:
   Enabled: true
 
@@ -104,6 +111,9 @@ Lint/EmptyClass:
 Lint/EmptyInPattern:
   Enabled: true
 
+Lint/IncompatibleIoSelectWithFiberScheduler: # new in 1.21
+  Enabled: true
+
 Lint/LambdaWithoutLiteralBlock:
   Enabled: true
 
@@ -123,6 +133,12 @@ Lint/RaiseException:
   Enabled: true
 
 Lint/RedundantDirGlobSort:
+  Enabled: true
+
+Lint/RefinementImportMethods: # new in 1.27
+  Enabled: true
+
+Lint/RequireRelativeSelfPath: # new in 1.22
   Enabled: true
 
 Lint/RescueException:
@@ -152,11 +168,14 @@ Lint/UnusedMethodArgument:
 Lint/UselessAccessModifier:
   Enabled: true
 
-Lint/Void:
-  Enabled: false
-
 Lint/UselessAssignment:
   Enabled: true
+
+Lint/UselessRuby2Keywords: # new in 1.23
+  Enabled: true
+
+Lint/Void:
+  Enabled: false
 
 Metrics/AbcSize:
   Enabled: false
@@ -191,14 +210,17 @@ Metrics/ModuleLength:
 Metrics/PerceivedComplexity:
   Enabled: false
 
+Naming/BlockForwarding: # new in 1.24
+  Enabled: true
+
+Naming/BlockParameterName:
+  Enabled: true
+
 Naming/ConstantName:
   Enabled: false
 
 Naming/ClassAndModuleCamelCase:
   Enabled: false
-
-Naming/BlockParameterName:
-  Enabled: true
 
 Naming/InclusiveLanguage:
   Enabled: true
@@ -212,8 +234,11 @@ Naming/MethodName:
 Naming/VariableName:
   Enabled: false
 
-Style/AccessorGrouping:
-  Enabled: false
+Security/CompoundHash: # new in 1.28
+  Enabled: true
+
+Security/IoMethods: # new in 1.22
+  Enabled: true
 
 Style/Alias:
   Enabled: true
@@ -261,12 +286,21 @@ Style/Documentation:
   Enabled: false
 
 Style/DocumentDynamicEvalDefinition:
-  Enabled: false
+  Enabled: true
 
 Style/ExpandPathArguments:
   Enabled: false
 
 Style/ExponentialNotation:
+  Enabled: true
+
+Style/FetchEnvVar: # new in 1.28
+  Enabled: true
+
+Style/FileRead: # new in 1.24
+  Enabled: true
+
+Style/FileWrite: # new in 1.24
   Enabled: true
 
 Style/GuardClause:
@@ -293,6 +327,9 @@ Style/InPatternThen:
 Style/InverseMethods:
   Enabled: false
 
+Style/MapToHash: # new in 1.24
+  Enabled: true
+
 Style/MissingRespondToMissing:
   Enabled: false
 
@@ -302,14 +339,29 @@ Style/MultilineInPatternThen:
 Style/NegatedIfElseCondition:
   Enabled: true
 
+Style/NestedFileDirname: # new in 1.26
+  Enabled: true
+
 Style/Next:
   Enabled: false
 
 Style/NilLambda:
   Enabled: true
 
+Style/NumberedParameters: # new in 1.22
+  Enabled: true
+
+Style/NumberedParametersLimit: # new in 1.22
+  Enabled: true
+
 Style/NumericLiterals:
   Enabled: false
+
+Style/ObjectThen: # new in 1.28
+  Enabled: true
+
+Style/OpenStructUse: # new in 1.23
+  Enabled: true
 
 Style/QuotedSymbols:
   Enabled: true
@@ -319,9 +371,12 @@ Style/RaiseArgs:
 
 Style/RedundantArgument:
   Enabled: true
+  
+Style/RedundantInitialize: # new in 1.27
+  Enabled: true  
 
 Style/RedundantReturn:
-  Enabled: false
+  Enabled: true
 
 Style/RedundantSelf:
   Enabled: true
@@ -334,6 +389,9 @@ Style/RegexpLiteral:
 
 Style/PercentLiteralDelimiters:
   Enabled: false
+
+Style/SelectByRegexp: # new in 1.22
+  Enabled: true
 
 Style/StderrPuts:
   Enabled: false
@@ -388,6 +446,9 @@ Lint/TopLevelReturnWithArgument:
   Enabled: true
 
 Lint/UnreachableLoop:
+  Enabled: true
+
+Style/AccessorGrouping:
   Enabled: true
 
 Style/ArrayCoercion:

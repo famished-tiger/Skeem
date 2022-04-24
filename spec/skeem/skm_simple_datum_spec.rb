@@ -5,6 +5,7 @@ require_relative '../spec_helper' # Use the RSpec framework
 require_relative '../../lib/skeem/skm_simple_datum' # Load the classes under test
 
 module Skeem
+  # rubocop: disable Style/OpenStructUse
   describe SkmSimpleDatum do
     let(:pos) { double('fake-position') }
     let(:dummy_symbol) { double('fake-symbol') }
@@ -298,4 +299,5 @@ module Skeem
       end
     end # context
   end # describe
+  # rubocop: enable Style/OpenStructUse
 end # module

@@ -21,7 +21,7 @@ module Skeem
     def self.create(aValue)
       lightweight = allocate
       lightweight.init_value(aValue)
-      return lightweight
+      lightweight
     end
 
     def symbol
@@ -62,7 +62,7 @@ module Skeem
     # Reminder: terminals evaluate to themselves.
     # @param _runtime [Skeem::Runtime]
     def evaluate(_runtime)
-      return self
+      self
     end
 
     # Return this object un-evaluated.

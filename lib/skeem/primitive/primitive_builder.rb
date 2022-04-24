@@ -6,6 +6,7 @@ require_relative '../skm_exception'
 require_relative '../skm_pair'
 
 module Skeem
+  # rubocop: disable Metrics/ModuleLength
   module Primitive
     module PrimitiveBuilder
       include DatumDSL
@@ -1231,7 +1232,7 @@ module Skeem
       def remaining_args(arglist, aRuntime)
         case arglist
         when Array
-          raw_arg = arglist[1..-1]
+          raw_arg = arglist[1..]
         when SkmPair
           raw_arg = arglist.cdr.to_a
         end
@@ -1239,4 +1240,5 @@ module Skeem
       end
     end # module
   end # module
+  # rubocop: enable Metrics/ModuleLength
 end # module

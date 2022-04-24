@@ -214,14 +214,14 @@ module Skeem
       SkmUpdateBinding.new(theChildren[2], theChildren[3])
     end
 
-    # rule('derived_expression' => 'LPAREN COND cond_clause_plus RPAREN').as 'cond_form'
+    # rule('derived_expression' => 'LPAREN COND cond_clause* (LPAREN ELSE sequence RPAREN)? RPAREN')
     def reduce_cond_form(_production, aRange, _tokens, theChildren)
-      SkmConditional.new(aRange.low, theChildren[2], nil)
-    end
-
-    # rule('derived_expression' => 'LPAREN COND cond_clause_star LPAREN ELSE sequence RPAREN RPAREN').as 'cond_else_form'
-    def reduce_cond_else_form(_production, aRange, _tokens, theChildren)
-      SkmConditional.new(aRange.low, theChildren[2], SkmSequencingBlock.new(theChildren[5]))
+      if theChildren[3]
+        else_part = SkmSequencingBlock.new(theChildren[3][2])
+      else
+        else_part = nil
+      end
+      SkmConditional.new(aRange.low, theChildren[2], else_part)
     end
 
     # rule('derived_expression' => 'LPAREN LET LPAREN binding_spec_star RPAREN body RPAREN').as 'short_let_form'

@@ -36,7 +36,7 @@ module Skeem
         raise StandardError, line1 + line2
       end
 
-      return engine.to_ptree(result)
+      engine.to_ptree(result)
     end
   end # class
 end # module

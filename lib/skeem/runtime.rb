@@ -80,7 +80,7 @@ module Skeem
     end
 
     def depth
-      return env_stack.size
+      env_stack.size
     end
 
     def push(anEnvironment)

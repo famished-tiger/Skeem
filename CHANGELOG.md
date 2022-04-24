@@ -1,8 +1,16 @@
+## [0.2.21] - 2022-04-24
+- Dependencies updates, minor changes
+
+### Changed
+- File `.rubocop.yml` Incorporating new Rubocop cops (up to version 1.28)
+- File `grammar.rb`: Refactoring of a rule with grouping parentheses
+- File `s_expr_builder` Change to relfect changes in grammar
+- File `skeem.gempsec` Updated dependencies; minimal Ruby version is now 2.6+
+
 ## [0.2.20] - 2021-11-01
 - Code update to cope with changes in `Rley` v. 0.8.08
 
-### Changed
-- File `grammar.rb`: Refactoring to cope with ? quantifier changes
+
 - File `s_expr_builder.rb`: Refactoring to cope with ? quantifier changes
 - File `skeem.gemspec` dependency updated for `Rley` v. 0.8.08
 

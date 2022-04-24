@@ -89,8 +89,7 @@ module Skeem
     rule 'number' => 'RATIONAL'
     rule 'number' => 'REAL'
     rule('assignment' => 'LPAREN SET! IDENTIFIER expression RPAREN').as 'assignment'
-    rule('derived_expression' => 'LPAREN COND cond_clause+ RPAREN').as 'cond_form'
-    rule('derived_expression' => 'LPAREN COND cond_clause* LPAREN ELSE sequence RPAREN RPAREN').as 'cond_else_form'
+    rule('derived_expression' => 'LPAREN COND cond_clause* (LPAREN ELSE sequence RPAREN)? RPAREN').as 'cond_form'
     rule('derived_expression' => 'LPAREN LET LPAREN binding_spec* RPAREN body RPAREN').as 'short_let_form'
     # TODO: implement "named let"
     rule('derived_expression' => 'LPAREN LET IDENTIFIER LPAREN binding_spec* RPAREN body RPAREN') # .as 'named_form'

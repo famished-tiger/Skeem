@@ -58,7 +58,7 @@ module Skeem
       SYNTAX-RULES
       UNQUOTE
       UNQUOTE-SPLICING
-    ].map { |x| [x, x.sub(/\*$/, '_STAR')] }.to_h
+    ].to_h { |x| [x, x.sub(/\*$/, '_STAR')] }
 
     class ScanError < StandardError; end
 
@@ -289,7 +289,7 @@ other literal data (section 2.4).
         value = aLexeme.gsub(/(^")|("$)/, '')
       end
 
-      return value
+      value
     end
 
     def to_identifier(aLexeme, aFormat)
@@ -298,7 +298,7 @@ other literal data (section 2.4).
         value = aLexeme
       end
 
-      return value
+      value
     end
 
     def named_char(aLexeme)
