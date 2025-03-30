@@ -16,84 +16,85 @@ module Skeem
       obj.lexeme = sample_value
       obj
     end
-    let(:instance) { SkmSimpleDatum.create(3) }
-    subject { SkmSimpleDatum.new(dummy_token, pos) }
+    let(:instance) { described_class.create(3) }
+
+    subject(:datum) { described_class.new(dummy_token, pos) }
 
     context 'Initialization:' do
-      it 'should be initialized with a token and a position' do
-        expect { SkmSimpleDatum.new(dummy_token, pos) }.not_to raise_error
+      it 'is initialized with a token and a position' do
+        expect { described_class.new(dummy_token, pos) }.not_to raise_error
       end
 
       it 'could be created with just a value' do
-        expect { SkmSimpleDatum.create(3) }.not_to raise_error
-        expect(instance).to be_kind_of(SkmSimpleDatum)
+        expect { described_class.create(3) }.not_to raise_error
+        expect(instance).to be_a(described_class)
         expect(instance.value).to eq(3)
       end
 
-      it 'should know its token' do
-        expect(subject.token).to eq(dummy_token)
+      it 'knows its token' do
+        expect(datum.token).to eq(dummy_token)
       end
 
-      it 'should know its value' do
-        expect(subject.value).to eq(sample_value)
+      it 'knows its value' do
+        expect(datum.value).to eq(sample_value)
       end
 
-      it "should know the token's symbol" do
-        expect(subject.symbol).to eq(dummy_symbol)
+      it "knows the token's symbol" do
+        expect(datum.symbol).to eq(dummy_symbol)
       end
     end # context
 
     context 'Provided services:' do
       let(:runtime) { double('fake-runtime') }
 
-      it 'should assert that it is equal to itself' do
-        expect(subject).to eq(subject)
+      it 'asserts that it is equal to itself' do
+        expect(datum).to eq(datum)
       end
 
-      it 'should assert the equality by value' do
+      it 'asserts the equality by value' do
         # Comparison with other instances
-        expect(instance).to eq(SkmSimpleDatum.create(3))
-        expect(instance).not_to eq(SkmSimpleDatum.create('foo'))
+        expect(instance).to eq(described_class.create(3))
+        expect(instance).not_to eq(described_class.create('foo'))
 
         # Comparison with PORO values
         expect(instance).to eq(3)
         expect(instance).not_to eq('foo')
       end
 
-      it 'should be equivalent to itself' do
-        expect(subject).to be_eqv(subject)
+      it 'is equivalent to itself' do
+        expect(datum).to be_eqv(datum)
       end
 
-      it 'should be equivalent by value' do
-        same = SkmSimpleDatum.create(3)
+      it 'is equivalent by value' do
+        same = described_class.create(3)
         expect(instance).to be_eqv(same)
       end
 
-      it 'should be Skeem equal to itself' do
-        expect(subject).to be_skm_equal(subject)
+      it 'is Skeem equal to itself' do
+        expect(datum).to be_skm_equal(datum)
       end
 
-      it 'should be Skeem equal by value' do
-        same = SkmSimpleDatum.create(3)
+      it 'is Skeem equal by value' do
+        same = described_class.create(3)
         expect(instance).to be_skm_equal(same)
       end
 
-      it 'should be self-evaluating' do
-        expect(subject.evaluate(runtime)).to be_equal(subject)
+      it 'is self-evaluating' do
+        expect(datum.evaluate(runtime)).to equal(datum)
       end
 
-      it 'should be self-quasiquoting' do
-        expect(subject.quasiquote(runtime)).to be_equal(subject)
+      it 'is self-quasiquoting' do
+        expect(datum.quasiquote(runtime)).to equal(datum)
       end
 
-      it 'should return its text representation' do
-        expect(subject.inspect).to eq('<Skeem::SkmSimpleDatum: sample-value>')
+      it 'returns its text representation' do
+        expect(datum.inspect).to eq('<Skeem::SkmSimpleDatum: sample-value>')
       end
 
-      it 'should respond to visitor' do
+      it 'responds to visitor' do
         visitor = double('fake-visitor')
-        expect(visitor).to receive(:visit_simple_datum).with(subject)
-        expect { subject.accept(visitor) }.not_to raise_error
+        allow(visitor).to receive(:visit_simple_datum).with(datum)
+        expect { datum.accept(visitor) }.not_to raise_error
       end
     end # context
   end # describe
@@ -108,21 +109,22 @@ module Skeem
       obj.lexeme = sample_value
       obj
     end
-    subject { SkmBoolean.new(dummy_token, pos) }
+
+    subject(:boolean) { described_class.new(dummy_token, pos) }
 
     context 'Initialization:' do
-      it 'should be initialized with a token and a position' do
-        expect { SkmBoolean.new(dummy_token, pos) }.not_to raise_error
+      it 'is initialized with a token and a position' do
+        expect { described_class.new(dummy_token, pos) }.not_to raise_error
       end
 
-      it 'should react positively to boolean? predicate' do
-        expect(subject).to be_boolean
+      it 'reacts positively to boolean? predicate' do
+        expect(boolean).to be_boolean
       end
     end # context
 
     context 'Provided services:' do
-      it 'should return its text representation' do
-        expect(subject.inspect).to eq('<Skeem::SkmBoolean: false>')
+      it 'returns its text representation' do
+        expect(boolean.inspect).to eq('<Skeem::SkmBoolean: false>')
       end
     end # context
   end # describe
@@ -137,21 +139,22 @@ module Skeem
       obj.lexeme = sample_value
       obj
     end
-    subject { SkmNumber.new(dummy_token, pos) }
+
+    subject(:number) { described_class.new(dummy_token, pos) }
 
     context 'Initialization:' do
-      it 'should be initialized with a token and a position' do
-        expect { SkmNumber.new(dummy_token, pos) }.not_to raise_error
+      it 'is initialized with a token and a position' do
+        expect { described_class.new(dummy_token, pos) }.not_to raise_error
       end
     end # context
 
     context 'Provided services:' do
-      it 'should react positively to number? predicate' do
-        expect(subject).to be_number
+      it 'reacts positively to number? predicate' do
+        expect(number).to be_number
       end
 
-      it 'should return its text representation' do
-        expect(subject.inspect).to eq('<Skeem::SkmNumber: 0.51>')
+      it 'returns its text representation' do
+        expect(number.inspect).to eq('<Skeem::SkmNumber: 0.51>')
       end
     end # context
   end # describe
@@ -166,28 +169,29 @@ module Skeem
       obj.lexeme = sample_value
       obj
     end
-    subject { SkmReal.new(dummy_token, pos) }
+
+    subject(:real) { described_class.new(dummy_token, pos) }
 
     context 'Provided services:' do
-      it 'should react positively to number? predicate' do
-        expect(subject).to be_number
+      it 'reacts positively to number? predicate' do
+        expect(real).to be_number
       end
 
-      it 'should react positively to real? predicate' do
-        expect(subject).to be_real
+      it 'reacts positively to real? predicate' do
+        expect(real).to be_real
       end
 
-      it 'should react negatively to exact? predicate' do
-        expect(subject).not_to be_exact
+      it 'reacts negatively to exact? predicate' do
+        expect(real).not_to be_exact
       end
 
-      it 'should implement the eqv? predicate' do
-        same = SkmReal.create(0.51)
-        different = SkmReal.create(1.21)
+      it 'implements the eqv? predicate' do
+        same = described_class.create(0.51)
+        different = described_class.create(1.21)
 
-        expect(subject).to be_eqv(subject)
-        expect(subject).to be_eqv(same)
-        expect(subject).not_to be_eqv(different)
+        expect(real).to be_eqv(real)
+        expect(real).to be_eqv(same)
+        expect(real).not_to be_eqv(different)
       end
     end # context
   end # describe
@@ -202,33 +206,34 @@ module Skeem
       obj.lexeme = sample_value
       obj
     end
-    subject { SkmInteger.new(dummy_token, pos) }
+
+    subject(:integer) { described_class.new(dummy_token, pos) }
 
     context 'Provided services:' do
-      it 'should react positively to number? predicate' do
-        expect(subject).to be_number
+      it 'reacts positively to number? predicate' do
+        expect(integer).to be_number
       end
 
-      it 'should react positively to real? predicate' do
-        expect(subject).to be_real
+      it 'reacts positively to real? predicate' do
+        expect(integer).to be_real
       end
 
-      it 'should react positively to integer? predicate' do
-        expect(subject).to be_real
+      it 'reacts positively to integer? predicate' do
+        expect(integer).to be_real
       end
 
-      it 'should react positively to exact? predicate' do
-        expect(subject).to be_exact
+      it 'reacts positively to exact? predicate' do
+        expect(integer).to be_exact
       end
 
-      it 'should implement the eqv? predicate' do
-        three = SkmInteger.create(3)
+      it 'implements the eqv? predicate' do
+        three = described_class.create(3)
         real3 = SkmReal.create(3.0)
-        four = SkmInteger.create(4)
+        four = described_class.create(4)
 
-        expect(subject).to be_eqv(three)
-        expect(subject).not_to be_eqv(real3)
-        expect(subject).not_to be_eqv(four)
+        expect(integer).to be_eqv(three)
+        expect(integer).not_to be_eqv(real3)
+        expect(integer).not_to be_eqv(four)
       end
     end # context
   end # describe
@@ -243,15 +248,16 @@ module Skeem
       obj.lexeme = sample_value
       obj
     end
-    subject { SkmString.new(dummy_token, pos) }
+
+    subject(:string) { described_class.new(dummy_token, pos) }
 
     context 'Provided services:' do
-      it 'should react positively to string? predicate' do
-        expect(subject).to be_string
+      it 'reacts positively to string? predicate' do
+        expect(string).to be_string
       end
 
-      it 'should return its text representation' do
-        expect(subject.inspect).to eq('<Skeem::SkmString: Hello>')
+      it 'returns its text representation' do
+        expect(string.inspect).to eq('<Skeem::SkmString: Hello>')
       end
     end # context
   end # describe
@@ -266,36 +272,37 @@ module Skeem
       obj.lexeme = sample_value
       obj
     end
-    subject { SkmIdentifier.new(dummy_token, pos) }
+
+    subject(:identifier) { described_class.new(dummy_token, pos) }
 
     context 'Provided services:' do
       it 'could be initialized with a token and a position' do
-        expect { SkmIdentifier.new(dummy_token, pos) }.not_to raise_error
+        expect { described_class.new(dummy_token, pos) }.not_to raise_error
       end
 
       it 'could be initialized with a token, a position and a flag' do
-        expect { SkmIdentifier.new(dummy_token, pos, true) }.not_to raise_error
+        expect { described_class.new(dummy_token, pos, true) }.not_to raise_error
       end
 
-      it 'should know whether it is used as a variable name' do
-        expect(subject.is_var_name).to eq(false)
+      it 'knows whether it is used as a variable name' do
+        expect(identifier.is_var_name).to be(false)
 
-        instance = SkmIdentifier.new(dummy_token, pos, true)
-        expect(instance.is_var_name).to eq(true)
+        instance = described_class.new(dummy_token, pos, true)
+        expect(instance.is_var_name).to be(true)
       end
 
-      it 'should react positively to symbol? predicate' do
-        expect(subject).to be_symbol
+      it 'reacts positively to symbol? predicate' do
+        expect(identifier).to be_symbol
       end
 
-      it 'should react to verbatim? predicate' do
-        expect(subject).to be_verbatim
-        instance = SkmIdentifier.new(dummy_token, pos, true)
+      it 'reacts to verbatim? predicate' do
+        expect(identifier).to be_verbatim
+        instance = described_class.new(dummy_token, pos, true)
         expect(instance).not_to be_verbatim
       end
 
-      it 'should return its text representation' do
-        expect(subject.inspect).to eq('<Skeem::SkmIdentifier: this-is-it!>')
+      it 'returns its text representation' do
+        expect(identifier.inspect).to eq('<Skeem::SkmIdentifier: this-is-it!>')
       end
     end # context
   end # describe

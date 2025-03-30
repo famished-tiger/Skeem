@@ -35,6 +35,7 @@ module Skeem
     def update_binding(aKey, anEntry)
       environment.update_binding(aKey, anEntry)
     end
+    # rubocop: disable Lint/UselessRescue
 
     def evaluate(aKey)
       key_value = normalize_key(aKey)
@@ -58,6 +59,7 @@ module Skeem
         raise err, err_msg
       end
     end
+    # rubocop: enable Lint/UselessRescue
 
     # @param aList[SkmPair] first member is an identifier.
     def evaluate_form(aList)

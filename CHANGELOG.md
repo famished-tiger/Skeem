@@ -1,3 +1,10 @@
+## [0.2.22] - 2025-03-30
+- Dependency updates, minor changes, tested against Ruby 3.4.1.
+
+### Changed
+- Files updated to please Rubocop 1.75.1 
+- Files `*_spec.rb` updated to please `rubocop-rspec`.
+
 ## [0.2.21] - 2022-04-24
 - Dependencies updates, minor changes
 

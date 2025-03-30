@@ -5,18 +5,20 @@ require_relative '../../lib/skeem/tokenizer' # Load the class under test
 
 module Skeem
   describe Parser do
+    subject(:parser) { described_class.new }
+
     context 'Initialization:' do
-      it 'should be initialized without argument' do
-        expect { Parser.new }.not_to raise_error
+      it 'is initialized without argument' do
+        expect { described_class.new }.not_to raise_error
       end
 
-      it 'should have its parse engine initialized' do
-        expect(subject.engine).to be_kind_of(Rley::Engine)
+      it 'has its parse engine initialized' do
+        expect(parser.engine).to be_a(Rley::Engine)
       end
     end # context
 
     context 'Parsing literals:' do
-      it 'should parse isolated booleans' do
+      it 'parses isolated booleans' do
         samples = [
           ['#f', false]
 #        ['#false', false],
@@ -24,13 +26,13 @@ module Skeem
 #        ['#true', true]
         ]
         samples.each do |source, predicted|
-          ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SkmBoolean)
+          ptree = parser.parse(source)
+          expect(ptree.root).to be_a(SkmBoolean)
           expect(ptree.root.value).to eq(predicted)
         end
       end
 
-      it 'should parse isolated integers' do
+      it 'parses isolated integers' do
         samples = [
           ['0', 0],
           ['3', 3],
@@ -39,14 +41,14 @@ module Skeem
           ['-12345', -12345]
         ]
         samples.each do |source, predicted|
-          ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SkmInteger)
+          ptree = parser.parse(source)
+          expect(ptree.root).to be_a(SkmInteger)
           expect(ptree.root.value).to eq(predicted)
         end
       end
 
       # rubocop: disable Style/ExponentialNotation
-      it 'should parse isolated real numbers' do
+      it 'parses isolated real numbers' do
         samples = [
           ['0.0', 0.0],
           ['3.14', 3.14],
@@ -55,42 +57,42 @@ module Skeem
           ['-123e-45', -123e-45]
         ]
         samples.each do |source, predicted|
-          ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SkmReal)
+          ptree = parser.parse(source)
+          expect(ptree.root).to be_a(SkmReal)
           expect(ptree.root.value).to eq(predicted)
         end
       end
       # rubocop: enable Style/ExponentialNotation
 
-      it 'should parse isolated strings' do
+      it 'parses isolated strings' do
         samples = [
           ['"Hello world!"', 'Hello world!']
         ]
         samples.each do |source, predicted|
-          ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SkmString)
+          ptree = parser.parse(source)
+          expect(ptree.root).to be_a(SkmString)
           expect(ptree.root.value).to eq(predicted)
         end
       end
 
-      it 'should parse isolated identifiers' do
+      it 'parses isolated identifiers' do
         samples = [
           %w[the-word-recursion-has-many-meanings the-word-recursion-has-many-meanings]
         ]
         samples.each do |source, predicted|
-          ptree = subject.parse(source)
-          expect(ptree.root).to be_kind_of(SkmVariableReference)
+          ptree = parser.parse(source)
+          expect(ptree.root).to be_a(SkmVariableReference)
           expect(ptree.root.value).to eq(predicted)
         end
       end
     end # context
 
-    context 'Parsing forms:' do
-      # it 'should parse definitions' do
-        # source = '(define r 10)'
-        # expect { subject.parse(source) }.not_to raise_error
-      # end
-    end # context
+    # context 'Parsing forms:' do
+    #   # it 'parses definitions' do
+    #     # source = '(define r 10)'
+    #     # expect { parser.parse(source) }.not_to raise_error
+    #   # end
+    # end # context
   end # describe
 end # module
 

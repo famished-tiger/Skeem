@@ -12,27 +12,27 @@ module Skeem
     let(:operator) { SkmIdentifier.create('+') }
     let(:operands) { [1, 2, 3] }
 
-    subject { ProcedureCall.new(pos, operator, operands) }
+    subject(:proc_call) { described_class.new(pos, operator, operands) }
 
     context 'Initialization:' do
-      it 'should be initialized with an operator symbol and its operands' do
-        expect { ProcedureCall.new(pos, operator, operands) }.not_to raise_error
+      it 'is initialized with an operator symbol and its operands' do
+        expect { described_class.new(pos, operator, operands) }.not_to raise_error
       end
 
-      it 'should know its operator' do
-        expect(subject.operator).to eq(operator)
+      it 'knows its operator' do
+        expect(proc_call.operator).to eq(operator)
       end
 
-      it 'should know its operands' do
-        expect(subject.operands.inspect).to eq('<Skeem::SkmPair: 1, 2, 3>')
+      it 'knows its operands' do
+        expect(proc_call.operands.inspect).to eq('<Skeem::SkmPair: 1, 2, 3>')
       end
     end # context
 
     context 'Provided services:' do
-      it 'should return its text representation' do
+      it 'returns its text representation' do
         txt1 = '<Skeem::ProcedureCall: <Skeem::SkmIdentifier: +>, '
         txt2 = '@operands <Skeem::SkmPair: 1, 2, 3>>'
-        expect(subject.inspect).to eq(txt1 + txt2)
+        expect(proc_call.inspect).to eq(txt1 + txt2)
       end
     end # context
   end # describe
@@ -43,32 +43,32 @@ module Skeem
     let(:s_consequent) { double('fake-consequent') }
     let(:s_alt) { double('fake-alternate') }
 
-    subject { SkmCondition.new(pos, s_test, s_consequent, s_alt) }
+    subject(:condition) { described_class.new(pos, s_test, s_consequent, s_alt) }
 
     context 'Initialization:' do
-      it 'should be initialized with a pos and 3 expressions' do
-        expect { SkmCondition.new(pos, s_test, s_consequent, s_alt) }.not_to raise_error
+      it 'is initialized with a pos and 3 expressions' do
+        expect { described_class.new(pos, s_test, s_consequent, s_alt) }.not_to raise_error
       end
 
-      it 'should know its test' do
-        expect(subject.test).to eq(s_test)
+      it 'knows its test' do
+        expect(condition.test).to eq(s_test)
       end
 
-      it 'should know its consequent' do
-        expect(subject.consequent).to eq(s_consequent)
+      it 'knows its consequent' do
+        expect(condition.consequent).to eq(s_consequent)
       end
 
-      it 'should know its alternate' do
-        expect(subject.alternate).to eq(s_alt)
+      it 'knows its alternate' do
+        expect(condition.alternate).to eq(s_alt)
       end
     end # context
 
     context 'Provided services:' do
-      it 'should return its text representation' do
+      it 'returns its text representation' do
         txt1 = '<Skeem::SkmCondition: @test #<Double "fake-test">, '
         txt2 = '@consequent #<Double "fake-consequent">, '
         txt3 = '@alternate #<Double "fake-alternate">>'
-        expect(subject.inspect).to eq(txt1 + txt2 + txt3)
+        expect(condition.inspect).to eq(txt1 + txt2 + txt3)
       end
     end # context
   end # describe
@@ -80,33 +80,33 @@ module Skeem
     let(:s_sequence) { double('fake-sequence') }
     let(:s_body) { { defs: s_defs, sequence: s_sequence } }
 
-    subject { SkmLambdaRep.new(pos, s_formals, s_body) }
+    subject(:lambda_rep) { described_class.new(pos, s_formals, s_body) }
 
     context 'Initialization:' do
-      it 'should be initialized with a pos and 3 expressions' do
-        expect { SkmLambdaRep.new(pos, s_formals, s_body) }.not_to raise_error
+      it 'is initialized with a pos and 3 expressions' do
+        expect { described_class.new(pos, s_formals, s_body) }.not_to raise_error
       end
 
-      it 'should know its formals' do
-        expect(subject.formals).to eq(s_formals)
+      it 'knows its formals' do
+        expect(lambda_rep.formals).to eq(s_formals)
       end
 
-      it 'should know its definitions' do
-        expect(subject.definitions).to eq(s_defs)
+      it 'knows its definitions' do
+        expect(lambda_rep.definitions).to eq(s_defs)
       end
 
-      it 'should know its sequence' do
-        expect(subject.sequence).to eq(s_sequence)
+      it 'knows its sequence' do
+        expect(lambda_rep.sequence).to eq(s_sequence)
       end
     end # context
 
     context 'Provided services:' do
-      it 'should return its text representation' do
+      it 'returns its text representation' do
         txt1 = '<Skeem::SkmLambdaRep: @formals #<Double "fake-formals">, '
         txt2 = '@definitions #<Double "fake-definitions">, '
         txt3 = '@sequence #<Double "fake-sequence">>>'
         # Remove "unpredictable" part of actual text
-        expectation = subject.inspect.gsub(/@object_id=[0-9a-z]+, /, '')
+        expectation = lambda_rep.inspect.gsub(/@object_id=[0-9a-z]+, /, '')
         expect(expectation).to eq(txt1 + txt2 + txt3)
       end
     end # context

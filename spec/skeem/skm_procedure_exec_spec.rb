@@ -32,32 +32,32 @@ SKEEM
       result.root
     end
 
-    subject { SkmProcedureExec.new(sample_lamb) }
+    subject(:proc_exec) { described_class.new(sample_lamb) }
 
     context 'Initialization:' do
-      it 'should be initialized with one lambda' do
-        expect { SkmProcedureExec.new(sample_lamb) }.not_to raise_error
+      it 'is initialized with one lambda' do
+        expect { described_class.new(sample_lamb) }.not_to raise_error
       end
 
-      it 'should know the definition of the procedure' do
-        expect(subject.definition).to eq(sample_lamb)
+      it 'knows the definition of the procedure' do
+        expect(proc_exec.definition).to eq(sample_lamb)
       end
     end # context
 
     context 'Executing a compound procedure:' do
-      it 'should execute the procedure that is called' do
-        subject
+      it 'executes the procedure that is called' do
+        proc_exec
         call_args = sample_call.operands.to_a
-        result = subject.run!(interpreter.runtime, call_args)
+        result = proc_exec.run!(interpreter.runtime, call_args)
         expect(result).to eq(9)
       end
 
-      it 'should execute the procedure with a procedure call in argument' do
-        subject
+      it 'executes the procedure with a procedure call in argument' do
+        proc_exec
 
         ptree = interpreter.parse('(square (+ (+ 2 1) 2))')
         call_args = ptree.root.operands.to_a
-        result = subject.run!(interpreter.runtime, call_args)
+        result = proc_exec.run!(interpreter.runtime, call_args)
         expect(result).to eq(25)
       end
     end

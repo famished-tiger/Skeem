@@ -12,79 +12,80 @@ module Skeem
     include DatumDSL
 
     let(:some_env) { SkmFrame.new }
-    subject { Runtime.new(some_env) }
+
+    subject(:runtime) { described_class.new(some_env) }
 
     context 'Initialization:' do
-      it 'should be initialized with an environment' do
-        expect { Runtime.new(SkmFrame.new) }.not_to raise_error
+      it 'is initialized with an environment' do
+        expect { described_class.new(SkmFrame.new) }.not_to raise_error
       end
 
-      it 'should know the environment' do
-        expect(subject.environment).to eq(some_env)
+      it 'knows the environment' do
+        expect(runtime.environment).to eq(some_env)
       end
 
-      it 'should have an empty call stack' do
-        expect(subject.call_stack).to be_empty
+      it 'has an empty call stack' do
+        expect(runtime.call_stack).to be_empty
       end
     end # context
 
     context 'Provided services:' do
-      it 'should add entries to the environment' do
+      it 'adds entries to the environment' do
         entry = double('dummy')
-        expect(entry).to receive(:bound!)
-        subject.add_binding('dummy', entry)
-        expect(subject.environment.size).to eq(1)
+        allow(entry).to receive(:bound!)
+        runtime.add_binding('dummy', entry)
+        expect(runtime.environment.size).to eq(1)
       end
 
-      it 'should know the keys in the environment' do
-        expect(subject.include?('dummy')).to be_falsey
+      it 'knows the keys in the environment' do
+        expect(runtime).not_to include('dummy')
         entry = double('dummy')
-        expect(entry).to receive(:bound!)
-        subject.add_binding('dummy', entry)
-        expect(subject.include?('dummy')).to be_truthy
+        allow(entry).to receive(:bound!)
+        runtime.add_binding('dummy', entry)
+        expect(runtime).to include('dummy')
       end
     end # context
 
     context 'Evaluation:' do
       include Primitive::PrimitiveBuilder
 
-      # it 'should evaluate a given entry' do
+      # it 'evaluates a given entry' do
         # entry = integer(3)
         # result = double('fake-procedure')
-        # expect(entry).to receive(:expression).and_return(result)
-        # expect(result).to receive(:evaluate).with(subject).and_return(integer(3))
-        # subject.define('three', entry)
-        # expect(subject.evaluate('three')).to eq(3)
+        # expect(entry).to have_received(:expression).and_return(result)
+        # expect(result).to have_received(:evaluate).with(runtime).and_return(integer(3))
+        # runtime.define('three', entry)
+        # expect(runtime.evaluate('three')).to eq(3)
       # end
 
-      it 'should evaluate a given list' do
-        add_primitives(subject)
+      it 'evaluates a given list' do
+        add_primitives(runtime)
         sum = list([identifier('+'), 3, 4])
 
-        expect(subject.evaluate_form(sum)).to eq(7)
+        expect(runtime.evaluate_form(sum)).to eq(7)
       end
     end # context
 
     context 'Environment nesting:' do
-      it 'should add nested environment' do
-        expect(subject.depth).to eq(1)
-        env_before = subject.environment
-        subject.nest
+      it 'adds nested environment' do
+        expect(runtime.depth).to eq(1)
+        env_before = runtime.environment
+        runtime.nest
 
-        expect(subject.environment).not_to eq(env_before)
-        expect(subject.environment.parent).to eq(env_before)
-        expect(subject.depth).to eq(2)
+        expect(runtime.environment).not_to eq(env_before)
+        expect(runtime.environment.parent).to eq(env_before)
+        expect(runtime.depth).to eq(2)
       end
 
-      it 'should remove nested environment' do
-        expect(subject.depth).to eq(1)
-        subject.nest
-        parent_before = subject.environment.parent
-        expect(subject.depth).to eq(2)
+      it 'removes nested environment' do
+        expect(runtime.depth).to eq(1)
+        runtime.nest
+        parent_before = runtime.environment.parent
+        expect(runtime.depth).to eq(2)
 
-        subject.unnest
-        expect(subject.environment).to eq(parent_before)
-        expect(subject.depth).to eq(1)
+        runtime.unnest
+        expect(runtime.environment).to eq(parent_before)
+        expect(runtime.depth).to eq(1)
       end
     end # context
 
@@ -94,23 +95,23 @@ module Skeem
         ProcedureCall.new(pos, identifier('boolean?'), [integer(42)])
       end
 
-      it 'should push a call to the stack call' do
-        expect { subject.push_call(sample_call) }.not_to raise_error
-        expect(subject.call_stack.size).to eq(1)
-        expect(subject.caller).to eq(sample_call)
+      it 'pushes a call to the stack call' do
+        expect { runtime.push_call(sample_call) }.not_to raise_error
+        expect(runtime.call_stack.size).to eq(1)
+        expect(runtime.caller).to eq(sample_call)
 
-        subject.push_call(sample_call.clone)
-        expect(subject.call_stack.size).to eq(2)
+        runtime.push_call(sample_call.clone)
+        expect(runtime.call_stack.size).to eq(2)
       end
 
-      it 'should pop a call from the call stack' do
-        subject.push_call(sample_call)
-        expect { subject.pop_call }.not_to raise_error
-        expect(subject.call_stack).to be_empty
+      it 'pops a call from the call stack' do
+        runtime.push_call(sample_call)
+        expect { runtime.pop_call }.not_to raise_error
+        expect(runtime.call_stack).to be_empty
 
         err = StandardError
         msg = 'Skeem call stack empty!'
-        expect { subject.pop_call }.to raise_error(err, msg)
+        expect { runtime.pop_call }.to raise_error(err, msg)
       end
     end # context
   end # describe

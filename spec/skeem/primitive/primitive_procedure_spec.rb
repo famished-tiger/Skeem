@@ -29,66 +29,66 @@ module Skeem
         ->(_runtime, operands) { operands.length }
       end
 
-      subject { PrimitiveProcedure.new('cube', unary, cube) }
+      subject(:primitive) { described_class.new('cube', unary, cube) }
 
-      before(:each) { @passing = false }
+      before { @passing = false }
 
       context 'Initialization:' do
-        it 'should be initialized with a name, arity and a lambda' do
-          expect { PrimitiveProcedure.new('newline', nullary, newline_code) }.not_to raise_error
+        it 'is initialized with a name, arity and a lambda' do
+          expect { described_class.new('newline', nullary, newline_code) }.not_to raise_error
         end
 
-        it 'should know its name' do
-          expect(subject.identifier.value).to eq('cube')
+        it 'knows its name' do
+          expect(primitive.identifier.value).to eq('cube')
         end
 
-        it 'should know its arity' do
-          expect(subject.arity).to eq([1, 1])
+        it 'knows its arity' do
+          expect(primitive.arity).to eq([1, 1])
         end
 
-        it 'should know its lambda' do
-          expect(subject.code).to eq(cube)
+        it 'knows its lambda' do
+          expect(primitive.code).to eq(cube)
         end
 
-        it 'should complain if third argument is not a lambda' do
+        it 'complains if third argument is not a lambda' do
           kode = proc { puts '' }
 
           err = StandardError
           err_msg = "Primitive procedure 'newline' must be implemented with a Ruby lambda."
-          expect { PrimitiveProcedure.new('newline', nullary, kode) }.to raise_error(err, err_msg)
+          expect { described_class.new('newline', nullary, kode) }.to raise_error(err, err_msg)
         end
 
-        it 'should complain if third argument is a nullary lambda' do
+        it 'complains if third argument is a nullary lambda' do
           kode = -> { puts '' } # Missing slot for Runtime object
 
           err = StandardError
           err_msg = "Primitive procedure 'newline' lambda takes no parameter."
-          expect { PrimitiveProcedure.new('newline', nullary, kode) }.to raise_error(err, err_msg)
+          expect { described_class.new('newline', nullary, kode) }.to raise_error(err, err_msg)
         end
 
-        it 'should complain when arity and parameter count mismatch' do
+        it 'complains when arity and parameter count mismatch' do
           err = StandardError
           msg1 = "Discrepancy in primitive procedure 'cube' "
 
           msg2 = 'between arity (0) + 1 and parameter count of lambda 2.'
-          expect { PrimitiveProcedure.new('cube', nullary, cube) }.to raise_error(err, msg1 + msg2)
+          expect { described_class.new('cube', nullary, cube) }.to raise_error(err, msg1 + msg2)
 
           msg2 = 'between arity (2) + 1 and parameter count of lambda 2.'
-          expect { PrimitiveProcedure.new('cube', binary, cube) }.to raise_error(err, msg1 + msg2)
+          expect { described_class.new('cube', binary, cube) }.to raise_error(err, msg1 + msg2)
 
           # Nasty; this discrepancy isn't detected
-          expect { PrimitiveProcedure.new('cube', zero_or_more, cube) }.not_to raise_error
+          expect { described_class.new('cube', zero_or_more, cube) }.not_to raise_error
 
-          expect { PrimitiveProcedure.new('cube', unary, cube) }.not_to raise_error
+          expect { described_class.new('cube', unary, cube) }.not_to raise_error
 
           msg2 = 'between arity (1) + 2 and parameter count of lambda 2.'
-          expect { PrimitiveProcedure.new('cube', one_or_more, cube) }.to raise_error(err, msg1 + msg2)
+          expect { described_class.new('cube', one_or_more, cube) }.to raise_error(err, msg1 + msg2)
         end
       end # context
 
       context 'Procedure invokation:' do
-        it 'should support Skeem nullary procedure' do
-          pproc = PrimitiveProcedure.new('newline', nullary, newline_code)
+        it 'supports Skeem nullary procedure' do
+          pproc = described_class.new('newline', nullary, newline_code)
           rtime = double('fake-runtime')
 
           expect(pproc.call(rtime, [])).to eq("\n")
@@ -99,8 +99,8 @@ module Skeem
           expect { pproc.call(rtime, ['superfluous']) }.to raise_error(err, ms1 + ms2)
         end
 
-        it 'should support Skeem unary procedure' do
-          pproc = PrimitiveProcedure.new('cube', unary, cube)
+        it 'supports Skeem unary procedure' do
+          pproc = described_class.new('cube', unary, cube)
           rtime = double('fake-runtime')
 
           args = [SkmInteger.create(3)]
@@ -118,8 +118,8 @@ module Skeem
           expect { pproc.call(rtime, too_much) }.to raise_error(err, ms1 + ms2)
         end
 
-        it 'should support Skeem binary procedure' do
-          pproc = PrimitiveProcedure.new('sum', binary, sum)
+        it 'supports Skeem binary procedure' do
+          pproc = described_class.new('sum', binary, sum)
           rtime = double('fake-runtime')
 
           args = [SkmInteger.create(3), SkmInteger.create(5)]
@@ -138,8 +138,8 @@ module Skeem
           expect { pproc.call(rtime, too_much) }.to raise_error(err, ms1 + ms2)
         end
 
-        it 'should support Skeem variadic procedure' do
-          pproc = PrimitiveProcedure.new('length', zero_or_more, length)
+        it 'supports Skeem variadic procedure' do
+          pproc = described_class.new('length', zero_or_more, length)
           rtime = double('fake-runtime')
 
           args = [SkmInteger.create(3), SkmInteger.create(5)]

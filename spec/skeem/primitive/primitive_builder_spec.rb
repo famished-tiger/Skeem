@@ -10,7 +10,7 @@ module Skeem
     describe 'Testing primitive procedures' do
       include InterpreterSpec
 
-      subject do
+      subject(:builder) do
         # We load the interpreter with the primitive procedures only
         Interpreter.new { |interp| interp.add_primitives(interp.runtime) }
       end
@@ -20,25 +20,25 @@ module Skeem
       end
 
       context 'Arithmetic operators:' do
-        it 'should implement the set! form' do
+        it 'implements the set! form' do
           skeem1 = <<-SKEEM
   (define x 2)
   (+ x 1)
 SKEEM
-          result = subject.run(skeem1)
+          result = builder.run(skeem1)
           expect(result.last).to eq(3)  # x is bound to value 2
 
           skeem2 = <<-SKEEM
   (set! x 4)
   (+ x 1)
 SKEEM
-          result = subject.run(skeem2)
+          result = builder.run(skeem2)
           expect(result.last).to eq(5)  # x is now bound to value 4
         end
       end # context
 
       context 'Arithmetic operators:' do
-        it 'should implement the addition operator' do
+        it 'implements the addition operator' do
           checks = [
             ['(+)', 0], # '+' as nullary operator. Example from section 6.2.6
             ['(+ -3)', -3], # '+' as unary operator
@@ -50,7 +50,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the minus operator' do
+        it 'implements the minus operator' do
           checks = [
             ['(- 3)', -3], # '-' as unary operator (= sign change)
             ['(- -2/3)', Rational(2, 3)],
@@ -60,7 +60,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the product operator' do
+        it 'implements the product operator' do
           checks = [
             ['(*)', 1], # '*' as nullary operator. Example from section 6.2.6
             ['(* 4)', 4], # '*' as unary operator. Example from section 6.2.6
@@ -71,7 +71,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the division operator' do
+        it 'implements the division operator' do
           checks = [
             ['(/ 3)', Rational(1, 3)], # '/' as unary operator (= inverse of argument)
             ['(/ 3/4)', Rational(4, 3)],
@@ -81,11 +81,11 @@ SKEEM
           ]
           compare_to_predicted(checks)
 
-          result = subject.run('(/ 3 4.5)')
+          result = builder.run('(/ 3 4.5)')
           expect(result.value).to be_within(0.000001).of(0.66666667)
         end
 
-        it 'should implement the floor/ procedure' do
+        it 'implements the floor/ procedure' do
           checks = [
             ['(floor/ 5 2)', [2, 1]], # Binary procedure.
             ['(floor/ -5 2)', [-3, 1]],
@@ -97,7 +97,7 @@ SKEEM
           end
         end
 
-        it 'should implement the truncate/ procedure' do
+        it 'implements the truncate/ procedure' do
           checks = [
             ['(truncate/ 5 2)', [2, 1]], # Binary procedure.
             ['(truncate/ -5 2)', [-2, -1]],
@@ -109,7 +109,7 @@ SKEEM
           end
         end
 
-        it 'should implement the gcd procedure' do
+        it 'implements the gcd procedure' do
           checks = [
             ['(gcd)', 0],
             ['(gcd 47)', 47],
@@ -120,7 +120,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the lcm procedure' do
+        it 'implements the lcm procedure' do
           checks = [
             ['(lcm)', 1],
             ['(lcm 47)', 47],
@@ -132,21 +132,21 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the numerator procedure' do
+        it 'implements the numerator procedure' do
           checks = [
             ['(numerator (/ 6 4))', 3]
           ]
           compare_to_predicted(checks)
         end
 
-        it 'should implement the denominator procedure' do
+        it 'implements the denominator procedure' do
           checks = [
             ['(denominator (/ 6 4))', 2]
           ]
           compare_to_predicted(checks)
         end
 
-        it 'should implement the floor procedure' do
+        it 'implements the floor procedure' do
           checks = [
             ['(floor -4.3)', -5],
             ['(floor 3.5)', 3]
@@ -154,7 +154,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the ceiling procedure' do
+        it 'implements the ceiling procedure' do
           checks = [
             ['(ceiling -4.3)', -4],
             ['(ceiling 3.5)', 4]
@@ -162,7 +162,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the round procedure' do
+        it 'implements the round procedure' do
           checks = [
             ['(round -4.3)', -4],
             ['(round 3.5)', 4],
@@ -174,7 +174,7 @@ SKEEM
       end # context
 
       context 'Comparison operators' do
-        it 'should implement the eqv? procedure' do
+        it 'implements the eqv? procedure' do
           checks = [
             ['(eqv? #f #f)', true],
             ['(eqv? #t #t)', true],
@@ -202,7 +202,7 @@ SKEEM
           end
         end
 
-        it 'should implement the equal? procedure' do
+        it 'implements the equal? procedure' do
           checks = [
             ['(equal? #f #f)', true],
             ['(equal? #t #t)', true],
@@ -232,7 +232,7 @@ SKEEM
           end
         end
 
-        it 'should implement the equality operator' do
+        it 'implements the equality operator' do
           checks = [
             ['(= 3)', true], # '=' as unary operator
             ['(= 3 3)', true], # '=' as binary operator
@@ -244,7 +244,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the less than operator' do
+        it 'implements the less than operator' do
           checks = [
             ['(< 3)', false], # '<' as unary operator
             ['(< 3 4)', true], # '<' as binary operator
@@ -256,7 +256,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the greater than operator' do
+        it 'implements the greater than operator' do
           checks = [
             ['(> 3)', false], # '>' as unary operator
             ['(> 3 2)', true], # '>' as binary operator
@@ -268,7 +268,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the less or equal than operator' do
+        it 'implements the less or equal than operator' do
           checks = [
             ['(<= 3)', true], # '<=' as unary operator
             ['(<= 3 4)', true], # '<=' as binary operator
@@ -281,7 +281,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the greater or equal than operator' do
+        it 'implements the greater or equal than operator' do
           checks = [
             ['(>= 3)', true], # '>=' as unary operator
             ['(>= 3 2)', true],
@@ -294,7 +294,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the max procedure' do
+        it 'implements the max procedure' do
           checks = [
             ['(max 3 4)', 4],
             ['(max 3.9 4)', 4],
@@ -303,7 +303,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the min procedure' do
+        it 'implements the min procedure' do
           checks = [
             ['(min 3 4)', 3],
             ['(min 3.9 4)', 3.9],
@@ -314,7 +314,7 @@ SKEEM
       end # context
 
       context 'Number procedures:' do
-        it 'should implement the number? predicate' do
+        it 'implements the number? predicate' do
           checks = [
             ['(number? 3.1)', true],
             ['(number? 22/7)', true],
@@ -325,7 +325,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the real? predicate' do
+        it 'implements the real? predicate' do
           checks = [
             ['(real? 3.1)', true],
             ['(real? 22/7)', true],
@@ -336,7 +336,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the rational? predicate' do
+        it 'implements the rational? predicate' do
           checks = [
             ['(rational? 3.1)', false],
             ['(rational? 3.0)', true],
@@ -348,7 +348,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the integer? predicate' do
+        it 'implements the integer? predicate' do
           checks = [
             ['(integer? 3.1)', false],
             ['(integer? 3.0)', true],
@@ -360,7 +360,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the number->string procedure' do
+        it 'implements the number->string procedure' do
           checks = [
             ['(number->string 3.4)', '3.4'],
             ['(number->string 22/7)', '22/7'],
@@ -373,7 +373,7 @@ SKEEM
       end # context
 
       context 'Boolean procedures:' do
-        it 'should implement the and procedure' do
+        it 'implements the and procedure' do
           checks = [
             ['(and (= 2 2) (> 2 1))', true],
             ['(and (= 2 2) (< 2 1))', false],
@@ -384,14 +384,14 @@ SKEEM
           # If all the expressions evaluate to true values,
           # the values of the last expression are returned.
           source = "(and 1 2 'c '(f g))"
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmPair)
+          result = builder.run(source)
+          expect(result).to be_a(SkmPair)
           expect(result.car).to eq('f')
-          expect(result.cdr).to be_kind_of(SkmPair)
+          expect(result.cdr).to be_a(SkmPair)
           expect(result.cdr.car).to eq('g')
         end
 
-        it 'should implement the or procedure' do
+        it 'implements the or procedure' do
           checks = [
             ['(or (= 2 2) (> 2 1))', true],
             ['(or (= 2 2) (< 2 1))', true],
@@ -406,12 +406,12 @@ SKEEM
           # When an expression evaluates to true value,
           # the values of the this expression is returned.
           source = "(or #f 'a #f)"
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmIdentifier)
+          result = builder.run(source)
+          expect(result).to be_a(SkmIdentifier)
           expect(result).to eq('a')
         end
 
-        it 'should implement the boolean? procedure' do
+        it 'implements the boolean? procedure' do
           checks = [
             ['(boolean? #f)', true],
             ['(boolean? 0)', false],
@@ -420,7 +420,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the boolean=? procedure' do
+        it 'implements the boolean=? procedure' do
           checks = [
             ['(boolean=? #t #t)', true],
             ['(boolean=? #f #f)', true],
@@ -432,7 +432,7 @@ SKEEM
       end # context
 
       context 'String procedures:' do
-        it 'should implement the string? procedure' do
+        it 'implements the string? procedure' do
           checks = [
             ['(string? #f)', false],
             ['(string? 3)', false],
@@ -441,17 +441,17 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the string->symbol procedure' do
+        it 'implements the string->symbol procedure' do
           checks = [
             ['(string->symbol "mISSISSIppi")', 'mISSISSIppi']
           ]
           checks.each do |(skeem_expr, expectation)|
-            result = subject.run(skeem_expr)
+            result = builder.run(skeem_expr)
             expect(result).to eq(expectation)
           end
         end
 
-        it 'should implement the string=? procedure' do
+        it 'implements the string=? procedure' do
           checks = [
             ['(string=? "Mom" "Mom")', true],
             ['(string=? "Mom" "Mum")', false],
@@ -460,7 +460,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the string procedure' do
+        it 'implements the string procedure' do
           checks = [
             ['(string)', ''],
             ['(string #\a #\b #\c)', 'abc'],
@@ -469,7 +469,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the make-string procedure' do
+        it 'implements the make-string procedure' do
           checks = [
             ['(make-string 0)', ''],
             ['(make-string 0 #\x)', ''],
@@ -478,7 +478,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the string-append procedure' do
+        it 'implements the string-append procedure' do
           checks = [
             ['(string-append)', ''],
             ['(string-append "abc" "def")', 'abcdef'],
@@ -487,7 +487,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the string-length procedure' do
+        it 'implements the string-length procedure' do
           checks = [
             ['(string-length "abc")', 3],
             ['(string-length "")', 0],
@@ -498,7 +498,7 @@ SKEEM
       end # context
 
       context 'Symbol procedures:' do
-        it 'should implement the symbol? procedure' do
+        it 'implements the symbol? procedure' do
           checks = [
             ["(symbol? 'foo)", true],
             ["(symbol? (car '(a b)))", true],
@@ -510,7 +510,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the symbol->string procedure' do
+        it 'implements the symbol->string procedure' do
           checks = [
             ["(equal? (symbol->string 'Hi) \"Hi\")", true],
             ["(equal? (symbol->string 'flying-fish) \"flying-fish\")", true],
@@ -522,7 +522,7 @@ SKEEM
       end # context
 
       context 'List procedures:' do
-        it 'should implement the pair? procedure' do
+        it 'implements the pair? procedure' do
           checks = [
             ["(pair? '(a . b))", true],
             ["(pair? '(a b c))", true],
@@ -532,7 +532,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the list? procedure' do
+        it 'implements the list? procedure' do
           checks = [
             ['(list? #f)', false],
             ['(list? 1)', false],
@@ -546,7 +546,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the null? procedure' do
+        it 'implements the null? procedure' do
           checks = [
             ['(null? #f)', false],
             ['(null? 1)', false],
@@ -559,14 +559,14 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the cons procedure' do
+        it 'implements the cons procedure' do
           example = "(cons 'a '())" # => (a)
-          result = subject.run(example)
+          result = builder.run(example)
           expect(result).to be_list
           expect(result.car).to eq('a')
 
           example = "(cons '(a) '(b c d))" # => ((a) b c d)
-          result = subject.run(example)
+          result = builder.run(example)
           expect(result).to be_list
           members = result.to_a
           expect(members[0]).to be_list
@@ -576,33 +576,33 @@ SKEEM
           expect(members[3]).to eq('d')
 
           example = "(cons \"a\" '(b c))" # => ("a" b c)
-          result = subject.run(example)
+          result = builder.run(example)
           expect(result).to be_list
-          expect(result.car).to be_kind_of(SkmString)
+          expect(result.car).to be_a(SkmString)
           expect(result.car).to eq('a')
-          expect(result.cdr.car).to be_kind_of(SkmIdentifier)
+          expect(result.cdr.car).to be_a(SkmIdentifier)
           expect(result.cdr.car).to eq('b')
-          expect(result.cdr.cdr.car).to be_kind_of(SkmIdentifier)
+          expect(result.cdr.cdr.car).to be_a(SkmIdentifier)
           expect(result.cdr.cdr.car).to eq('c')
 
           example = "(cons 'a 3)" # => (a . 3)
-          result = subject.run(example)
+          result = builder.run(example)
           expect(result.car).to eq('a')
           expect(result.cdr).to eq(3)
 
           example = "(cons '(a b) 'c)" # => ((a b) . c)
-          result = subject.run(example)
-          expect(result.car).to be_kind_of(SkmPair)
+          result = builder.run(example)
+          expect(result.car).to be_a(SkmPair)
           expect(result.car.to_a).to eq(%w[a b])
-          expect(result.cdr).to be_kind_of(SkmIdentifier)
+          expect(result.cdr).to be_a(SkmIdentifier)
           expect(result.cdr).to eq('c')
         end
 
-        it 'should implement the car procedure' do
+        it 'implements the car procedure' do
           expect_expr("(car '(a b c))").to eq('a')
 
           example = "(car '((a) b c d))" # => (a)
-          result = subject.run(example)
+          result = builder.run(example)
           expect(result).to be_list
           expect(result.length).to eq(1)
           expect(result.car).to eq('a')
@@ -610,12 +610,12 @@ SKEEM
           expect_expr("(car '(1 . 2))").to eq(1)
 
           example = "(car '())" # => error
-          expect { subject.run(example) }.to raise_error(StandardError)
+          expect { builder.run(example) }.to raise_error(StandardError)
         end
 
-        it 'should implement the cdr procedure' do
+        it 'implements the cdr procedure' do
           example = "(cdr '((a) b c d))" # => (b c d)
-          result = subject.run(example)
+          result = builder.run(example)
           expect(result).to be_list
           expect(result.length).to eq(3)
           expect(result.to_a).to eq(%w[b c d])
@@ -623,18 +623,18 @@ SKEEM
           expect_expr("(cdr '(1 . 2))").to eq(2)
 
           example = "(cdr '())" # => error
-          expect { subject.run(example) }.to raise_error(StandardError)
+          expect { builder.run(example) }.to raise_error(StandardError)
         end
 
-        it 'should implement the length procedure' do
+        it 'implements the length procedure' do
           example = '(make-list 2 3)'
-          result = subject.run(example)
+          result = builder.run(example)
           expect(result).to be_list
           expect(result.length).to eq(2)
           expect(result.to_a).to eq([3, 3])
         end
 
-        it 'should implement the length procedure' do
+        it 'implements the length procedure' do
           checks = [
             ["(length '())", 0],
             ["(length '(1))", 1],
@@ -645,7 +645,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the append procedure' do
+        it 'implements the append procedure' do
           checks = [
             ["(append '(a b c) '())", array2list_ids(%w[a b c])],
             ["(append '() '(a b c))", array2list_ids(%w[a b c])],
@@ -667,8 +667,8 @@ SKEEM
           end
         end
 
-        it 'should implement the procedure for an improper list' do
-          result = subject.run("(append '(a b) '(c . d))")
+        it 'implements the procedure for an improper list' do
+          result = builder.run("(append '(a b) '(c . d))")
           expect(result.car).to eq(SkmIdentifier.create('a'))
           expect(result.cdr.car).to eq(SkmIdentifier.create('b'))
           expect(result.cdr.cdr.car).to eq(SkmIdentifier.create('c'))
@@ -676,7 +676,7 @@ SKEEM
         end
 
 
-        it 'should implement the reverse procedure' do
+        it 'implements the reverse procedure' do
           checks = [
             ["(reverse '())", SkmEmptyList.instance],
             ["(reverse '(a b c))", array2list_ids(%w[c b a])],
@@ -691,7 +691,7 @@ SKEEM
           end
         end
 
-        it 'should implement the list->vector procedure' do
+        it 'implements the list->vector procedure' do
           checks = [
             ["(list->vector '())", []],
             ["(list->vector '(a b c))", %w[a b c]]
@@ -701,28 +701,28 @@ SKEEM
           end
         end
 
-        it 'should implement the set-car! procedure' do
+        it 'implements the set-car! procedure' do
           source = <<-SKEEM
   (define x '(a b c))
   (set-car! x 1)
   x
 SKEEM
-          result = subject.run(source)
+          result = builder.run(source)
           expect(result.last.car).to eq(1)
         end
 
-        it 'should implement the set-cdr! procedure' do
+        it 'implements the set-cdr! procedure' do
           source = <<-SKEEM
   (define x '(a b c))
   (set-cdr! x 1)
   x
 SKEEM
-          result = subject.run(source)
+          result = builder.run(source)
           expect(result.last.cdr).to eq(1)
         end
 
-        it 'should implement the assq procedure' do
-          subject.run("(define e '((a 1) (b 2) (c 3)))")
+        it 'implements the assq procedure' do
+          builder.run("(define e '((a 1) (b 2) (c 3)))")
           checks = [
             ["(assq 'a e)", ['a', 1]],
             ["(assq 'b e)", ['b', 2]],
@@ -738,12 +738,12 @@ SKEEM
           expect_expr("(assq '(a) '(((a)) ((b)) ((c))))").to eq(false)
         end
 
-        it 'should implement the assv procedure' do
-          result = subject.run("(assv 5 '((2 3) (5 7) (11 13)))")
+        it 'implements the assv procedure' do
+          result = builder.run("(assv 5 '((2 3) (5 7) (11 13)))")
           expect(result.to_a).to eq([5, 7])
         end
 
-        it 'should implement the list-copy procedure' do
+        it 'implements the list-copy procedure' do
           checks = [
             ["(list-copy '())", []],
             ["(list-copy '(a b c))", %w[a b c]]
@@ -757,16 +757,16 @@ SKEEM
   (define b (list-copy a))
   (set-car! b 3) ; b is mutable
 SKEEM
-          subject.run(source)
-          result = subject.run('b')
+          builder.run(source)
+          result = builder.run('b')
           expect(result.to_a).to eq([3, 8, 2, 8])
-          result = subject.run('a')
+          result = builder.run('a')
           expect(result.to_a).to eq([1, 8, 2, 8])
         end
       end # context
 
       context 'Character procedures:' do
-        it 'should implement the char? procedure' do
+        it 'implements the char? procedure' do
           checks = [
             ['(char? #f)', false],
             ["(char? 'a)", false],
@@ -777,7 +777,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the char->integer procedure' do
+        it 'implements the char->integer procedure' do
           checks = [
             ['(char->integer #\space)', 0x20],
             ['(char->integer #\newline)', 0x0a],
@@ -787,7 +787,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the integer->char procedure' do
+        it 'implements the integer->char procedure' do
           checks = [
             ['(integer->char #x20)', ?\s],
             ['(integer->char 48)', ?0],
@@ -797,7 +797,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the char=? procedure' do
+        it 'implements the char=? procedure' do
           checks = [
             ['(char=? #\a)', true],
             ['(char=? #\a #\a)', true],
@@ -808,7 +808,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the char<? procedure' do
+        it 'implements the char<? procedure' do
           checks = [
             ['(char<? #\a)', true],
             ['(char<? #\a #\a)', false],
@@ -819,7 +819,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the char>? procedure' do
+        it 'implements the char>? procedure' do
           checks = [
             ['(char>? #\b)', true],
             ['(char>? #\b #\b)', false],
@@ -830,7 +830,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the char<=? procedure' do
+        it 'implements the char<=? procedure' do
           checks = [
             ['(char<=? #\a)', true],
             ['(char<=? #\a #\a)', true],
@@ -842,7 +842,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the char>=? procedure' do
+        it 'implements the char>=? procedure' do
           checks = [
             ['(char>=? #\a)', true],
             ['(char>=? #\a #\a)', true],
@@ -856,7 +856,7 @@ SKEEM
       end # context
 
       context 'Vector procedures:' do
-        it 'should implement the vector? procedure' do
+        it 'implements the vector? procedure' do
           checks = [
             ['(vector? #f)', false],
             ['(vector? 1)', false],
@@ -867,19 +867,19 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the vector procedure' do
+        it 'implements the vector procedure' do
           source = '(vector)'
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmVector)
+          result = builder.run(source)
+          expect(result).to be_a(SkmVector)
           expect(result).to be_empty
 
           source = '(vector 1 2 3)'
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmVector)
+          result = builder.run(source)
+          expect(result).to be_a(SkmVector)
           expect(result.members).to eq([1, 2, 3])
         end
 
-        it 'should implement the vector-length procedure' do
+        it 'implements the vector-length procedure' do
           checks = [
             ['(vector-length (vector))', 0],
             ['(vector-length #())', 0],
@@ -892,7 +892,7 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the make-vector procedure' do
+        it 'implements the make-vector procedure' do
           checks = [
             ['(vector-length (make-vector 0))', 0],
             ["(vector-length (make-vector 0 'a))", 0],
@@ -901,14 +901,14 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the vector-ref procedure' do
+        it 'implements the vector-ref procedure' do
           source = "(vector-ref '#(1 1 2 3 5 8 13 21) 5)"
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmInteger)
+          result = builder.run(source)
+          expect(result).to be_a(SkmInteger)
           expect(result).to eq(8)
         end
 
-        it 'should implement the vector-set! procedure' do
+        it 'implements the vector-set! procedure' do
           source = <<-SKEEM
   (let
     ((vec (vector 0 '(2 2 2 2) "Anna")))
@@ -916,8 +916,8 @@ SKEEM
   vec)
 SKEEM
           # (0 ("Sue" "Sue") "Anna")
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmVector)
+          result = builder.run(source)
+          expect(result).to be_a(SkmVector)
           expectation = [SkmInteger.create(0),
             SkmPair.new(SkmString.create('Sue'), SkmPair.new(SkmString.create('Sue'), SkmEmptyList.instance)),
             SkmString.create('Anna')]
@@ -929,12 +929,12 @@ SKEEM
     (vector-set! v 2 'x)
     v)
 SKEEM
-          result = subject.run(source)
-          expect(result).to be_kind_of(SkmVector)
+          result = builder.run(source)
+          expect(result).to be_a(SkmVector)
           expect(result).to eq(array2list_ids(%w[a b x d e]))
         end
 
-        it 'should implement the vector->list procedure' do
+        it 'implements the vector->list procedure' do
           checks = [
             ['(vector->list #())', []],
             ["(vector->list '#(a b c))", %w[a b c]]
@@ -946,7 +946,7 @@ SKEEM
       end # context
 
       context 'Control procedures:' do
-        it 'should implement the procedure? predicate' do
+        it 'implements the procedure? predicate' do
           checks = [
             ['(procedure? car)', true],
             ["(procedure? 'car)", false],
@@ -956,14 +956,14 @@ SKEEM
           compare_to_predicted(checks)
         end
 
-        it 'should implement the apply procedure' do
+        it 'implements the apply procedure' do
           checks = [
             ["(apply + '(3 4))", 7]
           ]
           compare_to_predicted(checks)
         end
 
-        it 'should implement the map procedure' do
+        it 'implements the map procedure' do
           checks = [
             ["(map car '((a b) (d e) (g h)))", %w[a d g]],
             ["(map + '(1 2 3) '(4 5 6 7))", [5, 7, 9]]
@@ -975,33 +975,29 @@ SKEEM
       end # context
 
       context 'IO procedures:' do
-        it 'should implement the display procedure' do
-          default_stdout = $stdout
-          $stdout = StringIO.new
-          subject.run('(display "Hello")')
-          expect($stdout.string).to eq('Hello')
-          $stdout = default_stdout
+        it 'implements the display procedure' do
+          expect { builder.run('(display "Hello")') }.to output('Hello').to_stdout
         end
       end # context
 
       context 'Miscellaneous procedures' do
-        it 'should raise an exception with given error message' do
+        it 'raises an exception with given error message' do
           source = '(error "This is an error message")'
           err = SkmError
           msg = 'This is an error message'
-          expect { subject.run(source) }.to raise_error(err, msg)
+          expect { builder.run(source) }.to raise_error(err, msg)
         end
 
-        it 'should return true when an assertion succeeds' do
+        it 'returns true when an assertion succeeds' do
           source = <<-SKEEM
   (define x 2)
   (define y 1)
   (test-assert (> x y))
 SKEEM
-          expect(subject.run(source).last).to eq(true)
+          expect(builder.run(source).last).to eq(true)
         end
 
-        it 'should raise an error when an assertion fails' do
+        it 'raises an error when an assertion fails' do
           source = <<-SKEEM
   (define x 1)
   (define y 2)
@@ -1010,7 +1006,7 @@ SKEEM
           err = StandardError
           msg1 = 'Error: assertion failed on line 3, column 4'
           msg2 = 'with <Skeem::SkmBoolean: false>'
-          expect { subject.run(source) }.to raise_error(err, "#{msg1}, #{msg2}")
+          expect { builder.run(source) }.to raise_error(err, "#{msg1}, #{msg2}")
         end
       end # context
     end # describe

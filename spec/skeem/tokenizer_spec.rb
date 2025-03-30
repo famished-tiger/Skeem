@@ -16,8 +16,8 @@ module Skeem
     # Assumption: subject is a Skeem::Tokenizer
     def check_tokens(tokenTests, tokType)
       tokenTests.each do |(input, prediction)|
-        subject.reinitialize(input)
-        token = subject.tokens.first
+        tokenizer.reset(input)
+        token = tokenizer.tokens.first
         expect(token.terminal).to eq(tokType)
         expect(token.lexeme).to eq(prediction)
       end
@@ -28,23 +28,23 @@ module Skeem
     end
 
     # Default instantiation
-    subject { Tokenizer.new('') }
+    subject(:tokenizer) { described_class.new('') }
 
     context 'Initialization:' do
-      it 'should be initialized with a text to tokenize' do
-        expect { Tokenizer.new('(+ 2 3)') }.not_to raise_error
+      it 'is initialized with a text to tokenize' do
+        expect { described_class.new('(+ 2 3)') }.not_to raise_error
       end
 
-      it 'should have its scanner initialized' do
-        expect(subject.scanner).to be_kind_of(StringScanner)
+      it 'has its scanner initialized' do
+        expect(tokenizer.scanner).to be_a(StringScanner)
       end
     end # context
 
     context 'Delimiter and separator token recognition:' do
-      it 'should tokenize single char delimiters' do
-        subject.reinitialize("( ) ' ` . , ,@")
-        tokens = subject.tokens
-        tokens.each { |token| expect(token).to be_kind_of(Rley::Lexical::Token) }
+      it 'tokenizes single char delimiters' do
+        tokenizer.reset("( ) ' ` . , ,@")
+        tokens = tokenizer.tokens
+        expect(tokens).to all(be_a(Rley::Lexical::Token))
         terminals = tokens.map(&:terminal)
         prediction = %w[LPAREN RPAREN APOSTROPHE
           GRAVE_ACCENT PERIOD
@@ -54,7 +54,7 @@ module Skeem
     end # context
 
     context 'Boolean literals recognition:' do
-      it 'should tokenize boolean constants' do
+      it 'tokenizes boolean constants' do
         tests = [
           # couple [raw input, expected]
           ['#t', true],
@@ -68,7 +68,7 @@ module Skeem
     end # context
 
     context 'Integer literals recognition:' do
-      it 'should tokenize integers in default radix 10' do
+      it 'tokenizes integers in default radix 10' do
         tests = [
           # couple [raw input, expected]
           ['0', 0],
@@ -82,7 +82,7 @@ module Skeem
         check_tokens(tests, 'INTEGER')
       end
 
-      it 'should tokenize integers with explicit radix 10' do
+      it 'tokenizes integers with explicit radix 10' do
         tests = [
           # couple [raw input, expected]
           ['#d0', 0],
@@ -96,7 +96,7 @@ module Skeem
         check_tokens(tests, 'INTEGER')
       end
 
-      it 'should tokenize integers in hexadecimal notation' do
+      it 'tokenizes integers in hexadecimal notation' do
         tests = [
           # couple [raw input, expected]
           ['#x0', 0],
@@ -111,7 +111,7 @@ module Skeem
     end # context
 
     context 'Rational literals recognition:' do
-      it 'should tokenize rational in default radix 10' do
+      it 'tokenizes rational in default radix 10' do
         tests = [
           # couple [raw input, expected]
           ['1/2', Rational(1, 2)],
@@ -121,8 +121,8 @@ module Skeem
         check_tokens(tests, 'RATIONAL')
 
         # Special case: implicit promotion to integer
-        subject.reinitialize('8/4')
-        token = subject.tokens.first
+        tokenizer.reset('8/4')
+        token = tokenizer.tokens.first
         expect(token.terminal).to eq('INTEGER')
         expect(token.lexeme).to eq(2)
       end
@@ -130,7 +130,7 @@ module Skeem
 
     context 'Real number recognition:' do
       # rubocop: disable Style/ExponentialNotation
-      it 'should tokenize real numbers' do
+      it 'tokenizes real numbers' do
         tests = [
           # couple [raw input, expected]
           ["\t\t3.45e+6", 3.45e+6],
@@ -145,7 +145,7 @@ module Skeem
     end # context
 
     context 'Character literal recognition:' do
-      it 'should tokenize named characters' do
+      it 'tokenizes named characters' do
         tests = [
           # couple [raw input, expected]
           ['#\alarm', ?\a],
@@ -156,7 +156,7 @@ module Skeem
         check_tokens(tests, 'CHAR')
       end
 
-      it 'should tokenize escaped characters' do
+      it 'tokenizes escaped characters' do
         tests = [
           # couple [raw input, expected]
           ['#\a', ?a],
@@ -168,7 +168,7 @@ module Skeem
         check_tokens(tests, 'CHAR')
       end
 
-      it 'should tokenize hex-coded characters' do
+      it 'tokenizes hex-coded characters' do
         tests = [
           # couple [raw input, expected]
           ['#\x07', ?\a],
@@ -181,7 +181,7 @@ module Skeem
     end # context
 
     context 'String recognition:' do
-      it 'should tokenize strings' do
+      it 'tokenizes strings' do
         examples = [
           # Some examples taken from R7RS document
           '"Hello, world"',
@@ -190,8 +190,8 @@ module Skeem
 
         examples.each do |input|
           # puts input
-          subject.reinitialize(input)
-          token = subject.tokens.first
+          tokenizer.reset(input)
+          token = tokenizer.tokens.first
           expect(token.terminal).to eq('STRING_LIT')
           expect(token.lexeme).to eq(unquoted(input))
         end
@@ -204,7 +204,7 @@ module Skeem
 # "\x03B1; is named GREEK SMALL LETTER ALPHA."
 
     context 'Identifier recognition:' do
-      it 'should tokenize identifiers' do
+      it 'tokenizes identifiers' do
         examples = [
           # Examples taken from R7RS document
           '+', '+soup+', '<=?',
@@ -215,8 +215,8 @@ module Skeem
         ]
 
         examples.each do |input|
-          subject.reinitialize(input)
-          token = subject.tokens.first
+          tokenizer.reset(input)
+          token = tokenizer.tokens.first
           if token.lexeme == 'lambda'
             expect(token.terminal).to eq('LAMBDA')
           else
@@ -226,19 +226,19 @@ module Skeem
         end
       end
 
-      it 'should recognize ellipsis' do
+      it 'recognizes ellipsis' do
         input = '...'
-        subject.reinitialize(input)
-        token = subject.tokens.first
+        tokenizer.reset(input)
+        token = tokenizer.tokens.first
         expect(token.terminal).to eq('ELLIPSIS')
         expect(token.lexeme).to eq(input)
       end
     end # context
 
     context 'Vector recognition' do
-      it 'should tokenize vectors' do
+      it 'tokenizes vectors' do
         input = '#(0 -2 "Sue")'
-        subject.reinitialize(input)
+        tokenizer.reset(input)
         predictions = [
           ['VECTOR_BEGIN', '#(', 1],
           ['INTEGER', 0, 3],
@@ -246,7 +246,7 @@ module Skeem
           ['STRING_LIT', 'Sue', 8],
           ['RPAREN', ')', 13]
         ]
-        tokens = subject.tokens
+        tokens = tokenizer.tokens
         predictions.each_with_index do |(pr_terminal, pr_lexeme, pr_position), i|
           expect(tokens[i].terminal).to eq(pr_terminal)
           expect(tokens[i].lexeme).to eq(pr_lexeme)
@@ -256,27 +256,27 @@ module Skeem
     end
 
     context 'Comments:' do
-      it 'should skip heading comments' do
+      it 'skips heading comments' do
         input = "; Starting comment\n \"Some text\""
-        subject.reinitialize(input)
-        token = subject.tokens.first
+        tokenizer.reset(input)
+        token = tokenizer.tokens.first
         expect(token.terminal).to eq('STRING_LIT')
         expect(token.lexeme).to eq('Some text')
         expect(token.position.line).to eq(2)
       end
 
-      it 'should skip trailing comments' do
+      it 'skips trailing comments' do
         input = '"Some text"; Trailing comment'
-        subject.reinitialize(input)
-        token = subject.tokens.first
+        tokenizer.reset(input)
+        token = tokenizer.tokens.first
         expect(token.terminal).to eq('STRING_LIT')
         expect(token.lexeme).to eq('Some text')
       end
 
-      it 'should skip embedded comments' do
+      it 'skips embedded comments' do
         input = "\"First text\"; Middle comment\n\"Second text\""
-        subject.reinitialize(input)
-        tokens = subject.tokens
+        tokenizer.reset(input)
+        tokens = tokenizer.tokens
         expect(tokens.size).to eq(2)
         token = tokens[0]
         expect(token.terminal).to eq('STRING_LIT')
@@ -286,10 +286,10 @@ module Skeem
         expect(token.lexeme).to eq('Second text')
       end
 
-      it 'should skip block comments' do
+      it 'skips block comments' do
         input = '"First text" #| Middle comment |# "Second text"'
-        subject.reinitialize(input)
-        tokens = subject.tokens
+        tokenizer.reset(input)
+        tokens = tokenizer.tokens
         expect(tokens.size).to eq(2)
         token = tokens[0]
         expect(token.terminal).to eq('STRING_LIT')
@@ -299,10 +299,10 @@ module Skeem
         expect(token.lexeme).to eq('Second text')
       end
 
-      it 'should cope with nested block comments' do
+      it 'copes with nested block comments' do
         input = '"First text" #| One #| Two |# comment #| Three |# |# "Second text"'
-        subject.reinitialize(input)
-        tokens = subject.tokens
+        tokenizer.reset(input)
+        tokens = tokenizer.tokens
         expect(tokens.size).to eq(2)
         token = tokens[0]
         expect(token.terminal).to eq('STRING_LIT')
@@ -314,10 +314,10 @@ module Skeem
     end
 
     context 'Scanning Scheme sample code' do
-      it 'should produce a sequence of token objects' do
+      it 'produces a sequence of token objects' do
         # Deeper tokenizer testing
         source = '(define circle-area (lambda (r) (* pi (* r r))))'
-        subject.reinitialize(source)
+        tokenizer.reset(source)
         predicted = [
           %w[LPAREN (],
           %w[DEFINE define],
@@ -339,7 +339,7 @@ module Skeem
           %w[RPAREN )],
           %w[RPAREN )]
         ]
-        match_expectations(subject, predicted)
+        match_expectations(tokenizer, predicted)
       end
     end # context
   end # describe

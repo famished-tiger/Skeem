@@ -10,23 +10,23 @@ module Skeem
     let(:pos) { double('fake-position') }
     let(:sample_child) { double('fake-child') }
 
-    subject { SkmUnaryExpression.new(pos, sample_child) }
+    subject(:unary_expr) { described_class.new(pos, sample_child) }
 
     context 'Initialization:' do
-      it 'should be initialized with a position and a child element' do
-        expect { SkmUnaryExpression.new(pos, sample_child) }.not_to raise_error
+      it 'is initialized with a position and a child element' do
+        expect { described_class.new(pos, sample_child) }.not_to raise_error
       end
 
-      it 'should know its child' do
-        expect(subject.child).to eq(sample_child)
+      it 'knows its child' do
+        expect(unary_expr.child).to eq(sample_child)
       end
     end # context
 
     context 'Provided basic services:' do
-      it 'should respond to visitor' do
+      it 'responds to visitor' do
         visitor = double('fake-visitor')
-        expect(visitor).to receive(:visit_unary_expression).with(subject)
-        expect { subject.accept(visitor) }.not_to raise_error
+        expect(visitor).to receive(:visit_unary_expression).with(unary_expr)
+        expect { unary_expr.accept(visitor) }.not_to raise_error
       end
     end # context
   end # describe
@@ -36,42 +36,42 @@ module Skeem
 
     let(:sample_literal) { string('foo') }
 
-    subject { SkmQuotation.new(sample_literal) }
+    subject(:quotation) { described_class.new(sample_literal) }
 
     context 'Initialization:' do
-      it 'should be initialized with a Skeem element' do
-        expect { SkmQuotation.new(sample_literal) }.not_to raise_error
+      it 'is initialized with a Skeem element' do
+        expect { described_class.new(sample_literal) }.not_to raise_error
       end
 
-      it 'should know its datum' do
-        expect(subject.datum).to be_equal(sample_literal)
-        expect(subject.datum).to be_equal(subject.child)
+      it 'knows its datum' do
+        expect(quotation.datum).to equal(sample_literal)
+        expect(quotation.datum).to equal(quotation.child)
       end
     end # context
 
     context 'Provided services:' do
       let(:runtime) { Runtime.new(SkmFrame.new) }
 
-      # it 'should return the child(datum) at evaluation' do
-        # expect(subject.evaluate(runtime)).to be_equal(subject.child)
+      # it 'returns the child(datum) at evaluation' do
+        # expect(unary_expr.evaluate(runtime)).to equal(unary_expr.child)
       # end
 
-      it 'should implement quasiquotation' do
+      it 'implements quasiquotation' do
         # Case 1: child is idempotent with quasiquote
-        expect(subject.quasiquote(runtime)).to be_equal(subject)
+        expect(quotation.quasiquote(runtime)).to equal(quotation)
 
         # Case 2: quasiquoted child is different
         child = double('fake-child')
-        expect(child).to receive(:quasiquote).with(runtime).and_return(integer(3))
-        instance = SkmQuasiquotation.new(child)
+        allow(child).to receive(:quasiquote).with(runtime).and_return(integer(3))
+        instance = described_class.new(child)
         expect(instance.child).to eq(child)
         quasi_result = instance.quasiquote(runtime)
-        expect(quasi_result).to eq(3)
+        expect(quasi_result.child.value).to eq(3)
       end
 
-      it 'should return its text representation' do
+      it 'returns its text representation' do
         txt1 = '<Skeem::SkmQuotation: <Skeem::SkmString: foo>>'
-        expect(subject.inspect).to eq(txt1)
+        expect(quotation.inspect).to eq(txt1)
       end
     end # context
   end # describe
@@ -82,79 +82,78 @@ module Skeem
 
     let(:sample_literal) { string('foo') }
 
-    subject { SkmQuasiquotation.new(sample_literal) }
+    subject(:quasiquote) { described_class.new(sample_literal) }
 
     context 'Initialization:' do
-      it 'should be initialized with a Skeem element' do
-        expect { SkmQuasiquotation.new(sample_literal) }.not_to raise_error
+      it 'is initialized with a Skeem element' do
+        expect { described_class.new(sample_literal) }.not_to raise_error
       end
     end # context
 
     context 'Provided services:' do
       let(:runtime) { Runtime.new(SkmFrame.new) }
 
-      it 'should return the child(template) at evaluation' do
-        expect(subject.evaluate(runtime)).to be_equal(subject.child)
+      it 'returns the child(template) at evaluation' do
+        expect(quasiquote.evaluate(runtime)).to equal(quasiquote.child)
       end
 
-      it 'should accept quasiquotation' do
+      it 'accepts quasiquotation' do
         # Case 1: child is idempotent with quasiquote
-        expect(subject.quasiquote(runtime)).to be_equal(subject.child)
+        expect(quasiquote.quasiquote(runtime)).to equal(quasiquote.child)
 
         # Case 2: quasiquoted child is different
         child = double('fake-child')
-        expect(child).to receive(:quasiquote).with(runtime).and_return(integer(3))
-        instance = SkmQuotation.new(child)
+        allow(child).to receive(:quasiquote).with(runtime).and_return(integer(3))
+        instance = described_class.new(child)
         expect(instance.child).to eq(child)
         quasi_result = instance.quasiquote(runtime)
-        expect(quasi_result.child).to eq(3)
+        expect(quasi_result).to eq(3)
       end
 
-      it 'should return its text representation' do
+      it 'returns its text representation' do
         txt1 = '<Skeem::SkmQuasiquotation: <Skeem::SkmString: foo>>'
-        expect(subject.inspect).to eq(txt1)
+        expect(quasiquote.inspect).to eq(txt1)
       end
     end # context
   end # describe
-
 
   describe SkmUnquotation do
     include DatumDSL
 
     let(:sample_literal) { string('foo') }
 
-    subject { SkmUnquotation.new(sample_literal) }
+    subject(:unquote) { described_class.new(sample_literal) }
 
     context 'Initialization:' do
-      it 'should be initialized with a Skeem element' do
-        expect { SkmUnquotation.new(sample_literal) }.not_to raise_error
+      it 'is initialized with a Skeem element' do
+        expect { described_class.new(sample_literal) }.not_to raise_error
       end
     end # context
 
     context 'Provided services:' do
       let(:runtime) { Runtime.new(SkmFrame.new) }
 
-      it 'should return the child(template) at evaluation' do
-        expect(subject.evaluate(runtime)).to be_equal(subject.child)
+      it 'returns the child(template) at evaluation' do
+        expect(unquote.evaluate(runtime)).to equal(unquote.child)
       end
 
-      it 'should accept quasiquotation' do
+      it 'accepts quasiquotation' do
         # Case 1: child is idempotent with evaluate
-        expect(subject.quasiquote(runtime)).to be_equal(subject.child)
+        expect(unquote.quasiquote(runtime)).to equal(unquote.child)
 
         # Case 2: quasiquoted child is different
         child = double('fake-child')
-        expect(child).to receive(:unquoted!)
-        expect(child).to receive(:evaluate).with(runtime).and_return(integer(3))
-        instance = SkmUnquotation.new(child)
+        allow(child).to receive(:unquoted!)
+        allow(child).to receive(:evaluate).with(runtime).and_return(integer(3))
+        instance = described_class.new(child)
         expect(instance.child).to eq(child)
         quasi_result = instance.quasiquote(runtime)
         expect(quasi_result).to eq(3)
       end
 
-      it 'should return its text representation' do
+      it 'returns its text representation' do
         txt1 = '<Skeem::SkmUnquotation: <Skeem::SkmString: foo>>'
-        expect(subject.inspect).to eq(txt1)
+        expect(unquote.inspect).to eq(txt1)
       end
     end # context
   end # describe
@@ -165,37 +164,37 @@ module Skeem
     let(:pos) { double('fake-position') }
     let(:sample_var) { identifier('three') }
 
-    subject { SkmVariableReference.new(pos, sample_var) }
+    subject(:var_ref) { described_class.new(pos, sample_var) }
 
     context 'Initialization:' do
-      it 'should be initialized with a position and a symbol' do
-        expect { SkmVariableReference.new(pos, sample_var) }.not_to raise_error
+      it 'is initialized with a position and a symbol' do
+        expect { described_class.new(pos, sample_var) }.not_to raise_error
       end
 
-      it 'should know its variable' do
-        expect(subject.variable).to be_equal(sample_var)
-        expect(subject.variable).to be_equal(subject.child)
+      it 'knows its variable' do
+        expect(var_ref.variable).to equal(sample_var)
+        expect(var_ref.variable).to equal(var_ref.child)
       end
     end # context
 
     context 'Provided services:' do
       let(:runtime) { Runtime.new(SkmFrame.new) }
 
-      before(:each) do
+      before do
         runtime.add_binding('three', integer(3))
       end
 
-      it "should return the variable's value at evaluation" do
-        expect(subject.evaluate(runtime)).to eq(3)
+      it "returns the variable's value at evaluation" do
+        expect(var_ref.evaluate(runtime)).to eq(3)
       end
 
-      it 'should return itself at quasiquotation' do
-        expect(subject.quasiquote(runtime)).to be_equal(subject)
+      it 'returns itself at quasiquotation' do
+        expect(var_ref.quasiquote(runtime)).to equal(var_ref)
       end
 
-      it 'should return its text representation' do
+      it 'returns its text representation' do
         txt1 = '<Skeem::SkmVariableReference: <Skeem::SkmIdentifier: three>>'
-        expect(subject.inspect).to eq(txt1)
+        expect(var_ref.inspect).to eq(txt1)
       end
     end # context
   end # describe

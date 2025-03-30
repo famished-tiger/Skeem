@@ -105,7 +105,7 @@ module Skeem
     end
 
     def inspect
-      result = +"#{inspect_prefix}#{operator.inspect}, "
+      result = "#{inspect_prefix}#{operator.inspect}, "
       result << "@operands #{operands.inspect}#{inspect_suffix}"
       result
     end
@@ -146,6 +146,7 @@ module Skeem
     end
 
     # rubocop: disable Style/RedundantAssignment
+    # rubocop: disable Lint/UselessRescue
 
     def fetch_callee(aRuntime, var_key)
       begin
@@ -176,6 +177,7 @@ module Skeem
       callee
     end
 
+    # rubocop: enable Lint/UselessRescue
     # rubocop: enable Style/RedundantAssignment
 
     def transform_operands(aRuntime)
@@ -229,7 +231,7 @@ module Skeem
     end
 
     def inspect
-      result = +"#{inspect_prefix}@test #{test.inspect}, "
+      result = "#{inspect_prefix}@test #{test.inspect}, "
       result << "@consequent #{consequent.inspect}, "
       result << "@alternate #{alternate.inspect}#{inspect_suffix}"
       result
@@ -277,7 +279,7 @@ module Skeem
           consequent_qq = consequent.quasiquote(aRuntime)
           [test_qq, consequent_qq]
       end
-      quasi_alternate = alternate ? alternate.quasiquote(aRuntime) : nil
+      quasi_alternate = alternate&.quasiquote(aRuntime)
 
       self.class.new(position, quasi_clauses, quasi_alternate)
     end

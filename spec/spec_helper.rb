@@ -17,7 +17,6 @@ RSpec.configure do |config|
   config.full_backtrace = true
 end
 
-
 module InterpreterSpec
   def expect_expr(aSkeemExpr)
     result = subject.run(aSkeemExpr)
@@ -35,7 +34,6 @@ module InterpreterSpec
       else
         expect(result).to eq(predicted)
       end
-
     rescue Exception => e
       $stderr.puts "Row #{index + 1} failed."
       throw e

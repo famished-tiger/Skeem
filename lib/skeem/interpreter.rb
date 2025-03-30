@@ -3,7 +3,7 @@
 require_relative 'parser'
 require_relative 'skm_frame'
 require_relative 'runtime'
-require_relative './primitive/primitive_builder'
+require_relative 'primitive/primitive_builder'
 
 module Skeem
   class Interpreter

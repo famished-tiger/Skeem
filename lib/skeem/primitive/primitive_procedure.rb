@@ -70,7 +70,7 @@ module Skeem
         unless aRubyLambda.lambda?
           error_lambda('must be implemented with a Ruby lambda.')
         end
-        if aRubyLambda.parameters.size.zero?
+        if aRubyLambda.parameters.empty?
           error_lambda('lambda takes no parameter.')
         end
 

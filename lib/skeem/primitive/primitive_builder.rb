@@ -1112,7 +1112,7 @@ module Skeem
       def create_display(aRuntime)
         primitive = lambda do |_runtime, arg_evaluated|
           # @TODO: make output stream configurable
-          print arg_evaluated.value.to_s
+          print arg_evaluated.value
           SkmUndefined.instance
         end
 

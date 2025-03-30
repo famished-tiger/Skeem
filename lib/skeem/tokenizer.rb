@@ -25,7 +25,7 @@ module Skeem
     # @return [Integer] Offset of start of current line
     attr_reader(:line_start)
 
-    @@lexeme2name = {
+    Lexeme2name = {
       "'" => 'APOSTROPHE',
       '=>' => 'ARROW',
       '`' => 'GRAVE_ACCENT',
@@ -40,7 +40,7 @@ module Skeem
     }.freeze
 
     # Here are all the implemented Scheme keywords (in uppercase)
-    @@keywords = %w[
+    Keywords = %w[
       BEGIN
       COND
       DEFINE
@@ -66,11 +66,11 @@ module Skeem
     # @param source [String] Skeem text to tokenize.
     def initialize(source)
       @scanner = StringScanner.new('')
-      reinitialize(source)
+      reset(source)
     end
 
     # @param source [String] Skeem text to tokenize.
-    def reinitialize(source)
+    def reset(source)
       @scanner.string = source
       @lineno = 1
       @line_start = 0
@@ -84,7 +84,7 @@ module Skeem
         tok_sequence << token unless token.nil?
       end
 
-      return tok_sequence
+      tok_sequence
     end
 
     private
@@ -100,11 +100,11 @@ module Skeem
 
       if "()'`".include? curr_ch
         # Delimiters, separators => single character token
-        token = build_token(@@lexeme2name[curr_ch], scanner.getch)
+        token = build_token(Lexeme2name[curr_ch], scanner.getch)
       elsif (lexeme = scanner.scan(/(?:\.|_)(?=\s|\()/)) # Single char occurring alone
-        token = build_token(@@lexeme2name[curr_ch], scanner.getch)
+        token = build_token(Lexeme2name[curr_ch], scanner.getch)
       elsif (lexeme = scanner.scan(/(?:,@?)|(?:=>)|(?:\.\.\.)/))
-        token = build_token(@@lexeme2name[lexeme], lexeme)
+        token = build_token(Lexeme2name[lexeme], lexeme)
       elsif (token = recognize_char_token)
         # Do nothing
       elsif (lexeme = scanner.scan(/[+-]?[0-9]+\/[0-9]+(?=\s|[|()";]|$)/))
@@ -121,7 +121,7 @@ module Skeem
       elsif (lexeme = scanner.scan(/"(?:\\"|[^"])*"/)) # Double quotes literal?
         token = build_token('STRING_LIT', lexeme)
       elsif (lexeme = scanner.scan(/[a-zA-Z!$%&*\/:<=>?@^_~][a-zA-Z0-9!$%&*+-.\/:<=>?@^_~+-]*/))
-        keyw = @@keywords[lexeme.upcase]
+        keyw = Keywords[lexeme.upcase]
         tok_type = keyw || 'IDENTIFIER'
         token = build_token(tok_type, lexeme)
       elsif (lexeme = scanner.scan(/\|(?:[^|])*\|/)) # Vertical bar delimited
@@ -142,7 +142,7 @@ module Skeem
         raise ScanError, "Unknown token #{erroneous} on line #{lineno}"
       end
 
-      return token
+      token
     end
 
     # rubocop: enable Lint/DuplicateBranch
@@ -160,15 +160,15 @@ other literal data (section 2.4).
       when /^#true|false|t|f$/
         token = build_token('BOOLEAN', aLexeme)
       when '#('
-        token = build_token(@@lexeme2name[aLexeme], aLexeme)
+        token = build_token(Lexeme2name[aLexeme], aLexeme)
       end
 
-      return token
+      token
     end
 
     def recognize_char_token
       token = nil
-      if (lexeme = scanner.scan(/#\\/))
+      if (lexeme = scanner.scan("#\\"))
         if (lexeme = scanner.scan(/(?:alarm|backspace|delete|escape|newline|null|return|space|tab)/))
           token = build_token('CHAR', lexeme, :name)
         elsif (lexeme = scanner.scan(/x[0-9a-fA-F]+/))
@@ -193,7 +193,7 @@ other literal data (section 2.4).
         raise e
       end
 
-      return token
+      token
     end
 
     def convert_to(aLexeme, aSymbolName, aFormat)
@@ -218,7 +218,7 @@ other literal data (section 2.4).
         value = aLexeme
       end
 
-      return [value, symb]
+      [value, symb]
     end
 
     def to_boolean(aLexeme, _format)
@@ -333,8 +333,6 @@ other literal data (section 2.4).
     end
 
     def skip_intertoken_spaces
-      pre_pos = scanner.pos
-
       loop do
         ws_found = scanner.skip(/[ \t\f]+/) ? true : false
         nl_found = scanner.skip(/(?:\r\n)|\r|\n/)
@@ -354,9 +352,6 @@ other literal data (section 2.4).
         end
         break unless ws_found || cmt_found
       end
-
-      curr_pos = scanner.pos
-      return if curr_pos == pre_pos
     end
 
     def skip_block_comment
